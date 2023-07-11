@@ -66,6 +66,24 @@ fun GetFarmDescription(){
 
     Text(text = "Mi granja", fontSize = 32.sp)
     Text(text = "Salta, Argentina")
+    Row(
+
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+            .fillMaxWidth()
+    ) {
+        Text(text = "5 Trabajadores", fontSize = 28.sp)
+        Button(onClick = { /* Do something! */ }) {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Localized description",
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            Text("Invitar")
+        }
+    }
 }
 
 @Composable
