@@ -1,4 +1,5 @@
 package com.example.agroagil.ui.Farm
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,27 +18,263 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.example.agroagil.R
+import com.example.agroagil.core.Models.Member
 
+val openDialogMember =  mutableStateOf(false)
+val openDialogHome =  mutableStateOf(false)
+val members = mutableStateListOf(
+        Member("Nombre1", "Administrador", "correo"),
+        Member( "Nombre", "Administrador", "correo"),
+        Member( "Nombre", "Administrador", "correo"),
+        Member( "Nombre", "Administrador", "correo"),
+        Member( "Nombre", "Administrador", "correo"),
+        Member( "Nombre", "Administrador", "correo")
+)
+val nameFarm = mutableStateOf("Mi granja")
+
+@SuppressLint("UnrememberedMutableState")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GetDialogEditHome(){
+    var text_name = mutableStateOf(nameFarm.value)
+    var error_name = mutableStateOf(false)
+    if (openDialogHome.value) {
+    AlertDialog(
+        onDismissRequest = {
+            openDialogHome.value = false
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if(text_name.value ==""){
+                        error_name.value = true
+                    }else{
+                        nameFarm.value = text_name.value
+                        openDialogHome.value = false
+                        error_name.value = false
+                    }
+                }
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    openDialogHome.value = false
+                    text_name.value = ""
+                }
+            ) {
+                Text("Cancelar")
+            }
+        },
+
+        text = {
+            Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally ){
+            Box() {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_background),
+                    contentDescription = stringResource(id = R.string.app_name),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
+                FilledIconButton(
+                    onClick = {openDialogHome.value=true},
+                    modifier = Modifier
+                        .size(50.dp)
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Icon(
+                        ImageVector.vectorResource(R.drawable.camera),
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                }
+            }
+
+            OutlinedTextField(
+                value = text_name.value,
+                onValueChange = {
+                    text_name.value=it
+                    error_name.value = false
+                },
+                label = { Text("Nombre") },
+                modifier = Modifier.padding( top = 16.dp),
+                isError = error_name.value
+            )
+        }
+        }
+    )}
+
+}
+
+@SuppressLint("UnrememberedMutableState")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GetDialogEditMember(){
+    val text_nombre =  mutableStateOf("")
+    val error_nombre = mutableStateOf(false)
+    val text_correo =  mutableStateOf("")
+    val error_correo = mutableStateOf(false)
+    var expanded_role =  mutableStateOf(false)
+    var selected_role =  mutableStateOf("")
+    val error_role = mutableStateOf(false)
+
+    if (openDialogMember.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialogMember.value = false
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if(text_nombre.value ==""){
+                            error_nombre.value = true
+                        }
+                        if(text_correo.value == ""){
+                            error_correo.value = true
+                        }
+                        if(selected_role.value == ""){
+                            error_role.value = true
+                        }
+                        if ((text_nombre.value !="") && (text_correo.value != "") && (selected_role.value != "")){
+                            members.add(Member(text_nombre.value,selected_role.value, text_correo.value))
+                            openDialogMember.value = false
+                            text_nombre.value = ""
+                            text_correo.value = ""
+                            selected_role.value=""
+
+                        }
+
+
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text("Enviar invitacion")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openDialogMember.value = false
+                        text_nombre.value = ""
+                        text_correo.value = ""
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            },
+            title = {Text("Agregar Trabajador")},
+
+            text = {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    OutlinedTextField(
+                        value = text_nombre.value,
+                        onValueChange = {
+                            text_nombre.value=it
+                            error_nombre.value = false
+                                        },
+                        label = { Text("Nombre") },
+                        modifier = Modifier.padding(bottom=16.dp),
+                        isError = error_nombre.value
+                    )
+                    OutlinedTextField(
+                        value = text_correo.value,
+                        onValueChange = {
+                            text_correo.value=it
+                            error_correo.value = false
+                                        },
+                        label = { Text("Correo") },
+                        modifier = Modifier.padding(bottom=16.dp),
+                        isError = error_correo.value
+
+                    )
+                    ExposedDropdownMenuBox(
+                        expanded = expanded_role.value,
+                        onExpandedChange = { expanded_role.value = !expanded_role.value },
+                        modifier = Modifier.padding(bottom=16.dp),
+                    ) {
+                        TextField(
+                            // The `menuAnchor` modifier must be passed to the text field for correctness.
+                            modifier = Modifier.menuAnchor(),
+                            readOnly = true,
+                            value = selected_role.value,
+                            onValueChange = {},
+                            label = { Text("Rol") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded_role.value) },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                            isError = error_role.value
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded_role.value,
+                            onDismissRequest = { expanded_role.value = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Administrador") },
+                                onClick = {
+                                    selected_role.value="Administrador"
+                                    expanded_role.value = false
+                                    error_role.value = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Trabajador") },
+                                onClick = {
+                                    selected_role.value="Trabajador"
+                                    expanded_role.value = false
+                                    error_role.value = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
+                        }
+                    }
+
+                }
+
+        })
+    }
+}
 @Composable
 fun GetFarmDescription(){
     Box() {
@@ -50,7 +287,7 @@ fun GetFarmDescription(){
                 .clip(CircleShape)
         )
         FilledIconButton(
-            onClick = { /* Do something! */ },
+            onClick = {openDialogHome.value=true},
             modifier = Modifier
                 .size(50.dp)
                 .align(Alignment.BottomEnd),
@@ -64,8 +301,8 @@ fun GetFarmDescription(){
         }
     }
 
-    Text(text = "Mi granja", fontSize = 32.sp)
-    Text(text = "Salta, Argentina")
+    Text(text = nameFarm.value, fontSize = 32.sp)
+    //Text(text = "Salta, Argentina")
     Row(
 
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -73,8 +310,8 @@ fun GetFarmDescription(){
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .fillMaxWidth()
     ) {
-        Text(text = "5 Trabajadores", fontSize = 28.sp)
-        Button(onClick = { /* Do something! */ }) {
+        Text(text = members.size.toString()+" Trabajadores", fontSize = 28.sp)
+        Button(onClick = {openDialogMember.value = true}) {
             Icon(
                 Icons.Filled.Add,
                 contentDescription = "Localized description",
@@ -88,14 +325,14 @@ fun GetFarmDescription(){
 
 @Composable
 fun GetMembers(){
-    for(i in 1..3){
+    for(i in 0..Math.ceil((members.size/2).toDouble()).toInt()){
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
         ) {
-            for(i in 1..2){
+            for(item in 0..Math.min(2,members.size-(i*2))-1){
             Card(
                 modifier = Modifier.size(width = 200.dp, height = 240.dp),
                 elevation = CardDefaults.cardElevation(
@@ -113,26 +350,30 @@ fun GetMembers(){
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(150.dp)
                     )
-                    Text(
-                        "Nombre del usuario",
-                        modifier = Modifier
-                            .background(Color("#F8FAFB".toColorInt()))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .padding(top = 20.dp, start = 10.dp, end = 10.dp),
-                        color = Color.Black,
-                        fontSize = 17.sp
-                    )
-                    Text(
-                        "Administrador",
-                        modifier = Modifier
-                            .background(Color("#F8FAFB".toColorInt()))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .padding(start = 10.dp, end = 10.dp),
-                        color = Color.Black,
-                        fontSize = 14.sp
-                    )
+                    members[(i*2)+item].name?.let {
+                        Text(
+                            it,
+                            modifier = Modifier
+                                .background(Color("#F8FAFB".toColorInt()))
+                                .fillMaxWidth()
+                                .height(45.dp)
+                                .padding(top = 20.dp, start = 10.dp, end = 10.dp),
+                            color = Color.Black,
+                            fontSize = 17.sp
+                        )
+                    }
+                    members[(i*2)+item].role?.let {
+                        Text(
+                            it,
+                            modifier = Modifier
+                                .background(Color("#F8FAFB".toColorInt()))
+                                .fillMaxWidth()
+                                .height(45.dp)
+                                .padding(start = 10.dp, end = 10.dp),
+                            color = Color.Black,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
 
             }}
@@ -145,17 +386,24 @@ fun GetMembers(){
 
 
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun Farm(){
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).fillMaxSize()){
+
+    Column(modifier = Modifier
+        .verticalScroll(rememberScrollState())
+        .fillMaxSize()){
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 50.dp, bottom = 30.dp)
+        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+            .padding(top = 50.dp, bottom = 30.dp)
             .fillMaxSize()
     )
 
     {
         GetFarmDescription()
         GetMembers()
+        GetDialogEditMember()
+        GetDialogEditHome()
     }
     }
 }
