@@ -1,5 +1,6 @@
 package com.example.agroagil.ui.Farm
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.Gravity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,6 +51,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.viewModels
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,8 +62,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+
 import com.example.agroagil.R
+import com.example.agroagil.core.models.FarmModel
 import com.example.agroagil.core.models.Member
+import com.google.firebase.auth.ktx.auth
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.semantics.semantics
+import com.google.firebase.database.ktx.getValue
+
 val openDialogImageFarm =  mutableStateOf(false)
 val openDialogConfirmDelete =  mutableStateOf(false)
 val openDialogMemberDetails =  mutableStateOf(false)
@@ -360,6 +378,7 @@ fun GetDialogEditHome(){
                         error_name.value = true
                     }else{
                         nameFarm.value = text_name.value
+                        Firebase.database.getReference("title").setValue(text_name.value)
                         openDialogHome.value = false
                         error_name.value = false
                     }
@@ -581,8 +600,14 @@ fun GetFarmDescription(){
             )
         }
     }
+    /*
+    Firebase.database.getReference("granja/1/nombre").get().addOnSuccessListener { it ->
+        nameFarm.value = it.value as String
+        it
+    }*/
 
     Text(text = nameFarm.value, fontSize = 32.sp)
+    //Text(text = result.toString(), fontSize = 32.sp)
     //Text(text = "Salta, Argentina")
     Row(
 
@@ -674,26 +699,40 @@ fun GetMembers(){
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
-fun Farm(){
+fun Farm(farmViewModel:FarmViewModel){
+    val farm = farmViewModel.farm.observeAsState().value
+    if (farm == null){
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+            .fillMaxSize()) {
+            LinearProgressIndicator(
+                modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
+            )
+        }
+    }else {
+        //val farm = farmViewModel.farm.observeAsState()
+        //val ejemplo =  farm.value
+        //nameFarm.value = farm.value?.result?.value?.let { it.toString() }.toString()
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxSize()
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+                    .padding(top = 50.dp, bottom = 30.dp)
+                    .fillMaxSize()
+            )
 
-    Column(modifier = Modifier
-        .verticalScroll(rememberScrollState())
-        .fillMaxSize()){
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-            .padding(top = 50.dp, bottom = 30.dp)
-            .fillMaxSize()
-    )
-
-    {
-        GetFarmDescription()
-        GetMembers()
-        GetDialogEditMember()
-        GetDialogMemberDetails()
-        GetDialogEditHome()
-        GetDialogConfirmDelete()
-        GetImageFarm()
-    }
+            {
+                GetFarmDescription()
+                GetMembers()
+                GetDialogEditMember()
+                GetDialogMemberDetails()
+                GetDialogEditHome()
+                GetDialogConfirmDelete()
+                GetImageFarm()
+            }
+        }
     }
 }
 
