@@ -84,6 +84,7 @@ val openDialogMemberDetails =  mutableStateOf(false)
 val openDialogMember =  mutableStateOf(false)
 val openDialogHome =  mutableStateOf(false)
 val currentMember = mutableStateOf(Member())
+var farmViewModelCurrent: FarmViewModel? = null
 
 
 var members = mutableStateListOf<Member>()
@@ -191,6 +192,7 @@ fun GetDialogConfirmDelete() {
                 TextButton(
                     onClick = {
                         members.remove(currentMember.value)
+                        farmViewModelCurrent?.updateMembers(members)
                         openDialogConfirmDelete.value = false
                     }
                 ) {
@@ -245,7 +247,8 @@ fun GetDialogMemberDetails(){
                             error_role.value = true
                         }
                         if ((text_nombre.value !="") && (text_correo.value != "") && (selected_role.value != "")){
-                            members[members.indexOf(currentMember.value)] = Member(text_nombre.value,selected_role.value, text_correo.value)
+                            members[members.indexOf(currentMember.value)] = Member(text_nombre.value,selected_role.value, text_correo.value, currentMember.value.image)
+                            farmViewModelCurrent?.updateMembers(members)
                             openDialogMemberDetails.value = false
 
                         }
@@ -358,6 +361,7 @@ fun GetDialogMemberDetails(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GetDialogEditHome(){
+    val context = LocalContext.current
     var text_name = mutableStateOf(nameFarm.value)
     var error_name = mutableStateOf(false)
     if (openDialogHome.value) {
@@ -375,8 +379,13 @@ fun GetDialogEditHome(){
                         Firebase.database.getReference("title").setValue(text_name.value)
                         openDialogHome.value = false
                         error_name.value = false
+                        profileImage.value = profileImageTemp.value
+                        farmViewModelCurrent?.updateName(nameFarm.value)
+                        val nameImage = context.resources.getResourceEntryName(profileImageTemp.value)
+                        farmViewModelCurrent?.updateImage(nameImage)
                     }
-                    profileImage.value = profileImageTemp.value
+
+
                 }
             ) {
                 Text("Guardar")
@@ -467,7 +476,8 @@ fun GetDialogEditMember(){
                             error_role.value = true
                         }
                         if ((text_nombre.value !="") && (text_correo.value != "") && (selected_role.value != "")){
-                            members.add(Member(text_nombre.value,selected_role.value, text_correo.value))
+                            members.add(Member(text_nombre.value,selected_role.value, text_correo.value, "farmer2"))
+                            farmViewModelCurrent?.updateMembers(members)
                             openDialogMember.value = false
                             text_nombre.value = ""
                             text_correo.value = ""
@@ -594,15 +604,7 @@ fun GetFarmDescription(){
             )
         }
     }
-    /*
-    Firebase.database.getReference("granja/1/nombre").get().addOnSuccessListener { it ->
-        nameFarm.value = it.value as String
-        it
-    }*/
-
     Text(text = nameFarm.value, fontSize = 32.sp)
-    //Text(text = result.toString(), fontSize = 32.sp)
-    //Text(text = "Salta, Argentina")
     Row(
 
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -703,6 +705,7 @@ fun GetMembers(){
 @Composable
 fun Farm(farmViewModel:FarmViewModel){
     val farm = farmViewModel.farm.observeAsState().value
+    farmViewModelCurrent = farmViewModel
     if (farm == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {

@@ -3,6 +3,7 @@ package com.example.agroagil.ui.Farm
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.agroagil.core.models.FarmModel
+import com.example.agroagil.core.models.Member
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -27,5 +28,14 @@ class FarmViewModel : ViewModel() {
         } catch (e: Exception) {
             // Handle exception if needed
         }
+    }
+    fun updateMembers(members:List<Member>){
+        Firebase.database.getReference("granja/0/members").setValue(members)
+    }
+    fun updateName(name:String){
+        Firebase.database.getReference("granja/0/name").setValue(name)
+    }
+    fun updateImage(image:String){
+        Firebase.database.getReference("granja/0/image").setValue(image)
     }
 }
