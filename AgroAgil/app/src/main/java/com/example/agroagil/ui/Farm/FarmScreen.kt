@@ -74,6 +74,7 @@ import com.example.agroagil.core.models.FarmModel
 import com.example.agroagil.core.models.Member
 import com.google.firebase.auth.ktx.auth
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.semantics
 import com.google.firebase.database.ktx.getValue
 
@@ -85,24 +86,17 @@ val openDialogHome =  mutableStateOf(false)
 val currentMember = mutableStateOf(Member())
 
 
-val members = mutableStateListOf(
-        Member("Nombre1", "Administrador", "correo"),
-        Member( "Nombre", "Administrador", "correo"),
-        Member( "Nombre", "Administrador", "correo"),
-        Member( "Nombre", "Administrador", "correo"),
-        Member( "Nombre", "Administrador", "correo"),
-        Member( "Nombre", "Administrador", "correo")
-)
+var members = mutableStateListOf<Member>()
 val nameFarm = mutableStateOf("Mi granja")
 val profileImage = mutableStateOf(R.drawable.ic_launcher_background)
 val profileImageTemp = mutableStateOf(R.drawable.ic_launcher_background)
 val profileImages = mutableStateListOf(
-    R.drawable.ic_launcher_background,
-    R.drawable.ic_launcher_foreground,
-    R.drawable.ic_launcher_foreground,
-    R.drawable.ic_launcher_background,
-    R.drawable.ic_launcher_background,
-    R.drawable.ic_launcher_background
+    R.drawable.farm1,
+    R.drawable.farm2,
+    R.drawable.farm3,
+    R.drawable.farm4,
+    R.drawable.farm5,
+    R.drawable.farm6
 )
 
 @SuppressLint("UnrememberedMutableState")
@@ -154,23 +148,23 @@ fun GetImageFarm(){
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
-                        for (item in 0..Math.min(3, profileImages.size - (i * 3)) - 1) {
+                        for (item in 0..Math.min(3, profileImages.size - (i * 3)) -1) {
                             if (currentSelected.value == (i*3)+item+1){
                                 currentColor = ButtonDefaults.filledTonalButtonColors()}
                             else{
                                 currentColor = ButtonDefaults.textButtonColors()
                             }
-                            TextButton(onClick = { currentImage.value =  profileImages[(i*2)+item]
+                            TextButton(onClick = { currentImage.value =  profileImages[(i*3)+item]
                                 currentSelected.value = (i*3)+item+1
                                                  }, colors = currentColor) {
 
 
                             Image(
-                                painter = painterResource(id = profileImages[(i*2)+item]),
+                                painter = painterResource(id = profileImages[(i*3)+item]),
                                 contentDescription = stringResource(id = R.string.app_name),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(80.dp)
+                                    .size(65.dp)
                                     .clip(CircleShape)
                             )
                             }
@@ -655,8 +649,16 @@ fun GetMembers(){
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    val context = LocalContext.current
+                    val drawableId = remember(members[(i*2)+item].image) {
+                        context.resources.getIdentifier(
+                            members[(i*2)+item].image,
+                            "drawable",
+                            context.packageName
+                        )
+                    }
                     Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = drawableId),
                         contentDescription = stringResource(id = R.string.app_name),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(150.dp)
@@ -697,7 +699,7 @@ fun GetMembers(){
 
 
 
-@SuppressLint("MutableCollectionMutableState")
+@SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun Farm(farmViewModel:FarmViewModel){
     val farm = farmViewModel.farm.observeAsState().value
@@ -709,9 +711,18 @@ fun Farm(farmViewModel:FarmViewModel){
             )
         }
     }else {
-        //val farm = farmViewModel.farm.observeAsState()
-        //val ejemplo =  farm.value
-        //nameFarm.value = farm.value?.result?.value?.let { it.toString() }.toString()
+        members.addAll(farm.members)
+        nameFarm.value = farm.name
+        val context = LocalContext.current
+        val drawableId = remember(farm.image) {
+            context.resources.getIdentifier(
+                farm.image,
+                "drawable",
+                context.packageName
+            )
+        }
+        profileImage.value = drawableId
+        profileImageTemp.value = drawableId
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
