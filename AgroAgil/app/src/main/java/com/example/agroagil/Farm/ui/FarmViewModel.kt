@@ -1,4 +1,4 @@
-package com.example.agroagil.ui.Farm
+package com.example.agroagil.Farm.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData

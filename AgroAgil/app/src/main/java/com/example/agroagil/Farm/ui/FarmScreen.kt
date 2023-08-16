@@ -1,6 +1,5 @@
-package com.example.agroagil.ui.Farm
+package com.example.agroagil.Farm.ui
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.Gravity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,11 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -45,14 +42,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.activity.viewModels
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -62,21 +57,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.auth.FirebaseAuth
 
 import com.example.agroagil.R
-import com.example.agroagil.core.models.FarmModel
 import com.example.agroagil.core.models.Member
-import com.google.firebase.auth.ktx.auth
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.semantics
-import com.google.firebase.database.ktx.getValue
 
 val openDialogImageFarm =  mutableStateOf(false)
 val openDialogConfirmDelete =  mutableStateOf(false)
@@ -591,7 +579,7 @@ fun GetFarmDescription(){
                 .clip(CircleShape)
         )
         FilledIconButton(
-            onClick = {openDialogHome.value=true},
+            onClick = { openDialogHome.value=true},
             modifier = Modifier
                 .size(50.dp)
                 .align(Alignment.BottomEnd),
@@ -613,7 +601,7 @@ fun GetFarmDescription(){
             .fillMaxWidth()
     ) {
         Text(text = members.size.toString()+" Trabajadores", fontSize = 28.sp)
-        Button(onClick = {openDialogMember.value = true}) {
+        Button(onClick = { openDialogMember.value = true}) {
             Icon(
                 Icons.Filled.Add,
                 contentDescription = "Localized description",
@@ -635,9 +623,9 @@ fun GetMembers(){
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
         ) {
-            for(item in 0..Math.min(2,members.size-(i*2))-1){
+            for(item in 0..Math.min(2, members.size-(i*2))-1){
             Card(
-                modifier = Modifier.size(width = 200.dp, height = 240.dp),
+                modifier = Modifier.size(width =  200.dp, height = 240.dp).padding(start=5.dp, end=5.dp, top=10.dp),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 10.dp
                 ),
@@ -703,7 +691,7 @@ fun GetMembers(){
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun Farm(farmViewModel:FarmViewModel){
+fun Farm(farmViewModel: FarmViewModel){
     val farm = farmViewModel.farm.observeAsState().value
     farmViewModelCurrent = farmViewModel
     if (farm == null){

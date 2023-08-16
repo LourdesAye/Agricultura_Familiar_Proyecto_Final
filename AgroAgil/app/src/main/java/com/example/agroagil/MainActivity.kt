@@ -6,17 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.agroagil.ui.Farm.Farm
-import com.example.agroagil.ui.Farm.FarmViewModel
+import com.example.agroagil.Farm.ui.Farm
+import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
@@ -34,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     FirebaseApp.initializeApp(LocalContext.current)
                     Firebase.database.setPersistenceEnabled(true)
-                    Greeting("Android", model=FarmViewModel())
+                    Greeting("Android", model= FarmViewModel())
                 }
             }
         }
@@ -42,7 +38,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier, model: FarmViewModel= FarmViewModel()) {
+fun Greeting(name: String, modifier: Modifier = Modifier, model: FarmViewModel = FarmViewModel()) {
     Farm(model)
 }
 
