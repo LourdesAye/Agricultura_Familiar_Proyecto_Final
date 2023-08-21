@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.viewModels
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -709,7 +710,7 @@ fun Farm(farmViewModel:FarmViewModel){
     if (farm == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
-            LinearProgressIndicator(
+            CircularProgressIndicator(
                 modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
             )
         }
