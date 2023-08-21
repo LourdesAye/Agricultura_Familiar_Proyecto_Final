@@ -1,5 +1,4 @@
-package com.example.agroagil.ui.Loan
-import androidx.navigation.compose.rememberNavController
+package com.example.agroagil.Loan.ui
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
@@ -26,16 +25,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.agroagil.R
-import com.example.agroagil.ui.Farm.FarmViewModel
-import com.example.agroagil.ui.Farm.openDialogMember
-import androidx.navigation.compose.NavHost
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -47,9 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
@@ -58,7 +50,6 @@ import androidx.navigation.NavController
 import com.example.agroagil.core.models.Item
 import com.example.agroagil.core.models.Loan
 import java.util.Date
-import java.util.Locale
 
 val SinPagar = "#A93226"
 val PagadoParcialmente = "#D4AC0D"
