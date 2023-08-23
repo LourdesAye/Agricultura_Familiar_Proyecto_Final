@@ -118,12 +118,12 @@ fun Actions(navController: NavController){
     }
 }
 
-fun SelectColorCard(percentagePaid:Double): String {
+fun SelectColorCard(percentagePaid:Int): String {
     var color: String = "white"
-    if (percentagePaid==0.0){
+    if (percentagePaid==0){
         color = SinPagar
     }else{
-        if (percentagePaid==1.0){
+        if (percentagePaid>=100){
             color = Pagado
         }else{
             color = PagadoParcialmente
@@ -138,7 +138,7 @@ fun OneLoan(itemData:Loan, navController: NavController){
     Column(){
     Card(
         onClick={
-            navController.navigate("loan/info")
+            navController.navigate("loan/${listItemData.indexOf(itemData)}/info")
         },
         modifier = Modifier
             .height(100.dp)
@@ -191,9 +191,11 @@ fun OneLoan(itemData:Loan, navController: NavController){
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
-    //loanViewModel.init()
     var valuesLoan = loanViewModel.farm.observeAsState().value
-    valuesLoan?.let { listItemData.addAll(it) }
+    valuesLoan?.let {
+        listItemData.clear()
+        listItemData.addAll(it)
+    }
     if (valuesLoan == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
@@ -203,7 +205,6 @@ fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
         }
 
     }else {
-
         Column() {
             Actions(navController)
             LazyColumn(

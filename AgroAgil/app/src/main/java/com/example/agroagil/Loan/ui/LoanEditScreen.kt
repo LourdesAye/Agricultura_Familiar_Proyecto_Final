@@ -51,7 +51,7 @@ import kotlinx.coroutines.launch
 import java.util.Date
 
 val openDialogAddItemEdit =  mutableStateOf(false)
-val currentLoan = Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0.0)
+val currentLoan = Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0)
 var productsEdit = mutableStateListOf<Item>()
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,7 +217,8 @@ fun itemProductClose(item: Item){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoanEditScreen(navController: NavController) {
+fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int) {
+    current_loan = loanViewModel.farm.value?.get(loanId) ?: current_loan
     var percentagePaid by rememberSaveable { mutableStateOf(current_loan.percentagePaid.toString()+ " %") }
     var percentagePaidError by rememberSaveable { mutableStateOf(false)}
     AddProductEidt()
@@ -322,6 +323,9 @@ fun LoanEditScreen(navController: NavController) {
                 .padding(30.dp)
                 .fillMaxWidth()){
             Button(onClick = {
+                currentLoan.percentagePaid = percentagePaid.replace("%", "").toInt()
+                currentLoan.paid = productsEdit
+                loanViewModel.updateLoan(currentLoan, loanId)
                     productsEdit.clear()
                     navController.popBackStack()
 

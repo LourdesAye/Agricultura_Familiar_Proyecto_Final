@@ -15,9 +15,10 @@ data class Loans(
 data class Loan(
     val nameUser:String = "",
     val items: List<Item> = emptyList(),
-    val paid:List<Item> = emptyList(),
-    val percentagePaid: Double = 0.0,
-    val date: String = "01/01/2023 00:00"
+    var paid:List<Item> = emptyList(),
+    var percentagePaid: Int = 0,
+    val date: String = "01/01/2023 00:00",
+    val lend: Boolean = true
 ){
     @RequiresApi(Build.VERSION_CODES.O)
     fun datetoDate(): LocalDate? {

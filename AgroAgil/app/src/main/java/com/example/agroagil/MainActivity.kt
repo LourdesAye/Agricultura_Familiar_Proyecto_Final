@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
@@ -42,21 +44,28 @@ class MainActivity : ComponentActivity() {
                     FirebaseApp.initializeApp(LocalContext.current)
                     Firebase.database.setPersistenceEnabled(true)
                     val navController = rememberNavController()
+                    val loanViewModel = LoanViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
                         }
                         composable("loan") {
-                            LoanScreen(loanViewModel = LoanViewModel(), navController = navController)
+                            LoanScreen(loanViewModel = loanViewModel, navController = navController)
                         }
                         composable("loan/add") {
-                            LoanAddScreen(loanViewModel = LoanViewModel(), navController = navController)
+                            LoanAddScreen(loanViewModel = loanViewModel, navController = navController)
                         }
-                        composable("loan/info"){
-                            LoanInfoScreen(navController = navController)
+                        composable("loan/{loanId}/info", arguments = listOf(navArgument("loanId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
+                            if (loanId is Int)
+                                LoanInfoScreen(navController = navController,loanViewModel = loanViewModel, loanId)
                         }
-                        composable("loan/edit"){
-                            LoanEditScreen(navController = navController)
+                        composable("loan/{loanId}/edit", arguments = listOf(navArgument("loanId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
+                            if (loanId is Int)
+                                LoanEditScreen(navController = navController,loanViewModel = loanViewModel, loanId)
                         }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
