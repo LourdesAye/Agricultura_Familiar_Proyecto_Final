@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.core.models.Item
 import kotlinx.coroutines.launch
 

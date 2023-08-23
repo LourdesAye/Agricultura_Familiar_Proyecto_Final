@@ -16,8 +16,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
+import com.example.agroagil.Loan.ui.LoanEditScreen
+import com.example.agroagil.Loan.ui.LoanInfoScreen
 import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
@@ -40,11 +43,20 @@ class MainActivity : ComponentActivity() {
                     Firebase.database.setPersistenceEnabled(true)
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "loan") {
+                        composable("farm"){
+                            Farm(FarmViewModel())
+                        }
                         composable("loan") {
                             LoanScreen(loanViewModel = LoanViewModel(), navController = navController)
                         }
                         composable("loan/add") {
                             LoanAddScreen(loanViewModel = LoanViewModel(), navController = navController)
+                        }
+                        composable("loan/info"){
+                            LoanInfoScreen(navController = navController)
+                        }
+                        composable("loan/edit"){
+                            LoanEditScreen(navController = navController)
                         }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
@@ -58,10 +70,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier, model: LoanViewModel = LoanViewModel(), navController: NavController = rememberNavController()) {
     navController.navigate("loan")
-    //LoanScreen(loanViewModel = model, navController = navController)
-    //Farm(model)
-    //DateRangeSelector()
-    //MainScreen()
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

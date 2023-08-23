@@ -31,9 +31,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.agroagil.R
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -55,17 +58,7 @@ val SinPagar = "#A93226"
 val PagadoParcialmente = "#D4AC0D"
 val Pagado = "#28B463"
 
-val listItemData = listOf<Loan>(
-    Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0.0, Date(2023,1,1,15,0)),
-    Loan("Usuario2", listOf<Item>(Item("Papas", 1, "KG")), emptyList(), 0.0, Date(2023,1,1,15,0)),
-    Loan("Usuario3", listOf<Item>(Item("Calabaza", 1, "Unidad")), emptyList(), 0.5, Date(2023,1,1,15,0)),
-    Loan("Usuario4", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")), 1.0,Date(2023,1,1,15,0)),
-    Loan("Usuario5", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")), 1.0, Date(2023,1,1,15,0)),
-    Loan("Usuario6", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")), 1.0, Date(2023,1,1,15,0)),
-    Loan("Usuario7", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")), 0.2, Date(2023,1,1,15,0)),
-    Loan("Usuario8", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")), 0.3, Date(2023,1,1,15,0)),
-    Loan("Usuario10", listOf<Item>(Item("Tomate", 1, "KG")), listOf<Item>(Item("Papas", 1, "KG")),0.5,Date(2023,1,1,15,0) )
-    )
+var listItemData = mutableListOf<Loan>()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,15 +102,12 @@ fun Actions(navController: NavController){
         Column(modifier = Modifier.fillMaxWidth()){
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column (modifier = Modifier.align(Alignment.CenterHorizontally).padding(30.dp)){
-
-
                     OutlinedTextField(
                         value = text,
                         onValueChange = { text = it },
                         label = { Text("Nombre de usuario")},
                         modifier=Modifier.fillMaxWidth()
                     )
-                    Text("Filtrar por Nombre")
                     Text("Filtrar por Fecha")
                     Text("Filtrar por Prestado")
                 }
@@ -142,10 +132,14 @@ fun SelectColorCard(percentagePaid:Double): String {
     return color
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneLoan(itemData:Loan){
+fun OneLoan(itemData:Loan, navController: NavController){
     Column(){
     Card(
+        onClick={
+            navController.navigate("loan/info")
+        },
         modifier = Modifier
             .height(100.dp)
             .fillMaxWidth()
@@ -175,11 +169,19 @@ fun OneLoan(itemData:Loan){
                     Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
                 }
             }
-            Column(modifier = Modifier.padding(5.dp)) {
+            Column(modifier = Modifier.padding(5.dp).fillMaxWidth()) {
 
-                Text(itemData.date.date.toString()+ "/" + itemData.date.month.toString()+"/"+itemData.date.year.toString()+" "+itemData.date.hours.toString()+":"+itemData.date.minutes.toString(), fontSize=10.sp, modifier = Modifier.align(Alignment.End))
+                Text(itemData.date, fontSize=10.sp, modifier = Modifier.align(Alignment.End))
                 Text(itemData.nameUser, fontWeight= FontWeight.Bold)
-                Text("5 lechugas, 1 Tomate, Mas productos, Mas productos, Mas productos, Mas...")
+                var description = ""
+                for (i in 0..itemData.items.size-1){
+                    description+=itemData.items[i].amount.toString() + " "+itemData.items[i].name + ", "
+                }
+                if (description.length>70)
+                    description = description.substring(0,69)+"..."
+                else
+                    description = description.substring(0,description.length-2)
+                Text(description)
             }
         }
 
@@ -189,17 +191,30 @@ fun OneLoan(itemData:Loan){
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
-    Column() {
-        Actions(navController)
-        LazyColumn(modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 20.dp, end = 20.dp)) {
-            this.items(listItemData) {
-                OneLoan(it)
+    //loanViewModel.init()
+    var valuesLoan = loanViewModel.farm.observeAsState().value
+    valuesLoan?.let { listItemData.addAll(it) }
+    if (valuesLoan == null){
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+            .fillMaxSize()) {
+            CircularProgressIndicator(
+                modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
+            )
+        }
+
+    }else {
+
+        Column() {
+            Actions(navController)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 20.dp, end = 20.dp)
+            ) {
+                this.items(listItemData) {
+                    OneLoan(it, navController)
+                }
             }
         }
-        //LazyColumn(content = )
-        //OneLoan()
     }
-
 }
