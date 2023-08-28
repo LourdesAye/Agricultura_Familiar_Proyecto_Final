@@ -132,35 +132,35 @@ fun GetImageFarm(){
                     .verticalScroll(rememberScrollState())) {
 
 
-                for(i in 0..Math.ceil((profileImages.size/3).toDouble()).toInt()) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        for (item in 0..Math.min(3, profileImages.size - (i * 3)) -1) {
-                            if (currentSelected.value == (i*3)+item+1){
-                                currentColor = ButtonDefaults.filledTonalButtonColors()}
-                            else{
-                                currentColor = ButtonDefaults.textButtonColors()
-                            }
-                            TextButton(onClick = { currentImage.value =  profileImages[(i*3)+item]
-                                currentSelected.value = (i*3)+item+1
-                                                 }, colors = currentColor) {
+                    for(i in 0..Math.ceil((profileImages.size/3).toDouble()).toInt()) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            for (item in 0..Math.min(3, profileImages.size - (i * 3)) -1) {
+                                if (currentSelected.value == (i*3)+item+1){
+                                    currentColor = ButtonDefaults.filledTonalButtonColors()}
+                                else{
+                                    currentColor = ButtonDefaults.textButtonColors()
+                                }
+                                TextButton(onClick = { currentImage.value =  profileImages[(i*3)+item]
+                                    currentSelected.value = (i*3)+item+1
+                                }, colors = currentColor) {
 
 
-                            Image(
-                                painter = painterResource(id = profileImages[(i*3)+item]),
-                                contentDescription = stringResource(id = R.string.app_name),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(65.dp)
-                                    .clip(CircleShape)
-                            )
+                                    Image(
+                                        painter = painterResource(id = profileImages[(i*3)+item]),
+                                        contentDescription = stringResource(id = R.string.app_name),
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(65.dp)
+                                            .clip(CircleShape)
+                                    )
+                                }
                             }
                         }
                     }
-                }
                 }
 
             }
@@ -199,7 +199,7 @@ fun GetDialogConfirmDelete() {
                 }
             },
             title = {
-                    Text("Eliminar")
+                Text("Eliminar")
             },
 
             text = {Text("¿Desea eliminar trabajador?")}
@@ -267,14 +267,14 @@ fun GetDialogMemberDetails(){
                         },
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ){
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(30.dp),
-                        tint= Color("#C70707".toColorInt())
-                    )}
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(30.dp),
+                            tint= Color("#C70707".toColorInt())
+                        )}
                 }
-                    },
+            },
 
             text = {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -354,84 +354,84 @@ fun GetDialogEditHome(){
     var text_name = mutableStateOf(nameFarm.value)
     var error_name = mutableStateOf(false)
     if (openDialogHome.value) {
-    AlertDialog(
-        onDismissRequest = {
-            openDialogHome.value = false
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if(text_name.value ==""){
-                        error_name.value = true
-                    }else{
-                        nameFarm.value = text_name.value
-                        Firebase.database.getReference("title").setValue(text_name.value)
+        AlertDialog(
+            onDismissRequest = {
+                openDialogHome.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if(text_name.value ==""){
+                            error_name.value = true
+                        }else{
+                            nameFarm.value = text_name.value
+                            Firebase.database.getReference("title").setValue(text_name.value)
+                            openDialogHome.value = false
+                            error_name.value = false
+                            profileImage.value = profileImageTemp.value
+                            farmViewModelCurrent?.updateName(nameFarm.value)
+                            val nameImage = context.resources.getResourceEntryName(profileImageTemp.value)
+                            farmViewModelCurrent?.updateImage(nameImage)
+                        }
+
+
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
                         openDialogHome.value = false
-                        error_name.value = false
-                        profileImage.value = profileImageTemp.value
-                        farmViewModelCurrent?.updateName(nameFarm.value)
-                        val nameImage = context.resources.getResourceEntryName(profileImageTemp.value)
-                        farmViewModelCurrent?.updateImage(nameImage)
+                        text_name.value = ""
+                        profileImageTemp.value = profileImage.value
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            },
+
+            text = {
+                Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally ){
+                    Box() {
+                        Image(
+                            painter = painterResource(id = profileImageTemp.value),
+                            contentDescription = stringResource(id = R.string.app_name),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                        )
+                        FilledIconButton(
+                            onClick = {
+                                openDialogImageFarm.value=true
+                            },
+                            modifier = Modifier
+                                .size(50.dp)
+                                .align(Alignment.BottomEnd)
+                        ) {
+                            Icon(
+                                ImageVector.vectorResource(R.drawable.camera),
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                        }
                     }
 
-
-                }
-            ) {
-                Text("Guardar")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    openDialogHome.value = false
-                    text_name.value = ""
-                    profileImageTemp.value = profileImage.value
-                }
-            ) {
-                Text("Cancelar")
-            }
-        },
-
-        text = {
-            Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally ){
-            Box() {
-                Image(
-                    painter = painterResource(id = profileImageTemp.value),
-                    contentDescription = stringResource(id = R.string.app_name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-                FilledIconButton(
-                    onClick = {
-                        openDialogImageFarm.value=true
-                              },
-                    modifier = Modifier
-                        .size(50.dp)
-                        .align(Alignment.BottomEnd)
-                ) {
-                    Icon(
-                        ImageVector.vectorResource(R.drawable.camera),
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    OutlinedTextField(
+                        value = text_name.value,
+                        onValueChange = {
+                            text_name.value=it
+                            error_name.value = false
+                        },
+                        label = { Text("Nombre") },
+                        modifier = Modifier.padding( top = 16.dp),
+                        isError = error_name.value
                     )
                 }
             }
-
-            OutlinedTextField(
-                value = text_name.value,
-                onValueChange = {
-                    text_name.value=it
-                    error_name.value = false
-                },
-                label = { Text("Nombre") },
-                modifier = Modifier.padding( top = 16.dp),
-                isError = error_name.value
-            )
-        }
-        }
-    )}
+        )}
 
 }
 
@@ -506,7 +506,7 @@ fun GetDialogEditMember(){
                         onValueChange = {
                             text_nombre.value=it
                             error_nombre.value = false
-                                        },
+                        },
                         label = { Text("Nombre") },
                         modifier = Modifier.padding(bottom=16.dp),
                         isError = error_nombre.value
@@ -516,7 +516,7 @@ fun GetDialogEditMember(){
                         onValueChange = {
                             text_correo.value=it
                             error_correo.value = false
-                                        },
+                        },
                         label = { Text("Correo") },
                         modifier = Modifier.padding(bottom=16.dp),
                         isError = error_correo.value
@@ -565,7 +565,7 @@ fun GetDialogEditMember(){
 
                 }
 
-        })
+            })
     }
 }
 @Composable
@@ -625,65 +625,65 @@ fun GetMembers(){
                 .fillMaxWidth()
         ) {
             for(item in 0..Math.min(2, members.size-(i*2))-1){
-            Card(
-                modifier = Modifier.size(width =  200.dp, height = 240.dp).padding(start=5.dp, end=5.dp, top=10.dp),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 10.dp
-                ),
-                onClick={
-                    openDialogMemberDetails.value = true
-                    currentMember.value = members[(i*2)+item]
-                }
+                Card(
+                    modifier = Modifier.size(width =  200.dp, height = 240.dp).padding(start=5.dp, end=5.dp, top=10.dp),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 10.dp
+                    ),
+                    onClick={
+                        openDialogMemberDetails.value = true
+                        currentMember.value = members[(i*2)+item]
+                    }
 
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
                 ) {
-                    val context = LocalContext.current
-                    val drawableId = remember(members[(i*2)+item].image) {
-                        context.resources.getIdentifier(
-                            members[(i*2)+item].image,
-                            "drawable",
-                            context.packageName
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        val context = LocalContext.current
+                        val drawableId = remember(members[(i*2)+item].image) {
+                            context.resources.getIdentifier(
+                                members[(i*2)+item].image,
+                                "drawable",
+                                context.packageName
+                            )
+                        }
+                        Image(
+                            painter = painterResource(id = drawableId),
+                            contentDescription = stringResource(id = R.string.app_name),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(150.dp)
                         )
+                        members[(i*2)+item].name?.let {
+                            Text(
+                                it,
+                                modifier = Modifier
+                                    .background(Color("#F8FAFB".toColorInt()))
+                                    .fillMaxWidth()
+                                    .height(45.dp)
+                                    .padding(top = 20.dp, start = 10.dp, end = 10.dp),
+                                color = Color.Black,
+                                fontSize = 17.sp
+                            )
+                        }
+                        members[(i*2)+item].role?.let {
+                            Text(
+                                it,
+                                modifier = Modifier
+                                    .background(Color("#F8FAFB".toColorInt()))
+                                    .fillMaxWidth()
+                                    .height(45.dp)
+                                    .padding(start = 10.dp, end = 10.dp),
+                                color = Color.Black,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
-                    Image(
-                        painter = painterResource(id = drawableId),
-                        contentDescription = stringResource(id = R.string.app_name),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(150.dp)
-                    )
-                    members[(i*2)+item].name?.let {
-                        Text(
-                            it,
-                            modifier = Modifier
-                                .background(Color("#F8FAFB".toColorInt()))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .padding(top = 20.dp, start = 10.dp, end = 10.dp),
-                            color = Color.Black,
-                            fontSize = 17.sp
-                        )
-                    }
-                    members[(i*2)+item].role?.let {
-                        Text(
-                            it,
-                            modifier = Modifier
-                                .background(Color("#F8FAFB".toColorInt()))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .padding(start = 10.dp, end = 10.dp),
-                            color = Color.Black,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
 
-            }}
-            }
+                }}
         }
     }
+}
 //
 
 

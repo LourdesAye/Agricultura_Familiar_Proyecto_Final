@@ -3,7 +3,6 @@ package com.example.agroagil
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -11,7 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.agroagil.Farm.ui.Farm
+import com.example.agroagil.Cultivo.ui.Cultivo
+import com.example.agroagil.Farm.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
@@ -21,7 +21,7 @@ import com.google.firebase.ktx.Firebase
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val FarmViewModel by viewModels<FarmViewModel>()
+//        val FarmViewModel by viewModels<FarmViewModel>()
         setContent {
             AgroAgilTheme {
                 // A surface container using the 'background' color from the theme
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     FirebaseApp.initializeApp(LocalContext.current)
                     Firebase.database.setPersistenceEnabled(true)
-                    Greeting("Android !!!", model= FarmViewModel())
+                    Greeting("Android !!!", model = CultivoViewModel())
                 }
             }
         }
@@ -38,8 +38,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier, model: FarmViewModel = FarmViewModel()) {
-    Farm(model)
+fun Greeting(name: String, modifier: Modifier = Modifier, model: CultivoViewModel = CultivoViewModel()) {
+    Cultivo(model)
 }
 
 @Preview(showBackground = true)
