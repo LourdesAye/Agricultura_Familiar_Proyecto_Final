@@ -13,16 +13,19 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,6 +67,7 @@ import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.core.models.Item
 import com.example.agroagil.core.models.Loan
+import com.google.firebase.inappmessaging.model.Button
 import java.util.Date
 import kotlin.jvm.functions.FunctionN
 
@@ -98,7 +102,6 @@ fun resetFilter(){
     for (i in 0 .. filters.size-1) {
         var filtroExecute = mutableListOf<List<Loan>>()
         filtroExecute.addAll(listOf(filters[i](listItemData)))
-        //listItemDataFilter.clear()
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
 }
@@ -114,23 +117,12 @@ fun Actions(navController: NavController){
     Column {
     Row(
 
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = Arrangement.Center,
         modifier = Modifier
-            .padding(top = 20.dp, start = 20.dp, end = 10.dp)
+            .padding(top = 5.dp, start = 0.dp, end = 0.dp)
             .fillMaxWidth()
     ) {
-    Button(onClick = {
-        navController.navigate("loan/add")
-                     },modifier=Modifier.padding(end=10.dp), colors=ButtonDefaults.filledTonalButtonColors()) {
-        Icon(
-            Icons.Filled.Add,
-            contentDescription = "Localized description",
-            modifier = Modifier.size(ButtonDefaults.IconSize)
-        )
-        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-        Text("Agregar")
-    }//ButtonDefaults.buttonColors()
-    Button(onClick = { expandedFilter = !expandedFilter},colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors()) {
+    Button(onClick = { expandedFilter = !expandedFilter},colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(), modifier = Modifier.fillMaxWidth()) {
         Icon(
             ImageVector.vectorResource(R.drawable.filter),
             contentDescription = "Localized description",
@@ -140,7 +132,7 @@ fun Actions(navController: NavController){
         Text("Filtrar")
     }
     }
-    Column(modifier=Modifier.padding(end = 10.dp, start = 10.dp, bottom = 20.dp)){
+    Column(modifier=Modifier.padding(end = 10.dp, start = 10.dp, bottom = 5.dp)){
     AnimatedVisibility(visible = expandedFilter) {
         Column(modifier = Modifier.fillMaxWidth()){
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -395,6 +387,33 @@ fun filterStatus(){
 
     }
 }
+
+@Composable
+fun FloatingButton(
+) {
+    val yOffset = remember { mutableStateOf(0) }
+
+    val offsetY = with(LocalDensity.current) { yOffset.value.dp.toPx() }
+
+    Box(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Column {
+
+
+           Button(
+                onClick = {},
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
@@ -415,18 +434,33 @@ fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
 
     }else {
         resetFilter()
-
+        Box(){
         Column() {
-            filterStatus()
-            Actions(navController)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = 20.dp, end = 20.dp)
             ) {
+                item{
+                    filterStatus()
+                    Actions(navController)
+                }
                 this.items(listItemDataFilter) {
                     OneLoan(it, navController)
                 }
+            }
+
+        }
+            Button(onClick = {
+                navController.navigate("loan/add")
+            },modifier=Modifier.padding(end=20.dp,bottom=40.dp).align(Alignment.BottomEnd)) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Agregar")
             }
         }
     }
