@@ -1,5 +1,6 @@
 package com.example.agroagil.Loan.ui
 import android.annotation.SuppressLint
+import android.text.Selection
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -21,12 +22,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,7 +44,12 @@ import androidx.compose.ui.unit.dp
 import com.example.agroagil.R
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.getValue
@@ -51,16 +60,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -108,11 +125,78 @@ fun resetFilter(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun FormattedDateInputField(
+) {
+    var dateText by remember { mutableStateOf("") }
+    val cursor = remember { mutableStateOf(0) }
+    val formatter: (String) -> String = { value ->
+        val digits = value.filter { it.isDigit() }
+        var text =""
+        buildString {
+            if (digits.length >= 4) {
+                text +="${digits.substring(0..3)}-"
+            } else{
+                text +=digits
+
+            }
+            if (digits.length >= 6) {
+                text +="${digits.substring(4..5)}-"
+            }else{
+                if (digits.length > 4) {
+                    text +=digits.substring(4..(digits.length-1))
+                }
+            }
+            if (digits.length >= 8) {
+                text +=digits.substring(6..7)
+            }else{
+                if (digits.length > 6) {
+                    text +=digits.substring(6..(digits.length-1))
+                }
+            }
+            append(text)
+            cursor.value = text.length
+            append("YYYY-MM-DD".substring(text.length,"YYYY-MM-DD".length ))
+        }
+
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            label={Text("Filtrar por Fecha")},
+            value = TextFieldValue(dateText, TextRange(cursor.value)),
+            onValueChange = {
+                // Remove any non-digit characters
+               val formatted = formatter(it.text)
+                dateText = formatted
+
+            },
+            textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Number
+            ),
+            singleLine = true,
+            placeholder = { Text(text = "YYYY-MM-DD") },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun Actions(navController: NavController){
     var expandedFilter by remember { mutableStateOf(false) }
     var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     }
+    var selectedLent by remember { mutableStateOf(false) }
+    var selectedWasLent by remember { mutableStateOf(false) }
 
     Column {
     Row(
@@ -145,8 +229,47 @@ fun Actions(navController: NavController){
                         label = { Text("Nombre de usuario")},
                         modifier=Modifier.fillMaxWidth()
                     )
-                    Text("Filtrar por Fecha")
-                    Text("Filtrar por Prestado")
+                    FormattedDateInputField()
+                    Row {
+
+
+                    ElevatedFilterChip(
+                        selected = selectedLent,
+                        onClick = { selectedLent = !selectedLent },
+                        label = { Text("Preste") },
+                        modifier = Modifier.padding(end=10.dp),
+                        leadingIcon = if (selectedLent) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Localized Description",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else {
+                            null
+                        }
+                    )
+                    ElevatedFilterChip(
+                        selected = selectedWasLent,
+                        onClick = { selectedWasLent = !selectedWasLent },
+                        label = { Text("Me prestaron") },
+                        leadingIcon = if (selectedWasLent) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Localized Description",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else {
+                            null
+                        }
+                    )
+                }
+                    ExtendedFloatingActionButton(onClick = {
+                        expandedFilter=false
+                    }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                 }
             }
         }
@@ -453,7 +576,9 @@ fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
         }
             Button(onClick = {
                 navController.navigate("loan/add")
-            },modifier=Modifier.padding(end=20.dp,bottom=40.dp).align(Alignment.BottomEnd)) {
+            },modifier= Modifier
+                .padding(end = 20.dp, bottom = 40.dp)
+                .align(Alignment.BottomEnd)) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Localized description",
