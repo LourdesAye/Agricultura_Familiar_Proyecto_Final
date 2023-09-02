@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,8 +53,8 @@ import com.example.agroagil.core.models.Loan
 import kotlinx.coroutines.launch
 import java.util.Date
 
-val openDialogAddItemEdit =  mutableStateOf(false)
-val currentLoan = Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0)
+var openDialogAddItemEdit =  mutableStateOf(false)
+var currentLoanEdit = Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0)
 var productsEdit = mutableStateListOf<Item>()
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -218,132 +221,143 @@ fun itemProductClose(item: Item){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int) {
-    current_loan = loanViewModel.farm.value?.get(loanId) ?: current_loan
-    var percentagePaid by rememberSaveable { mutableStateOf(current_loan.percentagePaid.toString()+ " %") }
-    var percentagePaidError by rememberSaveable { mutableStateOf(false)}
-    AddProductEidt()
-    Box(modifier = Modifier.fillMaxSize()){
-        Column(modifier = Modifier
-            .padding(start = 30.dp, end = 30.dp)
-            .verticalScroll(rememberScrollState())
+    var valuesLoan = loanViewModel.farm.observeAsState().value
+    if (valuesLoan == null){
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 50.dp)
-            ) {
-                Text(
-                    currentLoan.nameUser,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 30.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    currentLoan.date,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 15.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-            }
-            Text(
-                "Productos pagados",
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
+            CircularProgressIndicator(
+                modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
             )
+        }
 
-            OutlinedTextField(
-                value = percentagePaid,
-                onValueChange = {
-                    percentagePaid = it
-                    percentagePaidError = false
-                },
-                label = {
-                    Text("Porcentaje pagado")
-                },
-                trailingIcon = {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(25.dp)
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                isError = percentagePaidError
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-
-
+    }else {
+        currentLoanEdit = valuesLoan.get(loanId)
+        var percentagePaid by rememberSaveable { mutableStateOf(currentLoanEdit.percentagePaid.toString()+ " %") }
+        var percentagePaidError by rememberSaveable { mutableStateOf(false)}
+        AddProductEidt()
+        Box(modifier = Modifier.fillMaxSize()){
+            Column(modifier = Modifier
+                .padding(start = 30.dp, end = 30.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxSize()) {
                 Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
-                        .padding(top = 30.dp)
+                        .fillMaxWidth()
+                        .padding(top = 50.dp)
+                ) {
+                    Text(
+                        currentLoanEdit.nameUser,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 30.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+                Row(
+                    modifier = Modifier
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Elementos",
-                        fontSize = 20.sp,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        currentLoanEdit.date,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
                     )
+                }
+                Text(
+                    "Productos pagados",
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
+                )
 
-                    Button(
-                        onClick = { openDialogAddItemEdit.value = true },
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    ) {
+                OutlinedTextField(
+                    value = percentagePaid,
+                    onValueChange = {
+                        percentagePaid = it
+                        percentagePaidError = false
+                    },
+                    label = {
+                        Text("Porcentaje pagado")
+                    },
+                    trailingIcon = {
                         Icon(
-                            Icons.Filled.Add,
+                            Icons.Filled.Edit,
                             contentDescription = "Localized description",
-                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                            modifier = Modifier.size(25.dp)
                         )
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        Text("Agregar")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    isError = percentagePaidError
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Elementos",
+                            fontSize = 20.sp,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+
+                        Button(
+                            onClick = { openDialogAddItemEdit.value = true },
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        ) {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text("Agregar")
+                        }
+                    }
+                    for (i in 0..productsEdit.size - 1) {
+                        itemProductClose(productsEdit[i])
                     }
                 }
-                for (i in 0..productsEdit.size - 1) {
-                    itemProductClose(productsEdit[i])
+            }
+            Row(horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(30.dp)
+                    .fillMaxWidth()){
+                Button(onClick = {
+                    currentLoanEdit.percentagePaid = percentagePaid.replace("%", "").toInt()
+                    currentLoanEdit.paid = productsEdit
+                    loanViewModel.updateLoan(currentLoanEdit, loanId)
+                        productsEdit.clear()
+                        navController.popBackStack()
+
+                }, modifier = Modifier.align(Alignment.CenterVertically)
+
+                ) {
+
+                    Text("Guardar")
+                }
+                TextButton(
+                    onClick = {
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text("Cancelar")
                 }
             }
-        }
-        Row(horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(30.dp)
-                .fillMaxWidth()){
-            Button(onClick = {
-                currentLoan.percentagePaid = percentagePaid.replace("%", "").toInt()
-                currentLoan.paid = productsEdit
-                loanViewModel.updateLoan(currentLoan, loanId)
-                    productsEdit.clear()
-                    navController.popBackStack()
-
-            }, modifier = Modifier.align(Alignment.CenterVertically)
-
-            ) {
-
-                Text("Guardar")
-            }
-            TextButton(
-                onClick = {
-                    navController.popBackStack()
-                },
-                modifier = Modifier.align(Alignment.CenterVertically)
-            ) {
-                Text("Cancelar")
-            }
-        }
+    }
 
     }
 }

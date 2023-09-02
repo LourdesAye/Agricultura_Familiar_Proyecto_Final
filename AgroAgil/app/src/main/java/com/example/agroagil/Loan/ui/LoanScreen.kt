@@ -103,6 +103,7 @@ var listItemData = mutableStateListOf<Loan>()
 var listItemDataFilter = mutableStateListOf<Loan>()
 
 var filters = mutableStateListOf<Function1<List<Loan>, List<Loan>>>()
+var filtersExclude = mutableStateListOf<Function1<List<Loan>, List<Loan>>>()
 var chipsFilter = mutableStateListOf<Map<String,Function1<List<Loan>, List<Loan>>>>()
 
 var UserFilter = mutableStateOf("")
@@ -178,6 +179,15 @@ fun resetFilter(){
     }
 }
 
+fun resetFilterExclude(){
+    for (i in 0 .. filtersExclude.size-1) {
+        var filtroExecute = mutableListOf<List<Loan>>()
+        filtroExecute.addAll(listOf(filtersExclude[i](listItemDataFilter)))
+        listItemDataFilter.clear()
+        listItemDataFilter.addAll(filtroExecute.flatten())
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormattedDateInputField(
@@ -188,23 +198,23 @@ fun FormattedDateInputField(
         var text =""
         buildString {
             if (digits.length >= 4) {
-                text +="${digits.substring(0..3)}/"
+                text +="${digits.substring(0..3)}"
             } else{
                 text +=digits
 
             }
             if (digits.length >= 6) {
-                text +="${digits.substring(4..5)}/"
+                text +="/${digits.substring(4..5)}"
             }else{
                 if (digits.length > 4) {
-                    text +=digits.substring(4..(digits.length-1))
+                    text +="/${digits.substring(4..(digits.length-1))}"
                 }
             }
             if (digits.length >= 8) {
-                text +=digits.substring(6..7)
+                text +="/${digits.substring(6..7)}"
             }else{
                 if (digits.length > 6) {
-                    text +=digits.substring(6..(digits.length-1))
+                    text +="/${digits.substring(6..(digits.length-1))}"
                 }
             }
             append(text)
@@ -247,23 +257,23 @@ fun FormattedDateInputFieldEnd(
         var text =""
         buildString {
             if (digits.length >= 4) {
-                text +="${digits.substring(0..3)}/"
+                text +="${digits.substring(0..3)}"
             } else{
                 text +=digits
 
             }
             if (digits.length >= 6) {
-                text +="${digits.substring(4..5)}/"
+                text +="/${digits.substring(4..5)}"
             }else{
                 if (digits.length > 4) {
-                    text +=digits.substring(4..(digits.length-1))
+                    text +="/${digits.substring(4..(digits.length-1))}"
                 }
             }
             if (digits.length >= 8) {
-                text +=digits.substring(6..7)
+                text +="/${digits.substring(6..7)}"
             }else{
                 if (digits.length > 6) {
-                    text +=digits.substring(6..(digits.length-1))
+                    text +="/${digits.substring(6..(digits.length-1))}"
                 }
             }
             append(text)
@@ -382,41 +392,43 @@ fun Actions(navController: NavController){
                     )
                 }
                     ExtendedFloatingActionButton(onClick = {
-                        filters.removeIf { it.equals(::filterNombre) or
+                        filtersExclude.removeIf { it.equals(::filterNombre) or
                                 it.equals(::filterAllLoans) or it.equals(::filterLent) or it.equals(::filterWasLent) or
                                 it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
                         }
                         chipsFilter.clear()
                         if (userName.text!=""){
                             chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombre))
-                            filters.add(::filterNombre)
+                            filtersExclude.add(::filterNombre)
                             UserFilter.value = userName.text
                         }
                         if (selectedLent or selectedWasLent){
                             if (selectedLent and selectedWasLent){
                             chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron, preste") to ::filterAllLoans))
-                                filters.add(::filterAllLoans)
+                                filtersExclude.add(::filterAllLoans)
                             }else{
                                 if(selectedLent){
                                     chipsFilter.add(mapOf(("Tipo: "+ "Preste") to ::filterLent))
-                                    filters.add(::filterLent)
+                                    filtersExclude.add(::filterLent)
                                 }else{
                                     chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron") to ::filterWasLent))
-                                    filters.add(::filterWasLent)
+                                    filtersExclude.add(::filterWasLent)
                                 }
                             }
                         }
-                        if  (!dataDateStart.value.equals("") or !dataDateEnd.value.equals("")){
-                            if  (!dataDateStart.value.equals("") and !dataDateEnd.value.equals("")){
+                        var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
+                        var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
+                        if  (checkStartDate or checkEndDate){
+                            if  (checkStartDate and checkEndDate){
                                 chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
-                                filters.add(::filterDateRange)
+                                filtersExclude.add(::filterDateRange)
                             }else{
-                                if(!dataDateStart.value.equals("")) {
+                                if(checkStartDate) {
                                     chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
-                                    filters.add(::filterDateStart)
+                                    filtersExclude.add(::filterDateStart)
                                 }else{
                                     chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
-                                    filters.add(::filterDateEnd)
+                                    filtersExclude.add(::filterDateEnd)
                                 }
                             }
 
@@ -431,7 +443,7 @@ fun Actions(navController: NavController){
             InputChip(
                 selected = false,
                 onClick = {
-                    filters.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
+                    filtersExclude.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
                     chipsFilter.remove(chipsFilter[i])
                           },
                 label = { Text(chipsFilter[i].keys.first()) },
@@ -726,6 +738,7 @@ fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
 
     }else {
         resetFilter()
+        resetFilterExclude()
         Box(){
         Column() {
             LazyColumn(
