@@ -232,6 +232,9 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
 
     }else {
         currentLoanEdit = valuesLoan.get(loanId)
+        if (productsEdit.size ==0){
+            productsEdit.addAll(currentLoanEdit.paid)
+        }
         var percentagePaid by rememberSaveable { mutableStateOf(currentLoanEdit.percentagePaid.toString()+ " %") }
         var percentagePaidError by rememberSaveable { mutableStateOf(false)}
         AddProductEidt()
@@ -336,7 +339,7 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                     .padding(30.dp)
                     .fillMaxWidth()){
                 Button(onClick = {
-                    currentLoanEdit.percentagePaid = percentagePaid.replace("%", "").toInt()
+                    currentLoanEdit.percentagePaid = percentagePaid.replace("%", "").replace(" ", "").toInt()
                     currentLoanEdit.paid = productsEdit
                     loanViewModel.updateLoan(currentLoanEdit, loanId)
                         productsEdit.clear()

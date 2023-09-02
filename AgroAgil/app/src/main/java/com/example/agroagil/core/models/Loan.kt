@@ -19,13 +19,7 @@ data class Loan(
     var percentagePaid: Int = 0,
     val date: String = "01/01/2023 00:00",
     val lend: Boolean = true
-){
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun datetoDate(): LocalDate? {
-        val formatter = DateTimeFormatter.ofPattern("dd/mm/yyyy HH:MM")
-        return LocalDate.parse(date, formatter)
-    }
-}
+)
 
 data class Item(
     val name: String = "",
