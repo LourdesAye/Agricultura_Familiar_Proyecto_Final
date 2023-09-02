@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Check
@@ -50,6 +52,7 @@ import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.getValue
@@ -85,6 +88,7 @@ import androidx.navigation.NavController
 import com.example.agroagil.core.models.Item
 import com.example.agroagil.core.models.Loan
 import com.google.firebase.inappmessaging.model.Button
+import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.jvm.functions.FunctionN
 
@@ -99,6 +103,11 @@ var listItemData = mutableStateListOf<Loan>()
 var listItemDataFilter = mutableStateListOf<Loan>()
 
 var filters = mutableStateListOf<Function1<List<Loan>, List<Loan>>>()
+var chipsFilter = mutableStateListOf<Map<String,Function1<List<Loan>, List<Loan>>>>()
+
+var UserFilter = mutableStateOf("")
+var dataDateStart = mutableStateOf("")
+var dataDateEnd = mutableStateOf("")
 
 fun filterPagado(loans:List<Loan>): List<Loan> {
     return loans.filter { it -> it.percentagePaid>=100 }
@@ -109,6 +118,52 @@ fun filterSinPagar(loans:List<Loan>): List<Loan> {
 }
 fun filterPagadoParcialmente(loans:List<Loan>): List<Loan> {
     return loans.filter { it -> 100>it.percentagePaid && it.percentagePaid > 0 }
+}
+fun filterNombre(loans:List<Loan>): List<Loan> {
+    return loans.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
+}
+
+fun filterLent(loans:List<Loan>): List<Loan> {
+    return loans.filter { it -> it.lend == true  }
+}
+
+fun filterWasLent(loans:List<Loan>): List<Loan> {
+    return loans.filter { it -> it.lend == false  }
+}
+
+fun filterAllLoans(loans:List<Loan>): List<Loan> {
+    return loans
+}
+
+fun filterDateStart(loans:List<Loan>): List<Loan> {
+    var date_format = SimpleDateFormat("yyyy/MM/dd")
+    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var filter_date = date_format.parse(dataDateStart.value)
+    return loans.filter { loan ->
+        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
+        filter_date.before(date_loan) or filter_date.equals(date_loan)
+    }
+}
+
+fun filterDateEnd(loans:List<Loan>): List<Loan> {
+    var date_format = SimpleDateFormat("yyyy/MM/dd")
+    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var filter_date = date_format.parse(dataDateEnd.value)
+    return loans.filter { loan ->
+        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
+        filter_date.after(date_loan) or filter_date.equals(date_loan) }
+}
+
+fun filterDateRange(loans:List<Loan>): List<Loan> {
+    var date_format = SimpleDateFormat("yyyy/MM/dd")
+    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var filter_date_end = date_format.parse(dataDateEnd.value)
+    var filter_date_start = date_format.parse(dataDateStart.value)
+    return loans.filter { loan ->
+        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
+        (filter_date_start.before(date_loan) or filter_date_start.equals(date_loan)) and
+                ( filter_date_end.after(date_loan) or filter_date_end.equals(date_loan))
+    }
 }
 
 fun resetFilter(){
@@ -127,20 +182,19 @@ fun resetFilter(){
 @Composable
 fun FormattedDateInputField(
 ) {
-    var dateText by remember { mutableStateOf("") }
     val cursor = remember { mutableStateOf(0) }
     val formatter: (String) -> String = { value ->
         val digits = value.filter { it.isDigit() }
         var text =""
         buildString {
             if (digits.length >= 4) {
-                text +="${digits.substring(0..3)}-"
+                text +="${digits.substring(0..3)}/"
             } else{
                 text +=digits
 
             }
             if (digits.length >= 6) {
-                text +="${digits.substring(4..5)}-"
+                text +="${digits.substring(4..5)}/"
             }else{
                 if (digits.length > 4) {
                     text +=digits.substring(4..(digits.length-1))
@@ -155,7 +209,7 @@ fun FormattedDateInputField(
             }
             append(text)
             cursor.value = text.length
-            append("YYYY-MM-DD".substring(text.length,"YYYY-MM-DD".length ))
+            append("YYYY/MM/DD".substring(text.length,"YYYY/MM/DD".length ))
         }
 
     }
@@ -164,12 +218,12 @@ fun FormattedDateInputField(
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            label={Text("Filtrar por Fecha")},
-            value = TextFieldValue(dateText, TextRange(cursor.value)),
+            label={Text("Filtrar por fecha de inicio")},
+            value = TextFieldValue(dataDateStart.value, TextRange(cursor.value)),
             onValueChange = {
                 // Remove any non-digit characters
                val formatted = formatter(it.text)
-                dateText = formatted
+                dataDateStart.value = formatted
 
             },
             textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
@@ -178,7 +232,66 @@ fun FormattedDateInputField(
                 keyboardType = KeyboardType.Number
             ),
             singleLine = true,
-            placeholder = { Text(text = "YYYY-MM-DD") },
+            placeholder = { Text(text = "YYYY/MM/DD") },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormattedDateInputFieldEnd(
+) {
+    val cursor = remember { mutableStateOf(0) }
+    val formatter: (String) -> String = { value ->
+        val digits = value.filter { it.isDigit() }
+        var text =""
+        buildString {
+            if (digits.length >= 4) {
+                text +="${digits.substring(0..3)}/"
+            } else{
+                text +=digits
+
+            }
+            if (digits.length >= 6) {
+                text +="${digits.substring(4..5)}/"
+            }else{
+                if (digits.length > 4) {
+                    text +=digits.substring(4..(digits.length-1))
+                }
+            }
+            if (digits.length >= 8) {
+                text +=digits.substring(6..7)
+            }else{
+                if (digits.length > 6) {
+                    text +=digits.substring(6..(digits.length-1))
+                }
+            }
+            append(text)
+            cursor.value = text.length
+            append("YYYY/MM/DD".substring(text.length,"YYYY/MM/DD".length ))
+        }
+
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            label={Text("Filtrar por fecha de fin")},
+            value = TextFieldValue(dataDateEnd.value, TextRange(cursor.value)),
+            onValueChange = {
+                // Remove any non-digit characters
+                val formatted = formatter(it.text)
+                dataDateEnd.value = formatted
+
+            },
+            textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Number
+            ),
+            singleLine = true,
+            placeholder = { Text(text = "YYYY/MM/DD") },
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -187,16 +300,16 @@ fun FormattedDateInputField(
 
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Actions(navController: NavController){
     var expandedFilter by remember { mutableStateOf(false) }
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+    var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     }
     var selectedLent by remember { mutableStateOf(false) }
     var selectedWasLent by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf(false) }
 
     Column {
     Row(
@@ -224,12 +337,13 @@ fun Actions(navController: NavController){
                     .align(Alignment.CenterHorizontally)
                     .padding(30.dp)){
                     OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it },
+                        value = userName,
+                        onValueChange = { userName = it },
                         label = { Text("Nombre de usuario")},
                         modifier=Modifier.fillMaxWidth()
                     )
                     FormattedDateInputField()
+                    FormattedDateInputFieldEnd()
                     Row {
 
 
@@ -268,12 +382,67 @@ fun Actions(navController: NavController){
                     )
                 }
                     ExtendedFloatingActionButton(onClick = {
+                        filters.removeIf { it.equals(::filterNombre) or
+                                it.equals(::filterAllLoans) or it.equals(::filterLent) or it.equals(::filterWasLent) or
+                                it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
+                        }
+                        chipsFilter.clear()
+                        if (userName.text!=""){
+                            chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombre))
+                            filters.add(::filterNombre)
+                            UserFilter.value = userName.text
+                        }
+                        if (selectedLent or selectedWasLent){
+                            if (selectedLent and selectedWasLent){
+                            chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron, preste") to ::filterAllLoans))
+                                filters.add(::filterAllLoans)
+                            }else{
+                                if(selectedLent){
+                                    chipsFilter.add(mapOf(("Tipo: "+ "Preste") to ::filterLent))
+                                    filters.add(::filterLent)
+                                }else{
+                                    chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron") to ::filterWasLent))
+                                    filters.add(::filterWasLent)
+                                }
+                            }
+                        }
+                        if  (!dataDateStart.value.equals("") or !dataDateEnd.value.equals("")){
+                            if  (!dataDateStart.value.equals("") and !dataDateEnd.value.equals("")){
+                                chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
+                                filters.add(::filterDateRange)
+                            }else{
+                                if(!dataDateStart.value.equals("")) {
+                                    chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
+                                    filters.add(::filterDateStart)
+                                }else{
+                                    chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
+                                    filters.add(::filterDateEnd)
+                                }
+                            }
+
+                        }
                         expandedFilter=false
                     }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                 }
             }
         }
     }
+        for (i in 0..chipsFilter.size-1) {
+            InputChip(
+                selected = false,
+                onClick = {
+                    filters.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
+                    chipsFilter.remove(chipsFilter[i])
+                          },
+                label = { Text(chipsFilter[i].keys.first()) },
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "Localized description"
+                    )
+                }
+            )
+        }
     }
     }
 }
