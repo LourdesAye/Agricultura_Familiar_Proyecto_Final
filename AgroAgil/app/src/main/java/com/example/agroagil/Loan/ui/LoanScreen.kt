@@ -545,7 +545,7 @@ fun filterStatus(){
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier= Modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, top = 15.dp)){
+            .padding( top = 15.dp)){
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val cardWidth =  with(LocalDensity.current) {
             screenWidth * 0.3f
