@@ -1,0 +1,28 @@
+package com.example.agroagil.core.models
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+
+data class Loans(
+    val loans:List<Loan> = emptyList()
+)
+
+
+
+data class Loan(
+    val nameUser:String = "",
+    val items: List<Item> = emptyList(),
+    var paid:List<Item> = emptyList(),
+    var percentagePaid: Int = 0,
+    val date: String = "01/01/2023 00:00",
+    val lend: Boolean = true
+)
+
+data class Item(
+    val name: String = "",
+    val amount: Int = 0,
+    val units: String = ""
+)
