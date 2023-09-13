@@ -1,4 +1,4 @@
-package com.example.agroagil.Loan.ui
+
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -36,11 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
 import java.util.Date
 
-var current_loan = Loan("Usuario1", listOf<Product>(Product("Tomate", 1, "KG")), emptyList(), 0)
+var currentSell = Sell()
 @Composable
 fun itemProduct(item: Product){
     Row() {
@@ -85,9 +86,9 @@ fun itemProduct(item: Product){
 
 
 @Composable
-fun LoanInfoScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int){
-    var valuesLoan = loanViewModel.farm.observeAsState().value
-    if (valuesLoan == null){
+fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, sellId: Int){
+    var valuesSell = sellViewModel.farm.observeAsState().value
+    if (valuesSell == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -96,7 +97,7 @@ fun LoanInfoScreen(navController: NavController, loanViewModel: LoanViewModel, l
         }
 
     }else {
-        current_loan = valuesLoan.get(loanId)
+        currentSell = valuesSell.get(sellId)
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
@@ -108,7 +109,7 @@ fun LoanInfoScreen(navController: NavController, loanViewModel: LoanViewModel, l
                     .padding(top = 50.dp)
             ) {
                 Text(
-                    current_loan.nameUser,
+                    currentSell.nameUser,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 30.sp,
                     textAlign = TextAlign.Center,
@@ -121,7 +122,7 @@ fun LoanInfoScreen(navController: NavController, loanViewModel: LoanViewModel, l
                     .fillMaxWidth()
             ) {
                 Text(
-                    current_loan.date,
+                    currentSell.date,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 15.sp,
                     textAlign = TextAlign.Center,
@@ -130,51 +131,15 @@ fun LoanInfoScreen(navController: NavController, loanViewModel: LoanViewModel, l
                 )
             }
             Text(
-                "Productos prestados",
+                "Productos vendidos",
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
             )
-            for (i in 0..current_loan.items.size - 1) {
-                itemProduct(current_loan.items[i])
+            for (i in 0..currentSell.items.size - 1) {
+                itemProduct(currentSell.items[i])
             }
 
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Productos pagados",
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
-                )
-                Text(
-                    current_loan.percentagePaid.toString() + " %",
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
-                        .align(Alignment.CenterEnd)
-                )
-            }
-
-            for (i in 0..current_loan.paid.size - 1) {
-                itemProduct(current_loan.paid[i])
-            }
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    onClick = {
-                        navController.navigate("loan/${loanId}/edit")
-                    },
-                    modifier = Modifier.padding(top = 50.dp).align(Alignment.CenterEnd),
-                    colors = ButtonDefaults.filledTonalButtonColors()
-                ) {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
-                    )
-                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text("Editar")
-                }
-            }
         }
     }
 }

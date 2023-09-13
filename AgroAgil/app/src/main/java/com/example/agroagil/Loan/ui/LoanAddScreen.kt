@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Loan.ui.LoanViewModel
-import com.example.agroagil.core.models.Item
+import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -66,7 +66,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 
 val openDialogAddItem =  mutableStateOf(false)
-val products = mutableStateListOf<Item>()
+val products = mutableStateListOf<Product>()
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProduct(){
@@ -100,7 +100,7 @@ fun AddProduct(){
                         error_measure=true
                     }
                     if (name != "" && amount != "" && measure != ""){
-                        var new_item = Item(name,amount.toInt(), units = measure)
+                        var new_item = Product(name,amount.toInt(), units = measure)
                         products.add(new_item)
                     openDialogAddItem.value=false
                     name = ""
