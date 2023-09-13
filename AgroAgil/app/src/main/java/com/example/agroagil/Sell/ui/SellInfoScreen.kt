@@ -5,23 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,10 +31,8 @@ import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.core.models.Product
-import com.example.agroagil.core.models.Loan
-import java.util.Date
 
-var currentSell = Sell()
+var currentSell = Sell(price=0)
 @Composable
 fun itemProduct(item: Product){
     Row() {
@@ -92,17 +83,25 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
-                modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
+                modifier = Modifier
+                    .semantics(mergeDescendants = true) {}
+                    .padding(10.dp)
             )
         }
 
     }else {
         currentSell = valuesSell.get(sellId)
+        val screenWidth = LocalConfiguration.current.screenHeightDp.dp
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
-                .verticalScroll(rememberScrollState())
+                .defaultMinSize(minHeight = screenWidth)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.SpaceAround
         ) {
+            Column {
+
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,10 +133,32 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                 "Productos vendidos",
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 50.dp, bottom = 10.dp)
+                modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
             )
             for (i in 0..currentSell.items.size - 1) {
                 itemProduct(currentSell.items[i])
+            }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(width = 0.dp, height = 150.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Precio total: ",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 30.sp,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                )
+                Text(
+                    "$ "+ currentSell.price.toString(),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 30.sp,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                )
             }
 
         }

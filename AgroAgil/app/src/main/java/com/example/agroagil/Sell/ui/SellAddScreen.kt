@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,6 +48,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.R
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.core.models.Product
 import kotlinx.coroutines.launch
@@ -62,13 +67,16 @@ import java.util.Date
 
 val openDialogAddItem =  mutableStateOf(false)
 val products = mutableStateListOf<Product>()
+val totalPrice = mutableStateOf(0.0)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProduct(){
     var name by rememberSaveable { mutableStateOf("") }
+    var price by rememberSaveable { mutableStateOf(0.0) }
     var amount by rememberSaveable { mutableStateOf("") }
     var measure by rememberSaveable { mutableStateOf("") }
     var error_name by rememberSaveable { mutableStateOf(false)}
+    var error_price by rememberSaveable { mutableStateOf(false)}
     var error_amount by rememberSaveable { mutableStateOf(false)}
     var error_measure by rememberSaveable { mutableStateOf(false)}
 
@@ -95,12 +103,14 @@ fun AddProduct(){
                             error_measure=true
                         }
                         if (name != "" && amount != "" && measure != ""){
-                            var new_item = Product(name,amount.toInt(), units = measure)
+                            var new_item = Product(name,amount.toInt(), units = measure, price=price)
                             products.add(new_item)
+                            totalPrice.value += price*amount.toDouble()
                             openDialogAddItem.value=false
                             name = ""
                             amount=""
                             measure=""
+                            price = 0.0
                         }
                     }
                 ) {
@@ -169,6 +179,25 @@ fun AddProduct(){
 
                         )
                     }
+                    OutlinedTextField(
+                        value = price.toString(),
+                        onValueChange = { price = it.toDouble()
+                            error_price=false
+                        },
+                        isError= error_price,
+                        label = {
+                            Text("Precio del producto por unidad")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                ImageVector.vectorResource(R.drawable.price),
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
                 }
 
             })
@@ -189,9 +218,16 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     var paid by rememberSaveable { mutableStateOf(true)}
     val scope = rememberCoroutineScope()
+    val screenWidth = LocalConfiguration.current.screenHeightDp.dp
     AddProduct()
 
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier
+        .verticalScroll(rememberScrollState())
+        .defaultMinSize(minHeight = screenWidth),
+        verticalArrangement = Arrangement.SpaceBetween) {
+        Column {
+
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -229,7 +265,10 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController) {
             isError = error_name
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(start = 20.dp, end = 20.dp,top=30.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+                .padding(start = 20.dp, end = 20.dp, top = 30.dp))
         {
             var textPaid = ""
             if(paid){
@@ -323,10 +362,33 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController) {
 
 
         }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .size(width = 0.dp, height = 150.dp)
+                .padding(20.dp)
+        ) {
+            Text(
+                "Precio total: ",
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 30.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            )
+            Text(
+                "$ "+ totalPrice.value.toString(),
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 30.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            )
+        }}
+        Column(){
+
+
         Box(modifier = Modifier.fillMaxSize()){
             Row(horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
+                modifier = Modifier.fillMaxWidth()
                     .padding(30.dp)){
                 Button(onClick = {
                     if(products.size == 0){
@@ -342,7 +404,10 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController) {
                     if (products.size !=0 && user!=""){
                         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                         val currentDate = sdf.format(Date())
-                        sellViewModel.addSell(Sell(nameUser=user, items= products,date= currentDate, paid=paid))
+                        sellViewModel.addSell(Sell(
+                            nameUser =user, items = products,
+                            date = currentDate, paid =paid,
+                            price =totalPrice.value))
                         products.clear()
                         navController.popBackStack()
                     }
@@ -361,7 +426,9 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController) {
                     Text("Cancelar")
                 }
             }
-        }}
+        }
+        }
+    }
 
 
 }
