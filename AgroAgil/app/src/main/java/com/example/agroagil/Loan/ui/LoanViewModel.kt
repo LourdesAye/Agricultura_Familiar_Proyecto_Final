@@ -1,11 +1,6 @@
 package com.example.agroagil.Loan.ui
-
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import com.example.agroagil.core.models.Item
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
 import com.google.firebase.database.ktx.database

@@ -1,4 +1,7 @@
 package com.example.agroagil
+import SellAddScreen
+import SellInfoScreen
+import SellScreen
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,6 +33,7 @@ import com.example.agroagil.Loan.ui.LoanInfoScreen
 import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
+import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
@@ -56,6 +60,7 @@ class MainActivity : ComponentActivity() {
                     val viewModelMenu: MenuViewModel by viewModels()
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
+                    val sellViewModel = SellViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
@@ -83,27 +88,27 @@ class MainActivity : ComponentActivity() {
                                 // Observador de eventos de navegación
                                 when (event) {
                                     //navegar a perfil
-                                    NavigationEventMenu.ToConfigPerfil-> {
+                                    NavigationEventMenu.ToConfigPerfil -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a notificaciones
-                                    NavigationEventMenu.ToNotificaciones-> {
+                                    NavigationEventMenu.ToNotificaciones -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a configurar granja
-                                    NavigationEventMenu.ToConfigGranja-> {
+                                    NavigationEventMenu.ToConfigGranja -> {
                                         navController.navigate("farm")
                                     }
                                     //navegar a cultivos
-                                    NavigationEventMenu.ToMisCultivos-> {
+                                    NavigationEventMenu.ToMisCultivos -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a misTareas
-                                    NavigationEventMenu.ToMisTareas-> {
+                                    NavigationEventMenu.ToMisTareas -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a mi almacen
-                                    NavigationEventMenu.ToMiAlmacen-> {
+                                    NavigationEventMenu.ToMiAlmacen -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a prestamos de articulos
@@ -111,21 +116,34 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("loan")
                                     }
                                     //navegar a mis ventas
-                                    NavigationEventMenu.ToMisVentas-> {
-                                        navController.navigate("menu")
+                                    NavigationEventMenu.ToMisVentas -> {
+                                        navController.navigate("sell")
                                     }
                                     //navegar a mis compras
-                                    NavigationEventMenu.ToMisCompras-> {
+                                    NavigationEventMenu.ToMisCompras -> {
                                         navController.navigate("menu")
                                     }
                                     //navegar a mi resumen
-                                    NavigationEventMenu.ToMiResumen-> {
+                                    NavigationEventMenu.ToMiResumen -> {
                                         navController.navigate("menu")
                                     }
 
                                     else -> {}
                                 }
                             }
+                        }
+                        composable("sell") {
+                            SellScreen(sellViewModel = sellViewModel, navController = navController)
+                        }
+                        composable("sell/add") {
+                            SellAddScreen(sellViewModel = sellViewModel, navController = navController)
+                        }
+                        composable("sell/{sellId}/info", arguments = listOf(navArgument("sellId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
+                            if (sellId is Int)
+                                SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)
+
                         }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
