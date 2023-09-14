@@ -7,8 +7,12 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,12 +29,16 @@ import com.example.agroagil.Loan.ui.LoanEditScreen
 import com.example.agroagil.Loan.ui.LoanInfoScreen
 import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
+import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.lourd.myapplication.featureMenu.NavigationEventMenu
+import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +53,9 @@ class MainActivity : ComponentActivity() {
                     Firebase.database.setPersistenceEnabled(true)
                     val navController = rememberNavController()
                     val loanViewModel = LoanViewModel()
+                    val viewModelMenu: MenuViewModel by viewModels()
+                    val drawerState = rememberDrawerState(DrawerValue.Closed)
+                    val scope = rememberCoroutineScope()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
@@ -67,6 +78,55 @@ class MainActivity : ComponentActivity() {
                             if (loanId is Int)
                                 LoanEditScreen(navController = navController,loanViewModel = loanViewModel, loanId)
                         }
+                        composable("menu") {
+                            Menu(scope, drawerState, viewModelMenu) { event ->
+                                // Observador de eventos de navegación
+                                when (event) {
+                                    //navegar a perfil
+                                    NavigationEventMenu.ToConfigPerfil-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a notificaciones
+                                    NavigationEventMenu.ToNotificaciones-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a configurar granja
+                                    NavigationEventMenu.ToConfigGranja-> {
+                                        navController.navigate("farm")
+                                    }
+                                    //navegar a cultivos
+                                    NavigationEventMenu.ToMisCultivos-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a misTareas
+                                    NavigationEventMenu.ToMisTareas-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a mi almacen
+                                    NavigationEventMenu.ToMiAlmacen-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a prestamos de articulos
+                                    NavigationEventMenu.ToPrestamosArticulos -> {
+                                        navController.navigate("loan")
+                                    }
+                                    //navegar a mis ventas
+                                    NavigationEventMenu.ToMisVentas-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a mis compras
+                                    NavigationEventMenu.ToMisCompras-> {
+                                        navController.navigate("menu")
+                                    }
+                                    //navegar a mi resumen
+                                    NavigationEventMenu.ToMiResumen-> {
+                                        navController.navigate("menu")
+                                    }
+
+                                    else -> {}
+                                }
+                            }
+                        }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
@@ -78,7 +138,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier, model: LoanViewModel = LoanViewModel(), navController: NavController = rememberNavController()) {
-    navController.navigate("loan")
+    navController.navigate("menu")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

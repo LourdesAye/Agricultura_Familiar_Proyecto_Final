@@ -35,7 +35,6 @@ import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.res.imageResource
@@ -52,9 +51,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.agroagil.R
 import com.lourd.myapplication.featureMenu.NavigationEventMenu
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
-import 
 
 //import androidx.navigation.NavHost
 
