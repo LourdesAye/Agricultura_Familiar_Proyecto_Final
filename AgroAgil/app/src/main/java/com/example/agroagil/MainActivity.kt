@@ -1,4 +1,7 @@
 package com.example.agroagil
+import SellAddScreen
+import SellInfoScreen
+import SellScreen
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,6 +28,7 @@ import com.example.agroagil.Loan.ui.LoanEditScreen
 import com.example.agroagil.Loan.ui.LoanInfoScreen
 import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
+import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
@@ -45,6 +49,7 @@ class MainActivity : ComponentActivity() {
                     Firebase.database.setPersistenceEnabled(true)
                     val navController = rememberNavController()
                     val loanViewModel = LoanViewModel()
+                    val sellViewModel = SellViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
@@ -67,6 +72,18 @@ class MainActivity : ComponentActivity() {
                             if (loanId is Int)
                                 LoanEditScreen(navController = navController,loanViewModel = loanViewModel, loanId)
                         }
+                        composable("sell") {
+                            SellScreen(sellViewModel = sellViewModel, navController = navController)
+                        }
+                        composable("sell/add") {
+                            SellAddScreen(sellViewModel = sellViewModel, navController = navController)
+                        }
+                        composable("sell/{sellId}/info", arguments = listOf(navArgument("sellId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
+                            if (sellId is Int)
+                                SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)
+                        }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
@@ -78,7 +95,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier, model: LoanViewModel = LoanViewModel(), navController: NavController = rememberNavController()) {
-    navController.navigate("loan")
+    navController.navigate("sell")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

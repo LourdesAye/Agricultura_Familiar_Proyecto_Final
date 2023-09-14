@@ -1,13 +1,11 @@
-package com.example.agroagil.Loan.ui
+
 import android.annotation.SuppressLint
-import android.text.Selection
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,24 +13,18 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,8 +38,6 @@ import androidx.compose.ui.unit.dp
 import com.example.agroagil.R
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -63,106 +53,84 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.core.models.Loan
-import com.google.firebase.inappmessaging.model.Button
+import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.core.models.Product
 import java.text.SimpleDateFormat
-import java.util.Date
-import kotlin.jvm.functions.FunctionN
 
 val SinPagar = "#A93226"
 val SinPagarClick = "#f4e5e4"
-val PagadoParcialmente = "#D4AC0D"
-val PagadoParcialmenteClick = "#faf5e1"
 val Pagado = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listItemData = mutableStateListOf<Loan>()
-var listItemDataFilter = mutableStateListOf<Loan>()
+var listItemData = mutableStateListOf<Sell>()
+var listItemDataFilter = mutableStateListOf<Sell>()
 
-var filters = mutableStateListOf<Function1<List<Loan>, List<Loan>>>()
-var filtersExclude = mutableStateListOf<Function1<List<Loan>, List<Loan>>>()
-var chipsFilter = mutableStateListOf<Map<String,Function1<List<Loan>, List<Loan>>>>()
+var filters = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
+var filtersExclude = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
+var chipsFilter = mutableStateListOf<Map<String,Function1<List<Sell>, List<Sell>>>>()
 
 var UserFilter = mutableStateOf("")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 
-fun filterPagado(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> it.percentagePaid>=100 }
+
+fun filterPagado(sells:List<Sell>): List<Sell> {
+    return sells.filter { it -> it.paid==true }
 }
 
-fun filterSinPagar(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> it.percentagePaid==0 }
+fun filterSinPagar(sells:List<Sell>): List<Sell> {
+    return sells.filter { it -> it.paid==false }
 }
-fun filterPagadoParcialmente(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> 100>it.percentagePaid && it.percentagePaid > 0 }
-}
-fun filterNombre(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
+fun filterNombre(sells:List<Sell>): List<Sell> {
+    return sells.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
 }
 
-fun filterLent(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> it.lend == true  }
+fun filterAllSells(sells:List<Sell>): List<Sell> {
+    return sells
 }
 
-fun filterWasLent(loans:List<Loan>): List<Loan> {
-    return loans.filter { it -> it.lend == false  }
-}
-
-fun filterAllLoans(loans:List<Loan>): List<Loan> {
-    return loans
-}
-
-fun filterDateStart(loans:List<Loan>): List<Loan> {
+fun filterDateStart(sells:List<Sell>): List<Sell> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateStart.value)
-    return loans.filter { loan ->
-        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
-        filter_date.before(date_loan) or filter_date.equals(date_loan)
+    return sells.filter { sell ->
+        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
+        filter_date.before(date_sell) or filter_date.equals(date_sell)
     }
 }
 
-fun filterDateEnd(loans:List<Loan>): List<Loan> {
+fun filterDateEnd(sells:List<Sell>): List<Sell> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateEnd.value)
-    return loans.filter { loan ->
-        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
-        filter_date.after(date_loan) or filter_date.equals(date_loan) }
+    return sells.filter { sell ->
+        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
+        filter_date.after(date_sell) or filter_date.equals(date_sell) }
 }
 
-fun filterDateRange(loans:List<Loan>): List<Loan> {
+fun filterDateRange(sells:List<Sell>): List<Sell> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_loan = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
     var filter_date_end = date_format.parse(dataDateEnd.value)
     var filter_date_start = date_format.parse(dataDateStart.value)
-    return loans.filter { loan ->
-        var date_loan = date_format_loan.parse(loan.date.split(" ")[0])
-        (filter_date_start.before(date_loan) or filter_date_start.equals(date_loan)) and
-                ( filter_date_end.after(date_loan) or filter_date_end.equals(date_loan))
+    return sells.filter { sell ->
+        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
+        (filter_date_start.before(date_sell) or filter_date_start.equals(date_sell)) and
+                ( filter_date_end.after(date_sell) or filter_date_end.equals(date_sell))
     }
 }
 
@@ -172,7 +140,7 @@ fun resetFilter(){
         listItemDataFilter.addAll(listItemData)
     }
     for (i in 0 .. filters.size-1) {
-        var filtroExecute = mutableListOf<List<Loan>>()
+        var filtroExecute = mutableListOf<List<Sell>>()
         filtroExecute.addAll(listOf(filters[i](listItemData)))
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
@@ -180,7 +148,7 @@ fun resetFilter(){
 
 fun resetFilterExclude(){
     for (i in 0 .. filtersExclude.size-1) {
-        var filtroExecute = mutableListOf<List<Loan>>()
+        var filtroExecute = mutableListOf<List<Sell>>()
         filtroExecute.addAll(listOf(filtersExclude[i](listItemDataFilter)))
         listItemDataFilter.clear()
         listItemDataFilter.addAll(filtroExecute.flatten())
@@ -231,7 +199,7 @@ fun FormattedDateInputField(
             value = TextFieldValue(dataDateStart.value, TextRange(cursor.value)),
             onValueChange = {
                 // Remove any non-digit characters
-               val formatted = formatter(it.text)
+                val formatted = formatter(it.text)
                 dataDateStart.value = formatted
 
             },
@@ -321,213 +289,157 @@ fun Actions(navController: NavController){
     var selected by remember { mutableStateOf(false) }
 
     Column {
-    Row(
+        Row(
 
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .padding(top = 5.dp, start = 0.dp, end = 0.dp)
-            .fillMaxWidth()
-    ) {
-    Button(onClick = { expandedFilter = !expandedFilter},colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(), modifier = Modifier.fillMaxWidth()) {
-        Icon(
-            ImageVector.vectorResource(R.drawable.filter),
-            contentDescription = "Localized description",
-            modifier = Modifier.size(ButtonDefaults.IconSize)
-        )
-        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-        Text("Filtrar")
-    }
-    }
-    Column(modifier=Modifier.padding(end = 10.dp, start = 10.dp, bottom = 5.dp)){
-    AnimatedVisibility(visible = expandedFilter) {
-        Column(modifier = Modifier.fillMaxWidth()){
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column (modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(30.dp)){
-                    OutlinedTextField(
-                        value = userName,
-                        onValueChange = { userName = it },
-                        label = { Text("Nombre de usuario")},
-                        modifier=Modifier.fillMaxWidth()
-                    )
-                    FormattedDateInputField()
-                    FormattedDateInputFieldEnd()
-                    Row {
-
-
-                    ElevatedFilterChip(
-                        selected = selectedLent,
-                        onClick = { selectedLent = !selectedLent },
-                        label = { Text("Preste") },
-                        modifier = Modifier.padding(end=10.dp),
-                        leadingIcon = if (selectedLent) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Filled.Done,
-                                    contentDescription = "Localized Description",
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                )
-                            }
-                        } else {
-                            null
-                        }
-                    )
-                    ElevatedFilterChip(
-                        selected = selectedWasLent,
-                        onClick = { selectedWasLent = !selectedWasLent },
-                        label = { Text("Me prestaron") },
-                        leadingIcon = if (selectedWasLent) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Filled.Done,
-                                    contentDescription = "Localized Description",
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                )
-                            }
-                        } else {
-                            null
-                        }
-                    )
-                }
-                    ExtendedFloatingActionButton(onClick = {
-                        filtersExclude.removeIf { it.equals(::filterNombre) or
-                                it.equals(::filterAllLoans) or it.equals(::filterLent) or it.equals(::filterWasLent) or
-                                it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
-                        }
-                        chipsFilter.clear()
-                        if (userName.text!=""){
-                            chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombre))
-                            filtersExclude.add(::filterNombre)
-                            UserFilter.value = userName.text
-                        }
-                        if (selectedLent or selectedWasLent){
-                            if (selectedLent and selectedWasLent){
-                            chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron, preste") to ::filterAllLoans))
-                                filtersExclude.add(::filterAllLoans)
-                            }else{
-                                if(selectedLent){
-                                    chipsFilter.add(mapOf(("Tipo: "+ "Preste") to ::filterLent))
-                                    filtersExclude.add(::filterLent)
-                                }else{
-                                    chipsFilter.add(mapOf(("Tipo: "+ "Me prestaron") to ::filterWasLent))
-                                    filtersExclude.add(::filterWasLent)
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .padding(top = 5.dp, start = 0.dp, end = 0.dp)
+                .fillMaxWidth()
+        ) {
+            Button(onClick = { expandedFilter = !expandedFilter},colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(), modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    ImageVector.vectorResource(R.drawable.filter),
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Filtrar")
+            }
+        }
+        Column(modifier=Modifier.padding(end = 10.dp, start = 10.dp, bottom = 5.dp)){
+            AnimatedVisibility(visible = expandedFilter) {
+                Column(modifier = Modifier.fillMaxWidth()){
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column (modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(30.dp)){
+                            OutlinedTextField(
+                                value = userName,
+                                onValueChange = { userName = it },
+                                label = { Text("Nombre de usuario")},
+                                modifier=Modifier.fillMaxWidth()
+                            )
+                            FormattedDateInputField()
+                            FormattedDateInputFieldEnd()
+                            ExtendedFloatingActionButton(onClick = {
+                                filtersExclude.removeIf { it.equals(::filterNombre) or
+                                        it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
                                 }
-                            }
-                        }
-                        var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
-                        var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
-                        if  (checkStartDate or checkEndDate){
-                            if  (checkStartDate and checkEndDate){
-                                chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
-                                filtersExclude.add(::filterDateRange)
-                            }else{
-                                if(checkStartDate) {
-                                    chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
-                                    filtersExclude.add(::filterDateStart)
-                                }else{
-                                    chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
-                                    filtersExclude.add(::filterDateEnd)
+                                chipsFilter.clear()
+                                if (userName.text!=""){
+                                    chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombre))
+                                    filtersExclude.add(::filterNombre)
+                                    UserFilter.value = userName.text
                                 }
-                            }
+                                var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
+                                var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
+                                if  (checkStartDate or checkEndDate){
+                                    if  (checkStartDate and checkEndDate){
+                                        chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
+                                        filtersExclude.add(::filterDateRange)
+                                    }else{
+                                        if(checkStartDate) {
+                                            chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
+                                            filtersExclude.add(::filterDateStart)
+                                        }else{
+                                            chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
+                                            filtersExclude.add(::filterDateEnd)
+                                        }
+                                    }
 
+                                }
+                                expandedFilter=false
+                            }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
-                        expandedFilter=false
-                    }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
+                    }
                 }
+            }
+            for (i in 0..chipsFilter.size-1) {
+                InputChip(
+                    selected = false,
+                    onClick = {
+                        filtersExclude.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
+                        chipsFilter.remove(chipsFilter[i])
+                    },
+                    label = { Text(chipsFilter[i].keys.first()) },
+                    trailingIcon = {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Localized description"
+                        )
+                    }
+                )
             }
         }
     }
-        for (i in 0..chipsFilter.size-1) {
-            InputChip(
-                selected = false,
-                onClick = {
-                    filtersExclude.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
-                    chipsFilter.remove(chipsFilter[i])
-                          },
-                label = { Text(chipsFilter[i].keys.first()) },
-                trailingIcon = {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = "Localized description"
-                    )
-                }
-            )
-        }
-    }
-    }
 }
 
-fun SelectColorCard(percentagePaid:Int): String {
-    var color: String = "white"
-    if (percentagePaid==0){
-        color = SinPagar
+fun SelectColorCard(paid:Boolean): String {
+    var color: String
+    if (paid==true){
+        color = Pagado
     }else{
-        if (percentagePaid>=100){
-            color = Pagado
-        }else{
-            color = PagadoParcialmente
-        }
+        color = SinPagar
     }
     return color
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneLoan(itemData:Loan, navController: NavController){
+fun OneSell(itemData:Sell, navController: NavController){
     Column(){
-    Card(
-        onClick={
-            navController.navigate("loan/${listItemData.indexOf(itemData)}/info")
-        },
-        modifier = Modifier
-            .height(100.dp)
-            .fillMaxWidth()
-            .padding(bottom = 5.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
-        )
+        Card(
+            onClick={
+                navController.navigate("sell/${listItemData.indexOf(itemData)}/info")
+            },
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+                .padding(bottom = 5.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 10.dp
+            )
 
-    ){
-        Row() {
-            Column(
-                modifier = Modifier
-                    .background(Color(SelectColorCard(itemData.percentagePaid).toColorInt()))
-                    .width(10.dp)
-                    .fillMaxHeight()
-            ) {
+        ){
+            Row() {
+                Column(
+                    modifier = Modifier
+                        .background(Color(SelectColorCard(itemData.paid).toColorInt()))
+                        .width(10.dp)
+                        .fillMaxHeight()
+                ) {
 
-            }
-            Column(modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .padding(start = 5.dp)) {
-                Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
+                }
+                Column(modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(start = 5.dp)) {
+                    Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
 
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(SolidColor(Color("#00687A".toColorInt())))
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            drawCircle(SolidColor(Color("#00687A".toColorInt())))
+                        }
+                        Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
                     }
-                    Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
                 }
-            }
-            Column(modifier = Modifier
-                .padding(5.dp)
-                .fillMaxWidth()) {
+                Column(modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth()) {
 
-                Text(itemData.date, fontSize=10.sp, modifier = Modifier.align(Alignment.End))
-                Text(itemData.nameUser, fontWeight= FontWeight.Bold)
-                var description = ""
-                for (i in 0..itemData.items.size-1){
-                    description+=itemData.items[i].amount.toString() + " "+itemData.items[i].name + ", "
+                    Text(itemData.date, fontSize=10.sp, modifier = Modifier.align(Alignment.End))
+                    Text(itemData.nameUser, fontWeight= FontWeight.Bold)
+                    var description = ""
+                    for (i in 0..itemData.items.size-1){
+                        description+=itemData.items[i].amount.toString() + " "+itemData.items[i].name + ", "
+                    }
+                    if (description.length>70)
+                        description = description.substring(0,69)+"..."
+                    else
+                        description = description.substring(0,description.length-2)
+                    Text(description)
                 }
-                if (description.length>70)
-                    description = description.substring(0,69)+"..."
-                else
-                    description = description.substring(0,description.length-2)
-                Text(description)
             }
+
         }
-
-    }
     }
 }
 
@@ -547,7 +459,7 @@ fun filterStatus(){
             .padding( top = 15.dp)){
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val cardWidth =  with(LocalDensity.current) {
-            screenWidth * 0.3f
+            screenWidth * 0.45f
         }
         if (clickPagado){
             colorPagado = Color(PagadoClick.toColorInt())
@@ -563,7 +475,7 @@ fun filterStatus(){
                     filters.remove(::filterPagado)
                 }
                 resetFilter()
-                    },
+            },
             modifier = Modifier
                 .width(cardWidth)
                 .padding(2.dp)
@@ -595,51 +507,6 @@ fun filterStatus(){
                 }
             }
         }
-        if (clickPagadoParcialmente){
-            colorPagadoParcialmente = Color(PagadoParcialmenteClick.toColorInt())
-        }else{
-            colorPagadoParcialmente=Color(MaterialTheme.colorScheme.background.value)
-        }
-        Card(
-            onClick={
-                clickPagadoParcialmente = !clickPagadoParcialmente
-                if(clickPagadoParcialmente){
-                    filters.add(::filterPagadoParcialmente)
-                }else{
-                    filters.remove(::filterPagadoParcialmente)
-                }
-                resetFilter()
-                    },
-            modifier = Modifier
-                .width(cardWidth)
-                .padding(2.dp)
-                .height(50.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-        colors = CardDefaults.cardColors(colorPagadoParcialmente)
-        ) {
-            Row() {
-                Column(
-                    modifier = Modifier
-                        .background(Color(PagadoParcialmente.toColorInt()))
-                        .width(10.dp)
-                        .fillMaxHeight()
-                ) {
-
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text("Pagado parcialmente", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickPagadoParcialmente){
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = "Localized description",
-                            modifier = Modifier
-                                .size(ButtonDefaults.IconSize)
-                                .align(Alignment.CenterEnd)
-                        )
-                    }
-                }
-            }
-        }
         if (clickSinPagar){
             colorSinPagar = Color(SinPagarClick.toColorInt())
         }else{
@@ -654,7 +521,7 @@ fun filterStatus(){
                     filters.remove(::filterSinPagar)
                 }
                 resetFilter()
-                      },
+            },
             modifier = Modifier
                 .width(cardWidth)
                 .padding(2.dp)
@@ -704,7 +571,7 @@ fun FloatingButton(
         Column {
 
 
-           Button(
+            Button(
                 onClick = {},
                 modifier = Modifier.align(Alignment.End)
             ) {
@@ -719,13 +586,13 @@ fun FloatingButton(
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
-    var valuesLoan = loanViewModel.farm.observeAsState().value
-    valuesLoan?.let {
+fun SellScreen(sellViewModel: SellViewModel, navController: NavController) {
+    var valuesSell= sellViewModel.farm.observeAsState().value
+    valuesSell?.let {
         listItemData.clear()
         listItemData.addAll(it)
     }
-    if (valuesLoan == null){
+    if (valuesSell == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -739,24 +606,24 @@ fun LoanScreen(loanViewModel: LoanViewModel, navController: NavController) {
         resetFilter()
         resetFilterExclude()
         Box(){
-        Column() {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 20.dp, end = 20.dp)
-            ) {
-                item{
-                    filterStatus()
-                    Actions(navController)
+            Column() {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 20.dp, end = 20.dp)
+                ) {
+                    item{
+                        filterStatus()
+                        Actions(navController)
+                    }
+                    this.items(listItemDataFilter) {
+                        OneSell(it, navController)
+                    }
                 }
-                this.items(listItemDataFilter) {
-                    OneLoan(it, navController)
-                }
-            }
 
-        }
+            }
             Button(onClick = {
-                navController.navigate("loan/add")
+                navController.navigate("sell/add")
             },modifier= Modifier
                 .padding(end = 20.dp, bottom = 40.dp)
                 .align(Alignment.BottomEnd)) {
