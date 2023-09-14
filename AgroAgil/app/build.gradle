@@ -2,16 +2,19 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
+    //estos dos son para inyección de dependencias
+    id("kotlin-kapt")
+    id ("com.google.dagger.hilt.android")
 }
 
 android {
     namespace 'com.example.agroagil'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.agroagil"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -28,17 +31,22 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        //CAMBIO
+        //sourceCompatibility JavaVersion.VERSION_1_8
+        //targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        //cambio
+        //jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.3.2'
+        kotlinCompilerExtensionVersion '1.4.3'
     }
     packagingOptions {
         resources {
@@ -77,5 +85,30 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     implementation 'androidx.navigation:navigation-compose:2.6.0-rc01'
+    //nuevo para iconos
+    implementation("androidx.compose.ui:ui-android:1.5.0")
+    //para firebase
+    implementation("com.google.firebase:firebase-database-ktx:20.2.2")
+    implementation("com.google.firebase:firebase-common-ktx:20.3.3")
+    //navegacion
+    implementation("androidx.navigation:navigation-runtime-ktx:2.7.2")
+    //para inyeccion de dependencias
+    implementation("com.google.dagger:hilt-android:2.41")
+    kapt("com.google.dagger:hilt-compiler:2.41")
+    //para que funcione el observer as state
+    implementation("androidx.compose.runtime:runtime-livedata:1.3.2")
+    //para lograr la navegación en JetpackCompose
+    implementation("androidx.navigation:navigation-compose:2.7.0")
 
+}
+
+//para que funcione inyeccion de dependencias
+kotlin {
+    kapt {
+        generateStubs = true
+    }
+}
+
+kapt {
+    correctErrorTypes = true
 }

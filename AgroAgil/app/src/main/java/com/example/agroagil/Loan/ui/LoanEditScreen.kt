@@ -48,14 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.core.models.Item
+import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
 import kotlinx.coroutines.launch
 import java.util.Date
 
 var openDialogAddItemEdit =  mutableStateOf(false)
-var currentLoanEdit = Loan("Usuario1", listOf<Item>(Item("Tomate", 1, "KG")), emptyList(), 0)
-var productsEdit = mutableStateListOf<Item>()
+var currentLoanEdit = Loan("Usuario1", listOf<Product>(Product("Tomate", 1, "KG")), emptyList(), 0)
+var productsEdit = mutableStateListOf<Product>()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +90,7 @@ fun AddProductEidt(){
                             error_measure=true
                         }
                         if (name != "" && amount != "" && measure != ""){
-                            var new_item = Item(name,amount.toInt(), units = measure)
+                            var new_item = Product(name,amount.toInt(), units = measure)
                             productsEdit.add(new_item)
                             openDialogAddItemEdit.value=false
                             name = ""
@@ -171,7 +171,7 @@ fun AddProductEidt(){
 }
 
 @Composable
-fun itemProductClose(item: Item){
+fun itemProductClose(item: Product){
     Row() {
         Column(modifier = Modifier.padding(top = 5.dp)) {
             Box(modifier = Modifier
