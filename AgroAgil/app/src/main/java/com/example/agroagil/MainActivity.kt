@@ -1,4 +1,6 @@
 package com.example.agroagil
+import BuyAddScreen
+import BuyInfoScreen
 import SellAddScreen
 import SellInfoScreen
 import SellScreen
@@ -25,6 +27,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.agroagil.Buy.ui.BuyScreen
+import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
@@ -61,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
+                    val buyViewModel = BuyViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
@@ -121,7 +126,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     //navegar a mis compras
                                     NavigationEventMenu.ToMisCompras -> {
-                                        navController.navigate("menu")
+                                        navController.navigate("buy")
                                     }
                                     //navegar a mi resumen
                                     NavigationEventMenu.ToMiResumen -> {
@@ -143,6 +148,19 @@ class MainActivity : ComponentActivity() {
                             val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
                             if (sellId is Int)
                                 SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)
+
+                        }
+                        composable("buy") {
+                            BuyScreen(buyViewModel = buyViewModel, navController = navController)
+                        }
+                        composable("buy/add") {
+                            BuyAddScreen(buyViewModel = buyViewModel, navController = navController)
+                        }
+                        composable("buy/{buyId}/info", arguments = listOf(navArgument("buyId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val buyId: Int? = backStackEntry.arguments?.getInt("buyId")
+                            if (buyId is Int)
+                                BuyInfoScreen(navController = navController,buyViewModel = buyViewModel, buyId)
 
                         }
                     }
