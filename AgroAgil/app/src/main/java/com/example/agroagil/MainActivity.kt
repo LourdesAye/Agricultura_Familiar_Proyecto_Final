@@ -34,6 +34,8 @@ import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Task.ui.TaskScreen
+import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
@@ -61,6 +63,7 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
+                    val taskViewModel = TaskViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             Farm(FarmViewModel())
@@ -105,7 +108,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     //navegar a misTareas
                                     NavigationEventMenu.ToMisTareas -> {
-                                        navController.navigate("menu")
+                                        navController.navigate("task")
                                     }
                                     //navegar a mi almacen
                                     NavigationEventMenu.ToMiAlmacen -> {
@@ -143,7 +146,9 @@ class MainActivity : ComponentActivity() {
                             val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
                             if (sellId is Int)
                                 SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)
-
+                        }
+                        composable("task") {
+                            TaskScreen(taskViewModel = taskViewModel, navController = navController)
                         }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
