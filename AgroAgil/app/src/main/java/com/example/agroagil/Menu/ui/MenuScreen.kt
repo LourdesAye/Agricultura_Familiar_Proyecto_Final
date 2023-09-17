@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Divider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.MutableState
@@ -186,6 +187,16 @@ fun Menu(
                     content = {
                         //Spacer(Modifier.height(22.dp))
                         items.forEachIndexed { posicion, item ->
+                            if (item.nombreItemMenu == "Mis Cultivos"){
+                                Text("Campo", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+                            if  (item.nombreItemMenu == "Mis Ventas"){
+                                Text("Dinero", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+                            if (item.nombreItemMenu == "Mi Almacén"){
+                                Text("Artículos", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+
                             if (posicion == 0) {
                                 NavigationDrawerItem(
                                     icon = {
@@ -243,6 +254,10 @@ fun Menu(
 
 
                             }
+                            if (item.nombreItemMenu in listOf("Mis Tareas","Mis Préstamos de Artículos","Mi Resumen")){
+                                Divider(modifier = Modifier.padding(start=20.dp, end=20.dp))
+                            }
+
                         }
                     }, modifier = Modifier.verticalScroll(
                         state = rememberScrollState()
