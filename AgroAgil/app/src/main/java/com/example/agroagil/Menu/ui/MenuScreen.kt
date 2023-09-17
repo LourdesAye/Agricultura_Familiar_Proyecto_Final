@@ -32,6 +32,7 @@ import com.lourd.myapplication.featureMenu.menu.domain.ItemMenuPrincipal
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.graphics.vector.*
@@ -39,6 +40,7 @@ import androidx.compose.ui.res.imageResource
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -50,10 +52,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.agroagil.Farm.ui.profileImage
 import com.example.agroagil.R
 import com.lourd.myapplication.featureMenu.NavigationEventMenu
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
@@ -167,6 +172,7 @@ fun Menu(
 
     //item seleccionado del menú
     val selectedItem = remember { mutableStateOf(items[1]) }
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     //construcción del menú
     ModalNavigationDrawer(
@@ -183,31 +189,14 @@ fun Menu(
                             if (posicion == 0) {
                                 NavigationDrawerItem(
                                     icon = {
-                                        Column(
-                                            verticalArrangement = Arrangement.Center, // Alinea el contenido en el centro vertical
-                                            horizontalAlignment = Alignment.CenterHorizontally, // Alinea el contenido en el centro horizontal
+                                        Image(
+                                            painter = painterResource(id = resourceId),
+                                            contentDescription = "Imagen del campo",
+                                            contentScale = ContentScale.Crop,
                                             modifier = Modifier
-                                                .size(200.dp)
-                                                .clip(RoundedCornerShape(16.dp)) // Ajusta el radio de las esquinas
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = resourceId),
-                                                contentDescription = "Imagen del campo",
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier
-                                                    .size(200.dp)
-                                                    .clickable {
-                                                        scope.launch { drawerState.close() }
-                                                        //esto funcionara cuando se le asocie el composable en el mainActivity
-                                                        onNavigationEvent(NavigationEventMenu.ToConfigGranja)
-                                                    }
-
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp)) // Espacio entre la imagen y el texto
-
-                                        }
-
-
+                                                .size(100.dp)
+                                                .clip(CircleShape)
+                                        )
                                     },
                                     label = {
                                         TextButton(onClick = {
@@ -231,7 +220,7 @@ fun Menu(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(250.dp)
+                                        .height(150.dp)
                                 )
                             } else {
                                 NavigationDrawerItem(
@@ -257,7 +246,7 @@ fun Menu(
                         }
                     }, modifier = Modifier.verticalScroll(
                         state = rememberScrollState()
-                    )
+                    ).defaultMinSize(minHeight = screenHeight)
                 )
             //}
 
