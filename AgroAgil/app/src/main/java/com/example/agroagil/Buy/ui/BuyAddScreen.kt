@@ -73,11 +73,9 @@ val totalPriceBuy = mutableStateOf(0.0)
 @Composable
 fun AddProductBuy(){
     var name by rememberSaveable { mutableStateOf("") }
-    var price by rememberSaveable { mutableStateOf(0.0) }
     var amount by rememberSaveable { mutableStateOf("") }
     var measure by rememberSaveable { mutableStateOf("") }
     var error_name by rememberSaveable { mutableStateOf(false)}
-    var error_price by rememberSaveable { mutableStateOf(false)}
     var error_amount by rememberSaveable { mutableStateOf(false)}
     var error_measure by rememberSaveable { mutableStateOf(false)}
 
@@ -104,14 +102,12 @@ fun AddProductBuy(){
                             error_measure=true
                         }
                         if (name != "" && amount != "" && measure != ""){
-                            var new_item = Product(name,amount.toInt(), units = measure, price=price)
+                            var new_item = Product(name,amount.toInt(), units = measure)
                             productsBuy.add(new_item)
-                            totalPriceBuy.value += price*amount.toDouble()
                             openDialogAddItemBuy.value=false
                             name = ""
                             amount=""
                             measure=""
-                            price = 0.0
                         }
                     }
                 ) {
@@ -180,25 +176,6 @@ fun AddProductBuy(){
 
                         )
                     }
-                    OutlinedTextField(
-                        value = price.toString(),
-                        onValueChange = { price = it.toDouble()
-                            error_price=false
-                        },
-                        isError= error_price,
-                        label = {
-                            Text("Precio del producto por unidad")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                ImageVector.vectorResource(R.drawable.price),
-                                contentDescription = "Localized description",
-                                modifier = Modifier.size(25.dp)
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
                 }
 
             })
@@ -216,6 +193,7 @@ fun AddProductBuy(){
 fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
     var user by rememberSaveable { mutableStateOf("") }
     var error_name by rememberSaveable { mutableStateOf(false)}
+    var error_price by rememberSaveable { mutableStateOf(false)}
     val snackbarHostState = remember { SnackbarHostState() }
     var paid by rememberSaveable { mutableStateOf(true)}
     val scope = rememberCoroutineScope()
@@ -236,7 +214,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                     .align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    "Agrega una venta",
+                    "Agrega una compra",
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 30.sp,
                     textAlign = TextAlign.Center,
@@ -369,12 +347,24 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                     .size(width = 0.dp, height = 150.dp)
                     .padding(20.dp)
             ) {
-                Text(
-                    "Precio total: ",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 30.sp,
+                OutlinedTextField(
+                    value = totalPriceBuy.value.toString(),
+                    onValueChange = { totalPriceBuy.value = it.toDouble()
+                        error_price=false
+                    },
+                    isError= error_price,
+                    label = {
+                        Text("Precio Total")
+                    },
+                    leadingIcon = {
+                        Icon(
+                            ImageVector.vectorResource(R.drawable.price),
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(25.dp)
+                        )
+                    },
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
+                        .fillMaxWidth()
                 )
                 Text(
                     "$ "+ totalPriceBuy.value.toString(),
@@ -402,7 +392,10 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                         if(user==""){
                             error_name = true
                         }
-                        if (productsBuy.size !=0 && user!=""){
+                        if(totalPriceBuy.value.toDouble()==0.0){
+                            error_price = true
+                        }
+                        if (productsBuy.size !=0 && user!="" && totalPriceBuy.value.toDouble()!=0.0){
                             val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                             val currentDate = sdf.format(Date())
                             buyViewModel.addBuy(
