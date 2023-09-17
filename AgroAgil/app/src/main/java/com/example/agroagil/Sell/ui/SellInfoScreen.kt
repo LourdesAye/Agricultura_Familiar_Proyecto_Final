@@ -12,12 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +37,7 @@ import androidx.navigation.NavController
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.core.models.Product
 
-var currentSell = Sell(price=0)
+var currentSell = mutableStateOf(Sell(price=0))
 @Composable
 fun itemProduct(item: Product){
     Row() {
@@ -76,6 +81,7 @@ fun itemProduct(item: Product){
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, sellId: Int){
     var valuesSell = sellViewModel.farm.observeAsState().value
@@ -90,15 +96,38 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
         }
 
     }else {
-        currentSell = valuesSell.get(sellId)
+        currentSell.value = valuesSell.get(sellId)
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
                 .defaultMinSize(minHeight = screenWidth)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.SpaceAround
+                .verticalScroll(rememberScrollState())
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+                horizontalArrangement = Arrangement.End
+            ){
+                var textChipStatus:String
+                var colorChipStatus:Color
+                if (currentSell.value.paid){
+                    textChipStatus = "Pagado"
+                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
+                }else{
+                    textChipStatus = "Sin pagar"
+                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
+                }
+                SuggestionChip(
+                    onClick = { /* Do something! */ },
+                    label = { Text(textChipStatus) },
+                    enabled = false,
+                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor=colorChipStatus),
+                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = colorChipStatus)
+                )
+            }
+            Column(modifier = Modifier.defaultMinSize(minHeight = screenWidth - 100.dp), verticalArrangement = Arrangement.SpaceAround) {
             Column {
 
 
@@ -108,7 +137,7 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                     .padding(top = 50.dp)
             ) {
                 Text(
-                    currentSell.nameUser,
+                    currentSell.value.nameUser,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 30.sp,
                     textAlign = TextAlign.Center,
@@ -121,7 +150,7 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                     .fillMaxWidth()
             ) {
                 Text(
-                    currentSell.date,
+                    currentSell.value.date,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 15.sp,
                     textAlign = TextAlign.Center,
@@ -135,8 +164,8 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
             )
-            for (i in 0..currentSell.items.size - 1) {
-                itemProduct(currentSell.items[i])
+            for (i in 0..currentSell.value.items.size - 1) {
+                itemProduct(currentSell.value.items[i])
             }
             }
             Row(
@@ -153,14 +182,23 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                         .align(Alignment.CenterVertically)
                 )
                 Text(
-                    "$ "+ currentSell.price.toString(),
+                    "$ "+ currentSell.value.price.toString(),
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 30.sp,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                 )
             }
+                if (!currentSell.value.paid){
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                        Button(onClick = {
+                            currentSell.value = currentSell.value.copy(paid = true)
+                            sellViewModel.updateSell(currentSell.value, sellId)
+                        }, content={Text("Confirmar pago")})
+                    }}
 
         }
+        }
+
     }
 }

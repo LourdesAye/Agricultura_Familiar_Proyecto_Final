@@ -45,7 +45,7 @@ import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 
-
+var currentBuy = mutableStateOf(Buy(price=0))
 @Composable
 fun itemProductBuy(item: Product){
     Row() {
@@ -94,7 +94,6 @@ fun itemProductBuy(item: Product){
 @Composable
 fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int){
     var valuesBuy = buyViewModel.farm.observeAsState().value
-    var currentBuy by remember {mutableStateOf(Buy(price=0))}
     if (valuesBuy == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
@@ -106,7 +105,7 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
         }
 
     }else {
-        currentBuy = valuesBuy.get(buyId)
+        currentBuy.value = valuesBuy.get(buyId)
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
 
         Column(
@@ -124,7 +123,7 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
             ){
                 var textChipStatus:String
                 var colorChipStatus:Color
-                if (currentBuy.paid){
+                if (currentBuy.value.paid){
                     textChipStatus = "Pagado"
                     colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
                 }else{
@@ -149,7 +148,7 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                             .padding(top = 50.dp)
                     ) {
                         Text(
-                            currentBuy.nameUser,
+                            currentBuy.value.nameUser,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 30.sp,
                             textAlign = TextAlign.Center,
@@ -162,7 +161,7 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                             .fillMaxWidth()
                     ) {
                         Text(
-                            currentBuy.date,
+                            currentBuy.value.date,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 15.sp,
                             textAlign = TextAlign.Center,
@@ -176,8 +175,8 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
                     )
-                    for (i in 0..currentBuy.items.size - 1) {
-                        itemProductBuy(currentBuy.items[i])
+                    for (i in 0..currentBuy.value.items.size - 1) {
+                        itemProductBuy(currentBuy.value.items[i])
                     }
                 }
                 Row(
@@ -194,18 +193,18 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                             .align(Alignment.CenterVertically)
                     )
                     Text(
-                        "$ " + currentBuy.price.toString(),
+                        "$ " + currentBuy.value.price.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         fontSize = 30.sp,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                     )
                 }
-                if (!currentBuy.paid){
+                if (!currentBuy.value.paid){
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
                     Button(onClick = {
-                        currentBuy = currentBuy.copy(paid = true)
-                        buyViewModel.updateBuy(currentBuy, buyId)
+                        currentBuy.value = currentBuy.value.copy(paid = true)
+                        buyViewModel.updateBuy(currentBuy.value, buyId)
                     }, content={Text("Confirmar pago")})
                 }}
             }
