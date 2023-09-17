@@ -11,4 +11,6 @@ sealed class NavigationEventMenu{
     object ToMiResumen : NavigationEventMenu()
     object ToNotificaciones : NavigationEventMenu()
     object ToConfigPerfil : NavigationEventMenu()
+
+    object ToHome : NavigationEventMenu()
 }
