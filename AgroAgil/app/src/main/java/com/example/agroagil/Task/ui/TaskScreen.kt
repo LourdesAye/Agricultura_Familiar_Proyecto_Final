@@ -7,51 +7,60 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ChipColors
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.R
 import com.example.agroagil.Task.model.TaskCardData
 import java.util.Calendar
 
 
-val completedTaskCardColor = "#E2F2F2"
-val incompleteImportantTaskCardColor = "#FAE9E8"
-val incompleteNormalTaskCardColor = "#E9F0F8"
 
-val completedTaskTextColor = "#38B9BC"
-val incompleteImportantTaskTextColor = "#E73226"
-val incompleteNormalTaskTextColor = "#5B92E3"
 data class CardColor(val surfaceColor: String, val textColor:String)
 
 @Composable
 fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
     var taskCardDataList = taskViewModel.taskCardDataList.observeAsState().value
+    var filterTasksBy = taskViewModel.filterTasksBy.observeAsState().value
 
     if(taskCardDataList == null) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
@@ -63,10 +72,29 @@ fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
             )
         }
     } else {
-        LazyColumn{
-            items(taskCardDataList) {
-                TaskCard(taskCardData = it, taskViewModel = taskViewModel)
+        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+
+            val (taskScreen, addTaskButton) = createRefs()
+
+            Column(modifier = Modifier.constrainAs(taskScreen) {}) {
+                LazyColumn {
+                    item { FilteringBox(taskViewModel) }
+                    item{ Spacer(modifier = Modifier.padding(10.dp)) }
+                    item { Text(text = "Tareas", style = MaterialTheme.typography.headlineSmall) }
+                    items(taskCardDataList) {
+                        TaskCard(taskCardData = it, taskViewModel = taskViewModel, filterTasksBy)
+                    }
+                    item { Spacer(modifier = Modifier.padding(32.dp))  }
+                }
             }
+
+            AddTaskButton(
+                navController,
+                modifier = Modifier.constrainAs(addTaskButton) {
+                    bottom.linkTo(parent.bottom, margin = 16.dp)
+                    end.linkTo(parent.end, margin = 16.dp)
+                }
+            )
         }
     }
 
@@ -74,74 +102,77 @@ fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
 
 fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
     if(completed)
-        return CardColor(completedTaskCardColor, completedTaskTextColor)
+        return CardColor(COMPLETED_TASK_CARD_COLOR, COMPLETED_TASK_TEXT_COLOR)
     if(highPriority)
-        return CardColor(incompleteImportantTaskCardColor, incompleteImportantTaskTextColor)
-    else return CardColor(incompleteNormalTaskCardColor, incompleteNormalTaskTextColor)
+        return CardColor(INCOMPLETE_IMPORTANT_TASK_CARD_COLOR, INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR)
+    else return CardColor(INCOMPLETE_NORMAL_TASK_CARD_COLOR, INCOMPLETE_NORMAL_TASK_TEXT_COLOR)
 }
 
 @Composable
-fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?) {
+fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTasksBy: AppliedFiltersForTasks?) {
     val roundedCornerShape = RoundedCornerShape(
     topStart = 0.dp, // 90-degree corner here
-    topEnd = 12.dp,
-    bottomEnd = 12.dp,
-    bottomStart = 12.dp
+    topEnd = 14.dp,
+    bottomEnd = 14.dp,
+    bottomStart = 14.dp
     )
 
     val cardColor: CardColor = getCardColor(taskCardData.highPriority, taskCardData.completed)
 
-    val cardColors = CardColors(
-        containerColor = Color(cardColor.surfaceColor.toColorInt()),
-        contentColor = Color(cardColor.surfaceColor.toColorInt()),
-        disabledContainerColor = Color(cardColor.surfaceColor.toColorInt()),
-        disabledContentColor = Color(cardColor.surfaceColor.toColorInt())
-    )
+    if(filterTasksBy != null && taskCardData.passFilters(filterTasksBy)) {
 
-    Card(
-        shape = roundedCornerShape,
-        colors = cardColors, // Setting color directly
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
-                .background(color = Color(cardColor.surfaceColor.toColorInt()))
-                .clip(roundedCornerShape)
                 .clickable {
-                    //TODO: Completar con la acción luego de hacer clic
-                    taskViewModel?.toggleTaskCompletedStatus(taskCardData.id)
-                }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(text = taskCardData.description, fontWeight = FontWeight.Bold, color = Color(cardColor.textColor.toColorInt()))
-                TextDate(taskCardData)
-            }
+                    //TODO: Completar con la acción luego de hacer clic en la card
 
-            //Checkcircle
-            RoundCheckbox(
-                checked = taskCardData.completed,
-                onCheckedChange = { taskCardData.completed = !taskCardData.completed },
-                color = Color(cardColor.textColor.toColorInt())
+                },
+            shape = roundedCornerShape,
+            colors = CardDefaults.cardColors(
+                containerColor = Color(cardColor.surfaceColor.toColorInt())
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 4.dp
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = taskCardData.getLimitedDescription(), fontWeight = FontWeight.Bold, color = Color(cardColor.textColor.toColorInt()))
+                    TextDate(taskCardData)
+                }
+
+                //Checkcircle
+                RoundCheckbox(
+                    checked = taskCardData.completed,
+                    onCheckedChange = { taskViewModel?.toggleTaskCompletedStatus(taskCardData.id) },
+                    color = Color(cardColor.textColor.toColorInt())
                 )
+            }
         }
     }
+
 }
 
 @Composable
 fun RoundCheckbox(
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onCheckedChange: () -> Unit,
     color: Color
 ) {
     val sizeDp: Int = 28
     IconButton(
-        onClick = { onCheckedChange(!checked) },
+        onClick = { onCheckedChange() },
         modifier = Modifier.size(sizeDp.dp)
     ) {
         Box(
@@ -154,7 +185,7 @@ fun RoundCheckbox(
         ) {
             if (checked)
                 Icon(
-                    painter = painterResource(id = R.drawable.check_completed_task),
+                    Icons.Filled.Check,
                     contentDescription = null,
                     tint = color,
                     modifier = Modifier.size((sizeDp - 4).dp)
@@ -169,11 +200,82 @@ fun TextDate(taskCardData: TaskCardData) {
     Text(text = taskCardData.getTaskFormatDate(), fontWeight = FontWeight.Light, color = LightGray)
 }
 
-
-@Preview
 @Composable
-fun TaskCardPrevie() {
-    var taskCardData =  TaskCardData(11, "Cosechar tomates", Calendar.getInstance().time, 3, true, false)
-
-    TaskCard(taskCardData = taskCardData, null)
+fun AddTaskButton(navController: NavController?, modifier: Modifier) {
+    Button(
+        onClick = { navController?.navigate("task/add") },
+        modifier = modifier
+    ) {
+        Row {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Localized description",
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            Text("Agregar")
+        }
+    }
 }
+
+@Composable
+fun FilteringBox(taskViewModel: TaskViewModel) {
+    var filterTasksBy = taskViewModel.filterTasksBy.observeAsState().value
+
+    Box(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(10.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = "Fecha",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Start
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                //Botones x3
+                    FilteringButton(filterTasksBy, TaskFilter.ByOverdue, taskViewModel)
+                    FilteringButton(filterTasksBy, TaskFilter.ByToday, taskViewModel)
+                    FilteringButton(filterTasksBy, TaskFilter.ByNext, taskViewModel)
+            }
+            Divider(modifier = Modifier.padding(10.dp))
+            Text(text = "Prioridad", style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                //Botones x3
+                    FilteringButton(filterTasksBy, TaskFilter.ByHigh, taskViewModel)
+                    FilteringButton(filterTasksBy, TaskFilter.ByLow, taskViewModel)
+                    FilteringButton(filterTasksBy, TaskFilter.ByDone, taskViewModel)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilteringButton(filterTasksBy: AppliedFiltersForTasks?, taskFilter: TaskFilter, taskViewModel: TaskViewModel) {
+    val color = filterTasksBy?.getFilterColor(taskFilter)?: MaterialTheme.colorScheme.onSurface
+    val chipColor: ChipColors = AssistChipDefaults.assistChipColors(
+        labelColor = color,
+        leadingIconContentColor = color
+    )
+
+    AssistChip(
+        modifier = Modifier
+            .height(AssistChipDefaults.IconSize * 2)
+            .padding(4.dp),
+        onClick = { taskViewModel.onFilteringBoxChange(taskFilter) },
+        label = { Text(taskFilter.name, style = MaterialTheme.typography.bodyLarge) },
+        colors = chipColor,
+        leadingIcon = {
+            if(filterTasksBy?.getFilterValue(taskFilter) == true)
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = "Localized description",
+                    Modifier.size(AssistChipDefaults.IconSize),
+                )
+        }
+    )
+}
+
+

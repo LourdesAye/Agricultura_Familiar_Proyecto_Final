@@ -34,6 +34,9 @@ import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Task.ui.TaskAddScreen
+import com.example.agroagil.Task.ui.TaskEditScreen
+import com.example.agroagil.Task.ui.TaskInfoScreen
 import com.example.agroagil.Task.ui.TaskScreen
 import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
@@ -149,6 +152,15 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("task") {
                             TaskScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/add") {
+                            TaskAddScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/{taskId}/info") {
+                            TaskInfoScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/{taskId}/edit") {
+                            TaskEditScreen(taskViewModel = taskViewModel, navController = navController)
                         }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
