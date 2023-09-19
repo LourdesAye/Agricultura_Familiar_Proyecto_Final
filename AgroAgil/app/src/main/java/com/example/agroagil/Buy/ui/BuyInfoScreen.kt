@@ -1,6 +1,8 @@
 
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ChipColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,25 +24,30 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Buy.ui.BuyViewModel
+import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 
-var currentSell = mutableStateOf(Sell(price=0))
+var currentBuy = mutableStateOf(Buy(price=0))
 @Composable
-fun itemProduct(item: Product){
+fun itemProductBuy(item: Product){
     Row() {
         Column(modifier = Modifier.padding(top = 5.dp)) {
             Box(modifier = Modifier
@@ -81,11 +89,12 @@ fun itemProduct(item: Product){
 
 
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, sellId: Int){
-    var valuesSell = sellViewModel.farm.observeAsState().value
-    if (valuesSell == null){
+fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int){
+    var valuesBuy = buyViewModel.farm.observeAsState().value
+    if (valuesBuy == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -96,13 +105,15 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
         }
 
     }else {
-        currentSell.value = valuesSell.get(sellId)
+        currentBuy.value = valuesBuy.get(buyId)
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
+
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
                 .defaultMinSize(minHeight = screenWidth)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+
         ) {
             Row(
                 modifier = Modifier
@@ -112,7 +123,7 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
             ){
                 var textChipStatus:String
                 var colorChipStatus:Color
-                if (currentSell.value.paid){
+                if (currentBuy.value.paid){
                     textChipStatus = "Pagado"
                     colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
                 }else{
@@ -128,77 +139,75 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                 )
             }
             Column(modifier = Modifier.defaultMinSize(minHeight = screenWidth - 100.dp), verticalArrangement = Arrangement.SpaceAround) {
-            Column {
+                Column {
 
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 50.dp)
-            ) {
-                Text(
-                    currentSell.value.nameUser,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 30.sp,
-                    textAlign = TextAlign.Center,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 50.dp)
+                    ) {
+                        Text(
+                            currentBuy.value.nameUser,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 30.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            currentBuy.value.date,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                    Text(
+                        "Productos vendidos",
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
+                    )
+                    for (i in 0..currentBuy.value.items.size - 1) {
+                        itemProductBuy(currentBuy.value.items[i])
+                    }
+                }
+                Row(
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
+                        .fillMaxWidth()
+                        .size(width = 0.dp, height = 150.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Precio total: ",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 30.sp,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
+                    Text(
+                        "$ " + currentBuy.value.price.toString(),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 30.sp,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+                if (!currentBuy.value.paid){
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                    Button(onClick = {
+                        currentBuy.value = currentBuy.value.copy(paid = true)
+                        buyViewModel.updateBuy(currentBuy.value, buyId)
+                    }, content={Text("Confirmar pago")})
+                }}
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    currentSell.value.date,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 15.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-            }
-            Text(
-                "Productos vendidos",
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
-            )
-            for (i in 0..currentSell.value.items.size - 1) {
-                itemProduct(currentSell.value.items[i])
-            }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .size(width = 0.dp, height = 150.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Precio total: ",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 30.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-                Text(
-                    "$ "+ currentSell.value.price.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 30.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-            }
-                if (!currentSell.value.paid){
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
-                        Button(onClick = {
-                            currentSell.value = currentSell.value.copy(paid = true)
-                            sellViewModel.updateSell(currentSell.value, sellId)
-                        }, content={Text("Confirmar pago")})
-                    }}
-
         }
-        }
-
     }
 }

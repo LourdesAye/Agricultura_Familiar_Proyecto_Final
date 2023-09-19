@@ -1,3 +1,4 @@
+package com.example.agroagil.Buy.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -67,8 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Sell.ui.SellViewModel
-import com.example.agroagil.core.models.Product
+import com.example.agroagil.core.models.Buy
 import java.text.SimpleDateFormat
 
 val SinPagar = "#A93226"
@@ -76,61 +76,61 @@ val SinPagarClick = "#f4e5e4"
 val Pagado = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listItemData = mutableStateListOf<Sell>()
-var listItemDataFilter = mutableStateListOf<Sell>()
+var listItemData = mutableStateListOf<Buy>()
+var listItemDataFilter = mutableStateListOf<Buy>()
 
-var filters = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
-var filtersExclude = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
-var chipsFilter = mutableStateListOf<Map<String,Function1<List<Sell>, List<Sell>>>>()
+var filters = mutableStateListOf<Function1<List<Buy>, List<Buy>>>()
+var filtersExclude = mutableStateListOf<Function1<List<Buy>, List<Buy>>>()
+var chipsFilter = mutableStateListOf<Map<String,Function1<List<Buy>, List<Buy>>>>()
 
 var UserFilter = mutableStateOf("")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 
 
-fun filterPagado(sells:List<Sell>): List<Sell> {
-    return sells.filter { it -> it.paid==true }
+fun filterPagado(buys:List<Buy>): List<Buy> {
+    return buys.filter { it -> it.paid==true }
 }
 
-fun filterSinPagar(sells:List<Sell>): List<Sell> {
-    return sells.filter { it -> it.paid==false }
+fun filterSinPagar(buys:List<Buy>): List<Buy> {
+    return buys.filter { it -> it.paid==false }
 }
-fun filterNombre(sells:List<Sell>): List<Sell> {
-    return sells.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
-}
-
-fun filterAllSells(sells:List<Sell>): List<Sell> {
-    return sells
+fun filterNombre(buys:List<Buy>): List<Buy> {
+    return buys.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
 }
 
-fun filterDateStart(sells:List<Sell>): List<Sell> {
+fun filterAllBuys(buys:List<Buy>): List<Buy> {
+    return buys
+}
+
+fun filterDateStart(buys:List<Buy>): List<Buy> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateStart.value)
-    return sells.filter { sell ->
-        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
-        filter_date.before(date_sell) or filter_date.equals(date_sell)
+    return buys.filter { buy ->
+        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
+        filter_date.before(date_buy) or filter_date.equals(date_buy)
     }
 }
 
-fun filterDateEnd(sells:List<Sell>): List<Sell> {
+fun filterDateEnd(buys:List<Buy>): List<Buy> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateEnd.value)
-    return sells.filter { sell ->
-        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
-        filter_date.after(date_sell) or filter_date.equals(date_sell) }
+    return buys.filter { buy ->
+        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
+        filter_date.after(date_buy) or filter_date.equals(date_buy) }
 }
 
-fun filterDateRange(sells:List<Sell>): List<Sell> {
+fun filterDateRange(buys:List<Buy>): List<Buy> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_sell = SimpleDateFormat("dd/MM/yyyy")
+    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date_end = date_format.parse(dataDateEnd.value)
     var filter_date_start = date_format.parse(dataDateStart.value)
-    return sells.filter { sell ->
-        var date_sell = date_format_sell.parse(sell.date.split(" ")[0])
-        (filter_date_start.before(date_sell) or filter_date_start.equals(date_sell)) and
-                ( filter_date_end.after(date_sell) or filter_date_end.equals(date_sell))
+    return buys.filter { buy ->
+        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
+        (filter_date_start.before(date_buy) or filter_date_start.equals(date_buy)) and
+                ( filter_date_end.after(date_buy) or filter_date_end.equals(date_buy))
     }
 }
 
@@ -140,7 +140,7 @@ fun resetFilter(){
         listItemDataFilter.addAll(listItemData)
     }
     for (i in 0 .. filters.size-1) {
-        var filtroExecute = mutableListOf<List<Sell>>()
+        var filtroExecute = mutableListOf<List<Buy>>()
         filtroExecute.addAll(listOf(filters[i](listItemData)))
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
@@ -148,7 +148,7 @@ fun resetFilter(){
 
 fun resetFilterExclude(){
     for (i in 0 .. filtersExclude.size-1) {
-        var filtroExecute = mutableListOf<List<Sell>>()
+        var filtroExecute = mutableListOf<List<Buy>>()
         filtroExecute.addAll(listOf(filtersExclude[i](listItemDataFilter)))
         listItemDataFilter.clear()
         listItemDataFilter.addAll(filtroExecute.flatten())
@@ -386,11 +386,11 @@ fun SelectColorCard(paid:Boolean): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneSell(itemData:Sell, navController: NavController){
+fun OneBuy(itemData:Buy, navController: NavController){
     Column(){
         Card(
             onClick={
-                navController.navigate("sell/${listItemData.indexOf(itemData)}/info")
+                navController.navigate("buy/${listItemData.indexOf(itemData)}/info")
             },
             modifier = Modifier
                 .height(100.dp)
@@ -558,15 +558,16 @@ fun filterStatus(){
     }
 }
 
+
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun SellScreen(sellViewModel: SellViewModel, navController: NavController) {
-    var valuesSell= sellViewModel.farm.observeAsState().value
-    valuesSell?.let {
+fun BuyScreen(buyViewModel: BuyViewModel, navController: NavController) {
+    var valuesBuy= buyViewModel.farm.observeAsState().value
+    valuesBuy?.let {
         listItemData.clear()
         listItemData.addAll(it)
     }
-    if (valuesSell == null){
+    if (valuesBuy == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -591,13 +592,13 @@ fun SellScreen(sellViewModel: SellViewModel, navController: NavController) {
                         Actions(navController)
                     }
                     this.items(listItemDataFilter) {
-                        OneSell(it, navController)
+                        OneBuy(it, navController)
                     }
                 }
 
             }
             Button(onClick = {
-                navController.navigate("sell/add")
+                navController.navigate("buy/add")
             },modifier= Modifier
                 .padding(end = 20.dp, bottom = 40.dp)
                 .align(Alignment.BottomEnd)) {
