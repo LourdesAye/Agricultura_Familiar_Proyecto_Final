@@ -1,16 +1,12 @@
 package com.example.agroagil.Menu.ui.featureMenu.menu.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -18,11 +14,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,26 +27,31 @@ import androidx.compose.ui.res.painterResource
 import com.lourd.myapplication.featureMenu.menu.domain.ItemMenuPrincipal
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.graphics.painter.*
-import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.res.imageResource
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Divider
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.agroagil.R
-import com.lourd.myapplication.featureMenu.NavigationEventMenu
+import com.example.agroagil.Menu.ui.NavigationEventMenu
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
 
 //import androidx.navigation.NavHost
@@ -77,45 +76,55 @@ fun ContenedorDeOpciones(
     scope: CoroutineScope,
     drawerState: DrawerState,
     onNavigationEvent: (NavigationEventMenu) -> Unit,
+    title: MutableState<String>,
+    isMenu: Boolean,
+    navController: NavController
 ) {
-    // estado del scaffold
-    var state=0
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Inicio", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Acceso a Opciones del Menú"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { onNavigationEvent(NavigationEventMenu.ToNotificaciones)
-
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Notifications,
-                            contentDescription = " Notificaciones "
-                        )
-                    }
-                    IconButton(onClick = { onNavigationEvent(NavigationEventMenu.ToConfigPerfil) }) {
-                        Icon(
-                            imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = "Perfil del Usuario"
-                        )
-                    }
-
-                })
+    TopAppBar(
+        title = { Text(title.value, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        navigationIcon = {
+            if(isMenu){
+            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                Icon(
+                    imageVector = Icons.Outlined.Menu,
+                    contentDescription = "Acceso a Opciones del Menú"
+                )
+            }}else{
+                IconButton(onClick = {scope.launch { navController.popBackStack()}}) {
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
         },
-        content = {
-                padding -> if (state == 1) {
-            Box(
-                modifier = Modifier.padding(padding)
-            )
-        }
+        actions = {
+            if (title.value!="Inicio") {
+                IconButton(onClick = {
+                    onNavigationEvent(NavigationEventMenu.ToHome)
+
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Home,
+                        contentDescription = " Home "
+                    )
+                }
+            }
+            IconButton(onClick = { onNavigationEvent(NavigationEventMenu.ToNotificaciones)
+
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = " Notificaciones "
+                )
+            }
+            IconButton(onClick = { onNavigationEvent(NavigationEventMenu.ToConfigPerfil) }) {
+                Icon(
+                    imageVector = Icons.Outlined.AccountCircle,
+                    contentDescription = "Perfil del Usuario"
+                )
+            }
+
         })
 }
 
@@ -125,7 +134,11 @@ fun Menu(
     scope: CoroutineScope,
     drawerState: DrawerState,
     viewModel: MenuViewModel,
-    onNavigationEvent: (NavigationEventMenu) -> Unit // Evento de navegación único
+    title: MutableState<String>,
+    onNavigationEvent: (NavigationEventMenu) -> Unit, // Evento de navegación único,
+    isMenu: Boolean,
+    navController: NavController,
+    contentFrame:  @Composable () ->Unit
 ){
         // Observa cambios en nombreGranja y nombreImagenGranja
     val nombreGranja: String by viewModel.nombreGranja.observeAsState("Mi Campo")
@@ -150,6 +163,7 @@ fun Menu(
 
     //item seleccionado del menú
     val selectedItem = remember { mutableStateOf(items[1]) }
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     //construcción del menú
     ModalNavigationDrawer(
@@ -157,56 +171,57 @@ fun Menu(
         drawerState = drawerState,
         // contenido del menú
         drawerContent = {
+            //Column() {
+            //    Text(text = "Hola")
                 ModalDrawerSheet(
                     content = {
                         //Spacer(Modifier.height(22.dp))
                         items.forEachIndexed { posicion, item ->
+                            if (item.nombreItemMenu == "Mis Cultivos"){
+                                Text("Campo", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+                            if  (item.nombreItemMenu == "Mis Ventas"){
+                                Text("Dinero", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+                            if (item.nombreItemMenu == "Mi Almacén"){
+                                Text("Artículos", modifier= Modifier.padding(start=20.dp, top=10.dp))
+                            }
+
                             if (posicion == 0) {
                                 NavigationDrawerItem(
                                     icon = {
-                                        Column(
-                                            verticalArrangement = Arrangement.Center, // Alinea el contenido en el centro vertical
-                                            horizontalAlignment = Alignment.CenterHorizontally, // Alinea el contenido en el centro horizontal
+                                        Image(
+                                            painter = painterResource(id = resourceId),
+                                            contentDescription = "Imagen del campo",
+                                            contentScale = ContentScale.Crop,
                                             modifier = Modifier
-                                                .size(200.dp)
-                                                .clip(RoundedCornerShape(16.dp)) // Ajusta el radio de las esquinas
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = resourceId),
-                                                contentDescription = "Imagen del campo",
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.size(200.dp).clickable {
-                                                    scope.launch { drawerState.close() }
-                                                    //esto funcionara cuando se le asocie el composable en el mainActivity
-                                                    onNavigationEvent(NavigationEventMenu.ToConfigGranja)
-                                                }
-
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp)) // Espacio entre la imagen y el texto
-
-                                        }
-
-
-                                    },
-                                    label = { TextButton(onClick = {
-                                        scope.launch { drawerState.close() }
-                                        //esto funcionara cuando se le asocie el composable en el mainActivity
-                                        onNavigationEvent(NavigationEventMenu.ToConfigGranja)
-                                    }) {
-                                        Text(
-                                            text = item.nombreItemMenu,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp,
-                                            textAlign = TextAlign.Center // Alinea el texto al centro
+                                                .size(100.dp)
+                                                .clip(CircleShape)
                                         )
-                                    }},
+                                    },
+                                    label = {
+                                        TextButton(onClick = {
+                                            scope.launch { drawerState.close() }
+                                            //esto funcionara cuando se le asocie el composable en el mainActivity
+                                            onNavigationEvent(NavigationEventMenu.ToConfigGranja)
+                                        }) {
+                                            Text(
+                                                text = item.nombreItemMenu,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp,
+                                                textAlign = TextAlign.Center // Alinea el texto al centro
+                                            )
+                                        }
+                                    },
                                     selected = false,
                                     onClick = {
                                         scope.launch { drawerState.close() }
                                         //esto funcionara cuando se le asocie el composable en el mainActivity
                                         onNavigationEvent(NavigationEventMenu.ToConfigGranja)
-                                        },
-                                    modifier = Modifier.fillMaxWidth().height(250.dp)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(150.dp)
                                 )
                             } else {
                                 NavigationDrawerItem(
@@ -220,28 +235,37 @@ fun Menu(
                                     label = { Text(item.nombreItemMenu) },
                                     selected = item == selectedItem.value,
                                     onClick = {
-                                            scope.launch { drawerState.close() }
-                                            selectedItem.value = item
-                                        onClick(posicion,item,onNavigationEvent)
+                                        scope.launch { drawerState.close() }
+                                        selectedItem.value = item
+                                        onClick(posicion, item, onNavigationEvent)
                                     },
                                     modifier = Modifier.padding(10.dp)
                                 )
 
 
                             }
+                            if (item.nombreItemMenu in listOf("Mis Tareas","Mis Préstamos de Artículos","Mi Resumen")){
+                                Divider(modifier = Modifier.padding(start=20.dp, end=20.dp))
+                            }
+
                         }
-                    }
-                    , modifier =Modifier.verticalScroll(
-                        state= rememberScrollState()
-                    )
+                    }, modifier = Modifier.verticalScroll(
+                        state = rememberScrollState()
+                    ).defaultMinSize(minHeight = screenHeight)
                 )
+            //}
+
             }
         ,
         content = {
             // lo que contiene al menú : los iconos que permiten que se abra
             // recibe scope y drawerState
-            ContenedorDeOpciones(scope,drawerState,onNavigationEvent)
-
+            Column() {
+                ContenedorDeOpciones(scope, drawerState, onNavigationEvent, title,
+                    isMenu,
+                    navController)
+                contentFrame()
+            }
         }
 
     )

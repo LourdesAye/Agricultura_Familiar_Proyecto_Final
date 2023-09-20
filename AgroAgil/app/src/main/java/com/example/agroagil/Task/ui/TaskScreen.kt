@@ -26,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ChipBorder
 import androidx.compose.material3.ChipColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +58,7 @@ import java.util.Calendar
 
 
 data class CardColor(val surfaceColor: String, val textColor:String)
+const val CHECK_ICON_SIZE = 24
 
 @Composable
 fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
@@ -84,7 +87,7 @@ fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
                     items(taskCardDataList) {
                         TaskCard(taskCardData = it, taskViewModel = taskViewModel, filterTasksBy)
                     }
-                    item { Spacer(modifier = Modifier.padding(32.dp))  }
+                    item { Spacer(modifier = Modifier.padding(40.dp))  }
                 }
             }
 
@@ -148,7 +151,9 @@ fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTa
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = taskCardData.getLimitedDescription(), fontWeight = FontWeight.Bold, color = Color(cardColor.textColor.toColorInt()))
+                    Text(text = taskCardData.getLimitedDescription(), fontWeight = FontWeight.Bold,
+                        color = Color(cardColor.textColor.toColorInt()),
+                        style = MaterialTheme.typography.titleLarge)
                     TextDate(taskCardData)
                 }
 
@@ -188,7 +193,7 @@ fun RoundCheckbox(
                     Icons.Filled.Check,
                     contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size((sizeDp - 4).dp)
+                    modifier = Modifier.size((CHECK_ICON_SIZE).dp)
                 )
         }
     }
@@ -197,7 +202,7 @@ fun RoundCheckbox(
 
 @Composable
 fun TextDate(taskCardData: TaskCardData) {
-    Text(text = taskCardData.getTaskFormatDate(), fontWeight = FontWeight.Light, color = LightGray)
+    Text(text = taskCardData.getTaskFormatDate(), fontWeight = FontWeight.Light, color = Gray)
 }
 
 @Composable
@@ -227,7 +232,7 @@ fun FilteringBox(taskViewModel: TaskViewModel) {
             .background(MaterialTheme.colorScheme.surface)
             .padding(10.dp)
     ) {
-        Column(horizontalAlignment = Alignment.Start) {
+        Column(horizontalAlignment = Alignment.Start, modifier = Modifier.padding(10.dp)) {
             Text(
                 text = "Fecha",
                 style = MaterialTheme.typography.titleMedium,
@@ -239,7 +244,7 @@ fun FilteringBox(taskViewModel: TaskViewModel) {
                     FilteringButton(filterTasksBy, TaskFilter.ByToday, taskViewModel)
                     FilteringButton(filterTasksBy, TaskFilter.ByNext, taskViewModel)
             }
-            Divider(modifier = Modifier.padding(10.dp))
+            Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
             Text(text = "Prioridad", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 //Botones x3
@@ -259,20 +264,25 @@ fun FilteringButton(filterTasksBy: AppliedFiltersForTasks?, taskFilter: TaskFilt
         labelColor = color,
         leadingIconContentColor = color
     )
+    val borderColor: ChipBorder = AssistChipDefaults.assistChipBorder(
+        borderColor = color,
+        borderWidth = 1.dp
+    )
 
     AssistChip(
         modifier = Modifier
-            .height(AssistChipDefaults.IconSize * 2)
+            .height((CHECK_ICON_SIZE * 2).dp)
             .padding(4.dp),
         onClick = { taskViewModel.onFilteringBoxChange(taskFilter) },
-        label = { Text(taskFilter.name, style = MaterialTheme.typography.bodyLarge) },
+        label = { Text(taskFilter.name, style = MaterialTheme.typography.titleLarge) },
         colors = chipColor,
+        border = borderColor,
         leadingIcon = {
             if(filterTasksBy?.getFilterValue(taskFilter) == true)
                 Icon(
                     Icons.Filled.Check,
                     contentDescription = "Localized description",
-                    Modifier.size(AssistChipDefaults.IconSize),
+                    Modifier.size(CHECK_ICON_SIZE.dp),
                 )
         }
     )

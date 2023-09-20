@@ -153,4 +153,16 @@ data class AppliedFiltersForTasks(
         }
     }
 
+    fun noFilterApplied(): Boolean {
+        return noDateFilterApplied() && noPriorityFiolterApplied()
+    }
+
+    fun noDateFilterApplied(): Boolean {
+        return !(filterByOverdue || filterByToday || filterByNext)
+    }
+
+    fun noPriorityFiolterApplied(): Boolean {
+        return !(filterByLow || filterByHigh || filterByDone)
+    }
+
 }

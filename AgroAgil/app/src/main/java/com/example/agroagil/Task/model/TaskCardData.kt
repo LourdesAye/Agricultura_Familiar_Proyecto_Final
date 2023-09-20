@@ -15,7 +15,7 @@ data class TaskCardData(
     var completed: Boolean,
     val highPriority: Boolean
 ) {
-    private val _maxDescriptionSize = 32
+    private val _maxDescriptionSize = 24
     fun getTaskFormatDate(): String {
         // Formatear el día de la semana (Domingo, Lunes, etc.)
         val formatoDiaSemana = SimpleDateFormat("EEEE", Locale("es", "ES"))
@@ -47,20 +47,30 @@ data class TaskCardData(
 
     fun passFilters(appliedFilters : AppliedFiltersForTasks): Boolean {
         val currentDate = Calendar.getInstance().time
-        if(appliedFilters.filterByOverdue && !isDate1OverdueComparedToDate2(date, currentDate) )
-           return false
-        if(appliedFilters.filterByToday && !datesHaveSameDayMonthYear(date, currentDate) )
-            return false
+        if(appliedFilters.noFilterApplied()) //Se muestra la tarea si cumple por lo menos un filtro
+            return true
+
+        var passDateFilters = appliedFilters.noDateFilterApplied()
+        var passPriorityFilters = appliedFilters.noPriorityFiolterApplied()
+
+        if(appliedFilters.filterByOverdue && isDate1OverdueComparedToDate2(date, currentDate) )
+            passDateFilters = true
+        if(appliedFilters.filterByToday && datesHaveSameDayMonthYear(date, currentDate) )
+            passDateFilters = true
         //FIXME: El filtro de tareas futuras incluye las de hoy
-        if(appliedFilters.filterByNext && isDate1OverdueComparedToDate2(date, currentDate) )
-            return false
-        if(appliedFilters.filterByLow && (highPriority || completed))
-            return false
-        if(appliedFilters.filterByHigh && (!highPriority || completed))
-            return false
-        if (appliedFilters.filterByDone && !completed)
-            return false
-        return true
+        if(appliedFilters.filterByNext && !isDate1OverdueComparedToDate2(date, currentDate) )
+            passDateFilters = true
+
+
+        if(appliedFilters.filterByLow && !highPriority && !completed)
+            passPriorityFilters = true
+        if(appliedFilters.filterByHigh && highPriority && !completed)
+            passPriorityFilters = true
+        if (appliedFilters.filterByDone && completed)
+            passPriorityFilters = true
+
+
+        return passDateFilters && passPriorityFilters
     }
 
 

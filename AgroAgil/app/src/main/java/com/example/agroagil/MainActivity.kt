@@ -1,4 +1,6 @@
 package com.example.agroagil
+import BuyAddScreen
+import BuyInfoScreen
 import SellAddScreen
 import SellInfoScreen
 import SellScreen
@@ -15,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +28,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.agroagil.Buy.ui.BuyScreen
+import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
@@ -34,16 +39,16 @@ import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
-import com.example.agroagil.Task.ui.TaskAddScreen
-import com.example.agroagil.Task.ui.TaskEditScreen
-import com.example.agroagil.Task.ui.TaskInfoScreen
-import com.example.agroagil.Task.ui.TaskScreen
 import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.lourd.myapplication.featureMenu.NavigationEventMenu
+import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.Task.ui.TaskAddScreen
+import com.example.agroagil.Task.ui.TaskEditScreen
+import com.example.agroagil.Task.ui.TaskInfoScreen
+import com.example.agroagil.Task.ui.TaskScreen
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
 
 class MainActivity : ComponentActivity() {
@@ -51,7 +56,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val FarmViewModel by viewModels<FarmViewModel>()
+        val titleCurrentPage = mutableStateOf("Inicio")
         setContent {
             AgroAgilTheme {
                 // A surface container using the 'background' color from the theme
@@ -67,90 +72,170 @@ class MainActivity : ComponentActivity() {
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
                     val taskViewModel = TaskViewModel()
+                    val buyViewModel = BuyViewModel()
+                    val farmViewModel = FarmViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
-                            Farm(FarmViewModel())
+                            titleCurrentPage.value="Mi campo"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
+                                Farm(farmViewModel)
+                            }
+
                         }
                         composable("loan") {
-                            LoanScreen(loanViewModel = loanViewModel, navController = navController)
+                            titleCurrentPage.value="Mis prestamos"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController) {
+                                LoanScreen(
+                                    loanViewModel = loanViewModel,
+                                    navController = navController
+                                )
+                            }
                         }
                         composable("loan/add") {
-                            LoanAddScreen(loanViewModel = loanViewModel, navController = navController)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                {LoanAddScreen(loanViewModel = loanViewModel, navController = navController)})
                         }
                         composable("loan/{loanId}/info", arguments = listOf(navArgument("loanId") { type = NavType.IntType })){
                                 backStackEntry ->
                             val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
                             if (loanId is Int)
-                                LoanInfoScreen(navController = navController,loanViewModel = loanViewModel, loanId)
+                                Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                    {LoanInfoScreen(navController = navController,loanViewModel = loanViewModel, loanId)})
                         }
                         composable("loan/{loanId}/edit", arguments = listOf(navArgument("loanId") { type = NavType.IntType })){
                                 backStackEntry ->
                             val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
                             if (loanId is Int)
-                                LoanEditScreen(navController = navController,loanViewModel = loanViewModel, loanId)
+                                Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                {LoanEditScreen(navController = navController,loanViewModel = loanViewModel, loanId)})
                         }
-                        composable("menu") {
-                            Menu(scope, drawerState, viewModelMenu) { event ->
-                                // Observador de eventos de navegación
-                                when (event) {
-                                    //navegar a perfil
-                                    NavigationEventMenu.ToConfigPerfil -> {
-                                        navController.navigate("menu")
-                                    }
-                                    //navegar a notificaciones
-                                    NavigationEventMenu.ToNotificaciones -> {
-                                        navController.navigate("menu")
-                                    }
-                                    //navegar a configurar granja
-                                    NavigationEventMenu.ToConfigGranja -> {
-                                        navController.navigate("farm")
-                                    }
-                                    //navegar a cultivos
-                                    NavigationEventMenu.ToMisCultivos -> {
-                                        navController.navigate("menu")
-                                    }
-                                    //navegar a misTareas
-                                    NavigationEventMenu.ToMisTareas -> {
-                                        navController.navigate("task")
-                                    }
-                                    //navegar a mi almacen
-                                    NavigationEventMenu.ToMiAlmacen -> {
-                                        navController.navigate("menu")
-                                    }
-                                    //navegar a prestamos de articulos
-                                    NavigationEventMenu.ToPrestamosArticulos -> {
-                                        navController.navigate("loan")
-                                    }
-                                    //navegar a mis ventas
-                                    NavigationEventMenu.ToMisVentas -> {
-                                        navController.navigate("sell")
-                                    }
-                                    //navegar a mis compras
-                                    NavigationEventMenu.ToMisCompras -> {
-                                        navController.navigate("menu")
-                                    }
-                                    //navegar a mi resumen
-                                    NavigationEventMenu.ToMiResumen -> {
-                                        navController.navigate("menu")
-                                    }
-
-                                    else -> {}
-                                }
-                            }
+                        composable("home") {
+                            titleCurrentPage.value = "Inicio"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {/*aca iria la funcion de home*/})
                         }
                         composable("sell") {
-                            SellScreen(sellViewModel = sellViewModel, navController = navController)
+                            titleCurrentPage.value="Mis ventas"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
+                                SellScreen(
+                                    sellViewModel = sellViewModel,
+                                    navController = navController
+                                )
+                            }
                         }
                         composable("sell/add") {
-                            SellAddScreen(sellViewModel = sellViewModel, navController = navController)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                {SellAddScreen(sellViewModel = sellViewModel, navController = navController)})
                         }
                         composable("sell/{sellId}/info", arguments = listOf(navArgument("sellId") { type = NavType.IntType })){
                                 backStackEntry ->
                             val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
                             if (sellId is Int)
-                                SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)
+                                Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                    {SellInfoScreen(navController = navController,sellViewModel = sellViewModel, sellId)})
                         }
+                        composable("buy") {
+                            titleCurrentPage.value="Mis compras"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController) {
+                                BuyScreen(buyViewModel = buyViewModel, navController = navController)
+                            }
+                        }
+                        composable("buy/add") {
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                {BuyAddScreen(buyViewModel = buyViewModel, navController = navController)})
+                        }
+                        composable("buy/{buyId}/info", arguments = listOf(navArgument("buyId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val buyId: Int? = backStackEntry.arguments?.getInt("buyId")
+                            if (buyId is Int)
+                                Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
+                                    {BuyInfoScreen(navController = navController,buyViewModel = buyViewModel, buyId)})
+                        }
+
                         composable("task") {
+                            titleCurrentPage.value="Mis Tareas"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController)
+                            { TaskScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/add") {
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskAddScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/{taskId}/info", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskInfoScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/{taskId}/edit", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskEditScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                    }
+                    Greeting("Android", model= LoanViewModel(), navController = navController)
+                }
+            }
+        }
+    }
+}
+
+fun NavigationEventFunction(navController: NavController): (event: NavigationEventMenu) ->Unit{
+    return{event ->
+        // Observador de eventos de navegación
+        when (event) {
+            //navegar a perfil
+            NavigationEventMenu.ToConfigPerfil -> {
+                navController.navigate("home")
+            }
+            //navegar a notificaciones
+            NavigationEventMenu.ToNotificaciones -> {
+                navController.navigate("home")
+            }
+            //navegar a configurar granja
+            NavigationEventMenu.ToConfigGranja -> {
+                navController.navigate("farm")
+            }
+            //navegar a cultivos
+            NavigationEventMenu.ToMisCultivos -> {
+                navController.navigate("home")
+            }
+            //navegar a misTareas
+            NavigationEventMenu.ToMisTareas -> {
+                navController.navigate("task")
+            }
+            //navegar a mi almacen
+            NavigationEventMenu.ToMiAlmacen -> {
+                navController.navigate("home")
+            }
+            //navegar a prestamos de articulos
+            NavigationEventMenu.ToPrestamosArticulos -> {
+                navController.navigate("loan")
+            }
+            //navegar a mis ventas
+            NavigationEventMenu.ToMisVentas -> {
+                navController.navigate("sell")
+            }
+            //navegar a mis compras
+            NavigationEventMenu.ToMisCompras -> {
+                navController.navigate("buy")
+            }
+            //navegar a mi resumen
+            NavigationEventMenu.ToMiResumen -> {
+                navController.navigate("home")
+            }
+            NavigationEventMenu.ToHome -> {
+                navController.navigate("home")
+            }
+            /*
+
+                composable("task") {
                             TaskScreen(taskViewModel = taskViewModel, navController = navController)
                         }
                         composable("task/add") {
@@ -162,18 +247,17 @@ class MainActivity : ComponentActivity() {
                         composable("task/{taskId}/edit") {
                             TaskEditScreen(taskViewModel = taskViewModel, navController = navController)
                         }
-                    }
-                    Greeting("Android", model= LoanViewModel(), navController = navController)
-                }
-            }
-        }
-    }
+            **/
+
+            else -> {}
+
+    }}
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier, model: LoanViewModel = LoanViewModel(), navController: NavController = rememberNavController()) {
-    navController.navigate("menu")
+    navController.navigate("home")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

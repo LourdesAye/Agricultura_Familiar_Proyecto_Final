@@ -1,4 +1,4 @@
-package com.lourd.myapplication.featureMenu
+package com.example.agroagil.Menu.ui
 
 sealed class NavigationEventMenu{
     object ToConfigGranja : NavigationEventMenu()
@@ -11,4 +11,6 @@ sealed class NavigationEventMenu{
     object ToMiResumen : NavigationEventMenu()
     object ToNotificaciones : NavigationEventMenu()
     object ToConfigPerfil : NavigationEventMenu()
+
+    object ToHome : NavigationEventMenu()
 }
