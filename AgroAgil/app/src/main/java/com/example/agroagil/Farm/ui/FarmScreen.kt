@@ -704,6 +704,7 @@ fun Farm(farmViewModel: FarmViewModel){
             )
         }
     }else {
+        members.clear()
         members.addAll(farm.members)
         nameFarm.value = farm.name
         val context = LocalContext.current

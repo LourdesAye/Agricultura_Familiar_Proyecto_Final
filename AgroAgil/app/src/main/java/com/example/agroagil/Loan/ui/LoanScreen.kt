@@ -85,7 +85,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.core.models.Item
 import com.example.agroagil.core.models.Loan
 import com.google.firebase.inappmessaging.model.Button
 import java.text.SimpleDateFormat
