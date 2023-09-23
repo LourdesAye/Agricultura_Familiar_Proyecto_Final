@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -65,7 +68,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.navigation.NavController
 import com.example.agroagil.Farm.ui.CultivoViewModel
+import com.example.agroagil.Loan.ui.Actions
+import com.example.agroagil.Loan.ui.LoanViewModel
+import com.example.agroagil.Loan.ui.OneLoan
+import com.example.agroagil.Loan.ui.filterStatus
+import com.example.agroagil.Loan.ui.listItemData
+import com.example.agroagil.Loan.ui.listItemDataFilter
+import com.example.agroagil.Loan.ui.resetFilter
+import com.example.agroagil.Loan.ui.resetFilterExclude
 
 val openDialogImageFarm =  mutableStateOf(false)
 val openDialogConfirmDelete =  mutableStateOf(false)
@@ -738,5 +750,62 @@ fun Cultivo(cultivoViewModel: CultivoViewModel){
         }
     }
 }
+
+
+
+//@SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
+//@Composable
+//fun Cu(loanViewModel: LoanViewModel, navController: NavController) {
+//    var valuesLoan = loanViewModel.farm.observeAsState().value
+//    valuesLoan?.let {
+//        listItemData.clear()
+//        listItemData.addAll(it)
+//    }
+//    if (valuesLoan == null){
+//        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+//            .fillMaxSize()) {
+//            CircularProgressIndicator(
+//                modifier = Modifier
+//                    .semantics(mergeDescendants = true) {}
+//                    .padding(10.dp)
+//            )
+//        }
+//
+//    }else {
+//        resetFilter()
+//        resetFilterExclude()
+//        Box(){
+//            Column() {
+//                LazyColumn(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(start = 20.dp, end = 20.dp)
+//                ) {
+//                    item{
+//                        filterStatus()
+//                        Actions(navController)
+//                    }
+//                    this.items(listItemDataFilter) {
+//                        OneLoan(it, navController)
+//                    }
+//                }
+//
+//            }
+//            Button(onClick = {
+//                navController.navigate("loan/add")
+//            },modifier= Modifier
+//                .padding(end = 20.dp, bottom = 40.dp)
+//                .align(Alignment.BottomEnd)) {
+//                Icon(
+//                    Icons.Filled.Add,
+//                    contentDescription = "Localized description",
+//                    modifier = Modifier.size(ButtonDefaults.IconSize)
+//                )
+//                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+//                Text("Agregar")
+//            }
+//        }
+//    }
+//}
 
 

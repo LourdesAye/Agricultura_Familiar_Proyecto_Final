@@ -33,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
+import com.example.agroagil.Farm.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
@@ -71,13 +72,13 @@ class MainActivity : ComponentActivity() {
                     val sellViewModel = SellViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
+                    val cultivoViewModel = CultivoViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             titleCurrentPage.value="Mi campo"
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
                                 Farm(farmViewModel)
                             }
-
                         }
                         composable("loan") {
                             titleCurrentPage.value="Mis prestamos"
@@ -147,6 +148,21 @@ class MainActivity : ComponentActivity() {
                                 Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
                                     {BuyInfoScreen(navController = navController,buyViewModel = buyViewModel, buyId)})
                         }
+
+//                        composable("cultivo") {
+//                            titleCurrentPage.value = "Cultivo_"
+//                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {/*aca iria la funcion de home*/})
+//                        }
+                        composable("cultivo") {
+                            titleCurrentPage.value="Cultivos_"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController) {
+                                LoanScreen(
+                                    loanViewModel = loanViewModel,
+//                                    loanViewModel = loanViewModel,
+                                    navController = navController
+                                )
+                            }
+                        }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
@@ -173,7 +189,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a cultivos
             NavigationEventMenu.ToMisCultivos -> {
-                navController.navigate("home")
+                navController.navigate("cultivo")
             }
             //navegar a misTareas
             NavigationEventMenu.ToMisTareas -> {
@@ -202,9 +218,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             NavigationEventMenu.ToHome -> {
                 navController.navigate("home")
             }
-
             else -> {}
-
     }}
 }
 
