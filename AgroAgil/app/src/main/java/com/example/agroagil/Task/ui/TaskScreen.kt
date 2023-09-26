@@ -83,7 +83,6 @@ fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
                 LazyColumn {
                     item { FilteringBox(taskViewModel) }
                     item{ Spacer(modifier = Modifier.padding(10.dp)) }
-                    item { Text(text = "Tareas", style = MaterialTheme.typography.headlineSmall) }
                     items(taskCardDataList) {
                         TaskCard(taskCardData = it, taskViewModel = taskViewModel, filterTasksBy)
                     }
