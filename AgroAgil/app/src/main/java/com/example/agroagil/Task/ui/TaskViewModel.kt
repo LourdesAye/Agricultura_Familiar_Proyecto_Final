@@ -23,19 +23,19 @@ val TASKS_FILTERS_DEFAULT_VALUES = AppliedFiltersForTasks(
 )
 
 val TASK_CARD_DATA_LIST_MOCK = listOf(
-    TaskCardData(111,"Cosechar tomates aaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbb ccccccccccccccccccc", Calendar.getInstance().time, 3, true, false),
-    TaskCardData(112,"Plantar tomates", Calendar.getInstance().time, 4, false, false),
-    TaskCardData(113,"Regar tomates", Calendar.getInstance().time, 5, true, false),
-    TaskCardData(114,"Comprar tomates", Calendar.getInstance().time, 6, false, true),
-    TaskCardData(115,"Vender tomates", Calendar.getInstance().time, 7, true, true),
-    TaskCardData(116,"Prestar tomates", Calendar.getInstance().time, 8, false, true),
-    TaskCardData(117,"Tomates", Calendar.getInstance().time, 9, true, true),
-    TaskCardData(118,"Plantar tomates", Calendar.getInstance().time, 4, false, false),
-    TaskCardData(119,"Regar tomates", Calendar.getInstance().time, 5, true, false),
-    TaskCardData(120,"Comprar tomates", Calendar.getInstance().time, 6, false, true),
-    TaskCardData(121,"Vender tomates", Calendar.getInstance().time, 7, true, true),
-    TaskCardData(122,"Prestar tomates", Calendar.getInstance().time, 8, false, true),
-    TaskCardData(123,"Tomates", Calendar.getInstance().time, 9, true, true)
+    TaskCardData(111,"Sembrar choclo", Calendar.getInstance().time, 3, true, false),
+    TaskCardData(112,"Fertilizar campo", Calendar.getInstance().time, 4, false, false),
+    TaskCardData(113,"Poda de árboles", Calendar.getInstance().time, 5, true, false),
+    TaskCardData(114,"Riego semanal", Calendar.getInstance().time, 6, false, true),
+    TaskCardData(115,"Revisar plagas", Calendar.getInstance().time, 7, true, true),
+    TaskCardData(116,"Rotar cultivos", Calendar.getInstance().time, 8, false, true),
+    TaskCardData(117,"Cosechar tomate", Calendar.getInstance().time, 9, true, true),
+    TaskCardData(118,"Venta de productos", Calendar.getInstance().time, 4, false, false),
+    TaskCardData(119,"Limpiar equipo", Calendar.getInstance().time, 5, true, false),
+    TaskCardData(120,"Actualizar inventario", Calendar.getInstance().time, 6, false, true),
+    TaskCardData(121,"Reparar tractor", Calendar.getInstance().time, 7, true, true),
+    TaskCardData(122,"Vacunar ganado", Calendar.getInstance().time, 8, false, true),
+    TaskCardData(123,"Comprar semillas", Calendar.getInstance().time, 9, true, true)
 )
 
 class TaskViewModel: ViewModel() {
