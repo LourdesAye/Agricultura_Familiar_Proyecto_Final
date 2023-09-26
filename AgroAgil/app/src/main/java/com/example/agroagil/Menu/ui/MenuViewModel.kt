@@ -12,6 +12,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.R
+import com.lourd.myapplication.featureMenu.menu.domain.ItemMenuPrincipal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,6 +30,12 @@ class MenuViewModel @Inject constructor() : ViewModel() {
 
     private val _itemGranjaImagen = MutableLiveData<String>()
     val nombreImagenGranja: LiveData<String> = _itemGranjaImagen
+
+    val defaultOptionSelected: ItemMenuPrincipal = ItemMenuPrincipal(NavigationEventMenu.ToMisCultivos, "Mis Cultivos", R.drawable.mis_cultivos)
+    private val _currentOptionSelected = MutableLiveData<ItemMenuPrincipal>(defaultOptionSelected)
+
+    val currentOptionSelected: LiveData<ItemMenuPrincipal> = _currentOptionSelected
+
 
     // private val urlImagen : String = "R.drawable."
 
@@ -59,4 +68,22 @@ class MenuViewModel @Inject constructor() : ViewModel() {
 
         }
     }
+
+    fun onChangeOptionSelected(menuOption: ItemMenuPrincipal) {
+        _currentOptionSelected.postValue(menuOption)
+    }
+
+    fun setItemsDeMenu(): List<ItemMenuPrincipal>{
+        return listOf(
+            defaultOptionSelected,
+            ItemMenuPrincipal(NavigationEventMenu.ToMisTareas, "Mis Tareas", R.drawable.mis_tareas),
+            ItemMenuPrincipal(NavigationEventMenu.ToMiAlmacen, "Mi Almacén", R.drawable.almacen_deposito),
+            ItemMenuPrincipal(NavigationEventMenu.ToPrestamosArticulos,  "Mis Préstamos de Artículos",
+                R.drawable.mis_prestamos),
+            ItemMenuPrincipal(NavigationEventMenu.ToMisVentas, "Mis Ventas", R.drawable.ventas),
+            ItemMenuPrincipal(NavigationEventMenu.ToMisCompras, "Mis Compras", R.drawable.mis_compras),
+            ItemMenuPrincipal(NavigationEventMenu.ToMiResumen, "Mi Resumen", R.drawable.mi_resumen)
+        )
+    }
+
 }

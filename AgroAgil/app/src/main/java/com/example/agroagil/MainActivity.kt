@@ -10,14 +10,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -42,11 +39,16 @@ import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.lourd.myapplication.featureMenu.NavigationEventMenu
+import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.Task.ui.TaskAddScreen
+import com.example.agroagil.Task.ui.TaskEditScreen
+import com.example.agroagil.Task.ui.TaskInfoScreen
+import com.example.agroagil.Task.ui.TaskScreen
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
 
 class MainActivity : ComponentActivity() {
@@ -69,6 +71,7 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
+                    val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
@@ -147,6 +150,34 @@ class MainActivity : ComponentActivity() {
                                 Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),false, navController,
                                     {BuyInfoScreen(navController = navController,buyViewModel = buyViewModel, buyId)})
                         }
+
+                        composable("task") {
+                            titleCurrentPage.value="Mis Tareas"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController)
+                            { TaskScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/add") {
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskAddScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/{taskId}/info", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskInfoScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/{taskId}/edit", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskEditScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
@@ -177,7 +208,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a misTareas
             NavigationEventMenu.ToMisTareas -> {
-                navController.navigate("home")
+                navController.navigate("task")
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {
@@ -202,6 +233,21 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             NavigationEventMenu.ToHome -> {
                 navController.navigate("home")
             }
+            /*
+
+                composable("task") {
+                            TaskScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/add") {
+                            TaskAddScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/{taskId}/info") {
+                            TaskInfoScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+                        composable("task/{taskId}/edit") {
+                            TaskEditScreen(taskViewModel = taskViewModel, navController = navController)
+                        }
+            **/
 
             else -> {}
 

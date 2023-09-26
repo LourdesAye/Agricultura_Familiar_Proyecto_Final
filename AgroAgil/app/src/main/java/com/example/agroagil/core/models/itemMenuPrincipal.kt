@@ -1,10 +1,11 @@
 package com.lourd.myapplication.featureMenu.menu.domain
 
-import androidx.compose.ui.graphics.ImageBitmap
+import com.example.agroagil.Menu.ui.NavigationEventMenu
 
 data class ItemMenuPrincipal(
-    val nombreItemMenu: String,
-    val iconoItemMenu: ImageBitmap
+    val typeOfNavigationEventMenu: NavigationEventMenu,
+    val itemMenuName: String,
+    val drawableIconId: Int
 )
 
 
