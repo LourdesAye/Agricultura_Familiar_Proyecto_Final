@@ -45,6 +45,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.Summary.SummaryScreen
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -74,6 +76,7 @@ class MainActivity : ComponentActivity() {
                     val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
+                    val summaryViewModel = SummaryViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
                         composable("farm"){
                             titleCurrentPage.value="Mi campo"
@@ -177,6 +180,11 @@ class MainActivity : ComponentActivity() {
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
                             { TaskEditScreen(taskViewModel = taskViewModel, navController = navController) }
                         }
+                        composable("summary") {
+                            titleCurrentPage.value="Mi Resumen"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController)
+                            { SummaryScreen(summaryViewModel = summaryViewModel, navController = navController) }
+                        }
 
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
@@ -228,7 +236,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a mi resumen
             NavigationEventMenu.ToMiResumen -> {
-                navController.navigate("home")
+                navController.navigate("summary")
             }
             NavigationEventMenu.ToHome -> {
                 navController.navigate("home")
