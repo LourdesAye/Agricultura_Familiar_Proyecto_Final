@@ -696,11 +696,6 @@ fun GetMembers(){
         }
     }
 }
-//
-
-
-
-
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
@@ -750,8 +745,6 @@ fun Cultivo(cultivoViewModel: CultivoViewModel){
         }
     }
 }
-
-
 
 //@SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 //@Composable

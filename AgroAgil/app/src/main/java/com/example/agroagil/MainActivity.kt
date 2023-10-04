@@ -33,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
+import com.example.agroagil.Cultivo.ui.Cultivo
 import com.example.agroagil.Farm.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
@@ -149,20 +150,26 @@ class MainActivity : ComponentActivity() {
                                     {BuyInfoScreen(navController = navController,buyViewModel = buyViewModel, buyId)})
                         }
 
-//                        composable("cultivo") {
-//                            titleCurrentPage.value = "Cultivo_"
-//                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {/*aca iria la funcion de home*/})
-//                        }
                         composable("cultivo") {
                             titleCurrentPage.value="Cultivos_"
-                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController) {
-                                LoanScreen(
-                                    loanViewModel = loanViewModel,
+//                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController) {
+//                                LoanScreen(
 //                                    loanViewModel = loanViewModel,
-                                    navController = navController
-                                )
+////                                    loanViewModel = loanViewModel,
+//                                    navController = navController
+//                                )
+//                            }
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
+//                                Farm(farmViewModel)
+                                Cultivo(cultivoViewModel)
                             }
                         }
+//                        composable("farm"){
+//                            titleCurrentPage.value="Mi campo"
+//                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
+//                                Farm(farmViewModel)
+//                            }
+//                        }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
                 }

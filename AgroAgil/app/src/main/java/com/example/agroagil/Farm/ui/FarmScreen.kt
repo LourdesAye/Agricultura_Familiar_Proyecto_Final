@@ -163,7 +163,6 @@ fun GetImageFarm(){
                         }
                     }
                 }
-
             }
         )
     }
