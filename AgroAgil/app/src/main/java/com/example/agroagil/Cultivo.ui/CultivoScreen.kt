@@ -142,8 +142,6 @@ fun GetImageFarm(){
                 dialogWindowProvider.window.setGravity(Gravity.BOTTOM)
                 Column(modifier = Modifier
                     .verticalScroll(rememberScrollState())) {
-
-
                     for(i in 0..Math.ceil((profileImages.size/3).toDouble()).toInt()) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
