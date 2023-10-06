@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,7 +66,6 @@ import com.example.agroagil.Buy.ui.SinPagarClick
 import com.example.agroagil.Buy.ui.filterPagado
 import com.example.agroagil.Buy.ui.filterSinPagar
 import com.example.agroagil.Buy.ui.filters
-import com.example.agroagil.Buy.ui.listItemData
 import com.example.agroagil.Buy.ui.resetFilter
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Buy
@@ -76,34 +78,41 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
+import java.util.Locale
 
 
 val titles = listOf("Caja", "Tarea", "Stock")
 
+var listItemData = mutableStateListOf<EventOperationBox>()
 var listItemDataFilter = mutableStateListOf<EventOperationBox>(
-    EventOperationBox(1000.0, typeEvent="Registro de venta", operation="Sell",referenceID="1"),
-    EventOperationBox(1000.0, typeEvent="Ingreso de pago de la venta", operation="Sell",referenceID="1"),
 )
+class CurrencyValueFormatter(private val currencySymbol: String) : ValueFormatter() {
+    override fun getFormattedValue(value: Float): String {
+        return "$currencySymbol${String.format(Locale.getDefault(), "%.2f", value)}"
+    }
+}
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun BarChartDemo(dataPoints: List<Pair<String, Float>>) {
     var color = MaterialTheme.colorScheme.secondary.toArgb()
     var colorBackground = MaterialTheme.colorScheme.background.toArgb()
-    var chart by remember { mutableStateOf(createChart(dataPoints,color)) }
+    var chart = mutableStateOf(createChart(dataPoints,color))
     var bars = mutableStateListOf<String>("Ingresos", "Egresos")
     var screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var dashboardHeight = with(LocalDensity.current) {
         screenHeight * 0.5f
     }
+    //chart.value.setValueTextSize(50f)
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
             .height(dashboardHeight)
-            .padding(top=20.dp, bottom=20.dp),
+            .padding(top = 20.dp, bottom = 20.dp),
         factory = { context ->
             var barchart = BarChart(context).apply {
                 setBackgroundColor(Color.White.toArgb())
-                data = chart
+                data = chart.value
                 axisLeft.axisMinimum = 0f
                 axisRight.axisMinimum = 0f
                 setDrawGridBackground(false)
@@ -112,6 +121,7 @@ fun BarChartDemo(dataPoints: List<Pair<String, Float>>) {
                 description.isEnabled = false
 
             }
+            barchart.data.setValueTextSize(25f)
             barchart.xAxis.setLabelCount(bars.size, false);
             barchart.xAxis.setValueFormatter(IndexAxisValueFormatter(bars));
             barchart.xAxis.position = XAxis.XAxisPosition.BOTTOM
@@ -122,13 +132,13 @@ fun BarChartDemo(dataPoints: List<Pair<String, Float>>) {
             barchart.setDrawBarShadow(false)
             barchart.setDrawGridBackground(false)
             barchart.setDrawBorders(false)
+            barchart.axisLeft.valueFormatter = CurrencyValueFormatter("$")
             var leftAxis: YAxis = barchart.getAxisLeft()
             leftAxis.setDrawAxisLine(false);
             leftAxis.textSize = 15f
             val rightAxis: YAxis = barchart.getAxisRight()
             rightAxis.setDrawAxisLine(false)
             rightAxis.setDrawLabels(false)
-
             barchart
         },
         update = { chartView ->
@@ -149,14 +159,11 @@ private fun createChart(dataPoints: List<Pair<String, Float>>, color: Int): BarD
     dataSet.setDrawValues(false)
     dataSet.setDrawIcons(false)
 
-    val labels = dataPoints.map { it.first }
     var bardata =  BarData(dataSet).apply {
         barWidth = 0.5f
-        setValueTextSize(50f)
         setValueTextColor(Color.Black.toArgb())
         setDrawValues(true)
-
-        //xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        setValueFormatter(CurrencyValueFormatter("$"))
     }
     return bardata
 }
@@ -171,7 +178,7 @@ fun filterStatus(){
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier= Modifier
             .fillMaxWidth()
-            .padding( top = 15.dp)){
+            .padding(top = 15.dp)){
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val cardWidth =  with(LocalDensity.current) {
             screenWidth * 0.45f
@@ -312,7 +319,9 @@ fun OneOperation(itemData: EventOperationBox, navController: NavController){
                     .fillMaxWidth()) {
 
                     Text(itemData.date, fontSize=10.sp, modifier = Modifier.align(Alignment.End))
-                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier= Modifier.fillMaxSize().padding(bottom=10.dp)) {
+                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier= Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 10.dp, start=10.dp, end=10.dp)) {
                         Text(itemData.typeEvent, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterVertically))
                         Text("$"+itemData.amount.toString(), modifier = Modifier.align(Alignment.CenterVertically))
                     }
@@ -324,7 +333,7 @@ fun OneOperation(itemData: EventOperationBox, navController: NavController){
 }
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun BoxSummary(navController: NavController){
+fun BoxSummary(summaryViewModel: SummaryViewModel, navController: NavController){
     Column(modifier = Modifier.padding(start=20.dp, end=20.dp)){
         LazyColumn(
             modifier = Modifier
@@ -333,16 +342,13 @@ fun BoxSummary(navController: NavController){
             item {
                 Row(){
                     BarChartDemo(
-                        dataPoints = listOf(
-                            "Ingresos" to 10f,
-                            "Egresos" to 20f,
-                        )
+                        dataPoints = summaryViewModel.getSummaryData("","")
                     )
                 }
                 Row(modifier = Modifier.padding(bottom=20.dp)){
                     filterStatus()
                 }
-                Text("Total de operaciones: 10", modifier = Modifier.padding(bottom=10.dp))
+                Text("Total de operaciones: "+listItemDataFilter.size.toString(), modifier = Modifier.padding(bottom=10.dp))
             }
             this.items(listItemDataFilter) {
 
@@ -354,6 +360,12 @@ fun BoxSummary(navController: NavController){
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavController) {
+    //var valuesSell= summaryViewModel.sells.observeAsState().value
+    //    var valuesBuy = summaryViewModel.buys.observeAsState().value
+    //    var valuesEvents = summaryViewModel.events.observeAsState().value
+    val valuesSell by summaryViewModel.sells.observeAsState()
+    val valuesBuy by summaryViewModel.buys.observeAsState()
+    val valuesEvents by summaryViewModel.events.observeAsState()
     var state by remember { mutableStateOf(0) }
     var expandedFilter by remember { mutableStateOf(false) }
     Column(modifier = Modifier
@@ -404,7 +416,23 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                 )
             }}}
         if (state == 0){
-            BoxSummary(navController)
+            if (valuesSell == null || valuesBuy == null || valuesEvents == null){
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+                    .fillMaxSize()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .semantics(mergeDescendants = true) {}
+                            .padding(10.dp)
+                    )
+                }
+
+            }else {
+                listItemData.clear()
+                listItemData.addAll(valuesEvents!!)
+                listItemDataFilter.clear()
+                listItemDataFilter.addAll(valuesEvents!!)
+                BoxSummary(summaryViewModel, navController)
+            }
         }else{
             if (state == 1){
 
