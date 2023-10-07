@@ -88,6 +88,7 @@ dependencies {
     //nuevo para iconos
     implementation("androidx.compose.ui:ui-android:1.5.0")
     //para firebase
+    implementation("com.google.firebase:firebase-database:20.2.2")
     implementation("com.google.firebase:firebase-database-ktx:20.2.2")
     implementation("com.google.firebase:firebase-common-ktx:20.3.3")
     //navegacion
@@ -100,6 +101,12 @@ dependencies {
     //para lograr la navegación en JetpackCompose
     implementation("androidx.navigation:navigation-compose:2.7.0")
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    //iconos
+    implementation("androidx.compose.material:material-icons-core:1.5.2")
+    implementation("androidx.compose.material:material-icons-extended:1.5.2")
+    //authentication con google
+    implementation("com.google.firebase:firebase-auth:21.0.1")
+    implementation("com.google.android.gms:play-services-auth:20.1.0")
 }
 
 //para que funcione inyeccion de dependencias
