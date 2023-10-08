@@ -10,14 +10,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +31,7 @@ import androidx.navigation.navArgument
 import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Cultivo.ui.Cultivo
-import com.example.agroagil.Farm.ui.CultivoViewModel
+import com.example.agroagil.Cultivo.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
 import com.example.agroagil.Loan.ui.LoanAddScreen
