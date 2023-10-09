@@ -99,8 +99,5 @@ class LoginGoogleViewModel @Inject constructor() : ViewModel() {
 
 }
 
-sealed class GoogleSignInResult {
-    data class Success(val user: FirebaseUser) : GoogleSignInResult()
-    data class Error(val exception: Exception) : GoogleSignInResult()
-}
+
 

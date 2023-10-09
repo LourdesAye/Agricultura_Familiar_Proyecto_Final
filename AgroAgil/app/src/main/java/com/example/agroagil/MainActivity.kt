@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                 when (evento) {
 
                                     NavigationInicio.PantallaMenu ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
 
                                     NavigationInicio.PantallaLogin ->
                                         navController.navigate("login")
@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(viewModelLogin, viewModelLoginGoogle, auth) { evento ->
                                 when (evento) {
                                     NavigationInicio.PantallaMenu ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
 
                                     NavigationInicio.PantallaRegistro ->
                                         navController.navigate("miRegistro")
@@ -143,7 +143,7 @@ class MainActivity : ComponentActivity() {
                             RegistroScreen(viewModelLogin, auth) { evento ->
                                 when (evento) {
                                     NavigationInicio.PantallaMenu ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
 
                                     else -> {
                                         VariablesFuncionesGlobales.navegacionDefinida = false // La ruta no está definida
@@ -157,7 +157,7 @@ class MainActivity : ComponentActivity() {
                                 // Observador de eventos de navegación
                                 when (event) {
                                     NavigationInicio.PantallaMenu ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
                                     NavigationInicio.PantallaLogin ->
                                         navController.navigate("login")
 
@@ -278,7 +278,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                     }
-                    Greeting("Android", model= LoanViewModel(), navController = navController)
+                    //Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
             }
         }
@@ -289,7 +289,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
     return{event ->
         // Observador de eventos de navegación
         when (event) {
-            //navegar a perfil
+            //navegar a perfil (PENDIENTE) (NO ME BORREN LOS COMENTARIOS POR FAVOR :))
             NavigationEventMenu.ToConfigPerfil -> {
                 navController.navigate("home")
             }

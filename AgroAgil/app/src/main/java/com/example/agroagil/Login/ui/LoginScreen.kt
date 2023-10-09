@@ -327,9 +327,7 @@ fun IniciarSesionGoogle(
     // Diálogo de espera , el circular
     if (loginGoogleViewModel.isLoadingDialogVisible.value) {
         Dialog(
-            onDismissRequest = {
-                loginGoogleViewModel.hideLoadingDialog()
-            }
+            onDismissRequest = {}
         ) {
             Box(
                 modifier = Modifier
@@ -970,10 +968,9 @@ fun RegistroConCuentaGoogle(viewModelRegistro: LoginGoogleViewModel, onNavigate:
                             // Botón salir sin hacer registro
                             Button(
                                 onClick = {
-                                    preguntarSalir = false
-                                    Log.d("Navegación", "Redirigiendo a la pantalla de inicio de sesión")
-                                    // Puedes redirigir al usuario a la pantalla de inicio de sesión
                                     auth.signOut()
+                                    preguntarSalir = false
+                                    // Puedes redirigir al usuario a la pantalla de inicio de sesión
                                     onNavigate(NavigationInicio.PantallaLogin)
                                 },
                             ) {
