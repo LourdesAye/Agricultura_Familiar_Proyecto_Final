@@ -646,7 +646,7 @@ fun GetMembers(){
                             )
                         }
                         Image(
-                            painter = painterResource(id = drawableId),
+                            painter = painterResource(id = R.drawable.farm1),
                             contentDescription = stringResource(id = R.string.app_name),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.size(150.dp)
@@ -719,7 +719,7 @@ fun Cultivo(cultivoViewModel: CultivoViewModel){
             )
 
             {
-                GetFarmDescription()
+//                GetFarmDescription()
                 GetMembers()
                 GetDialogEditMember()
                 GetDialogMemberDetails()
@@ -730,60 +730,3 @@ fun Cultivo(cultivoViewModel: CultivoViewModel){
         }
     }
 }
-
-//@SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
-//@Composable
-//fun Cu(loanViewModel: LoanViewModel, navController: NavController) {
-//    var valuesLoan = loanViewModel.farm.observeAsState().value
-//    valuesLoan?.let {
-//        listItemData.clear()
-//        listItemData.addAll(it)
-//    }
-//    if (valuesLoan == null){
-//        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
-//            .fillMaxSize()) {
-//            CircularProgressIndicator(
-//                modifier = Modifier
-//                    .semantics(mergeDescendants = true) {}
-//                    .padding(10.dp)
-//            )
-//        }
-//
-//    }else {
-//        resetFilter()
-//        resetFilterExclude()
-//        Box(){
-//            Column() {
-//                LazyColumn(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .padding(start = 20.dp, end = 20.dp)
-//                ) {
-//                    item{
-//                        filterStatus()
-//                        Actions(navController)
-//                    }
-//                    this.items(listItemDataFilter) {
-//                        OneLoan(it, navController)
-//                    }
-//                }
-//
-//            }
-//            Button(onClick = {
-//                navController.navigate("loan/add")
-//            },modifier= Modifier
-//                .padding(end = 20.dp, bottom = 40.dp)
-//                .align(Alignment.BottomEnd)) {
-//                Icon(
-//                    Icons.Filled.Add,
-//                    contentDescription = "Localized description",
-//                    modifier = Modifier.size(ButtonDefaults.IconSize)
-//                )
-//                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-//                Text("Agregar")
-//            }
-//        }
-//    }
-//}
-
-

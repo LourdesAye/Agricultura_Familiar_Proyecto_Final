@@ -17,7 +17,7 @@ class CultivoViewModel : ViewModel() {
 
         try {
             val realValue = suspendCancellableCoroutine<FarmModel> { continuation ->
-                Firebase.database.getReference("granja/0").get().addOnSuccessListener { snapshot ->
+                Firebase.database.getReference("cultivo/0").get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(FarmModel::class.java) as FarmModel
                     continuation.resume(value)
                 }.addOnFailureListener { exception ->
@@ -30,12 +30,12 @@ class CultivoViewModel : ViewModel() {
         }
     }
     fun updateMembers(members:List<Member>){
-        Firebase.database.getReference("granja/0/members").setValue(members)
+        Firebase.database.getReference("cultivo/0/members").setValue(members)
     }
     fun updateName(name:String){
-        Firebase.database.getReference("granja/0/name").setValue(name)
+        Firebase.database.getReference("cultivo/0/name").setValue(name)
     }
     fun updateImage(image:String){
-        Firebase.database.getReference("granja/0/image").setValue(image)
+        Firebase.database.getReference("cultivo/0/image").setValue(image)
     }
 }
