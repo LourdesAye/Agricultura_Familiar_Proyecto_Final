@@ -36,25 +36,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.Task.model.TaskCardData
-import java.util.Calendar
-
+import com.example.agroagil.Task.model.TaskFilter
 
 
 data class CardColor(val surfaceColor: String, val textColor:String)
@@ -63,7 +60,7 @@ const val CHECK_ICON_SIZE = 24
 @Composable
 fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
     var taskCardDataList = taskViewModel.taskCardDataList.observeAsState().value
-    var filterTasksBy = taskViewModel.filterTasksBy.observeAsState().value
+    var filterTasksBy = taskViewModel.appliedFiltersForTasks.observeAsState().value
 
     if(taskCardDataList == null) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
@@ -159,7 +156,7 @@ fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTa
                 //Checkcircle
                 RoundCheckbox(
                     checked = taskCardData.completed,
-                    onCheckedChange = { taskViewModel?.toggleTaskCompletedStatus(taskCardData.id) },
+                    onCheckedChange = { taskViewModel?.toggleTaskCompletedStatusOffline(taskCardData.id) },
                     color = Color(cardColor.textColor.toColorInt())
                 )
             }
@@ -224,7 +221,7 @@ fun AddTaskButton(navController: NavController?, modifier: Modifier) {
 
 @Composable
 fun FilteringBox(taskViewModel: TaskViewModel) {
-    var filterTasksBy = taskViewModel.filterTasksBy.observeAsState().value
+    var filterTasksBy = taskViewModel.appliedFiltersForTasks.observeAsState().value
 
     Box(
         modifier = Modifier
@@ -255,10 +252,12 @@ fun FilteringBox(taskViewModel: TaskViewModel) {
     }
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilteringButton(filterTasksBy: AppliedFiltersForTasks?, taskFilter: TaskFilter, taskViewModel: TaskViewModel) {
-    val color = filterTasksBy?.getFilterColor(taskFilter)?: MaterialTheme.colorScheme.onSurface
+    val color = taskViewModel.getFilterColor(taskFilter)?: MaterialTheme.colorScheme.onSurface
     val chipColor: ChipColors = AssistChipDefaults.assistChipColors(
         labelColor = color,
         leadingIconContentColor = color
