@@ -57,7 +57,8 @@ class TaskViewModel: ViewModel() {
 
     val taskCardDataList: LiveData<List<TaskCardData>?> = liveData(Dispatchers.IO) {
         emit(null)
-        taskRepository.getTaskCardsForUser(0)
+        val realValue = taskRepository.getTaskCardsForUser(0)
+        emit(realValue)
     }
 
     val appliedFiltersForTasks : LiveData<AppliedFiltersForTasks> = _appliedFiltersForTasks

@@ -16,12 +16,12 @@ private val TASK_PATH = "task/"
      * GET - obtiene todas las tareas para un usuario de id userId
      * @param userId id del usuario
      */
-    suspend fun getTaskCardsForUser(userId: Int) {
+    suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
         try {
-            suspendCancellableCoroutine<List<TaskCardData>> { continuation ->
+            return suspendCancellableCoroutine<List<TaskCardData>> { continuation ->
                 Firebase.database.getReference("$TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Tasks::class.java) as Tasks
-                    continuation.resume(value.tasks)
+                    continuation.resume(hashMapToListofTasks(value.tasks))
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
                 }
@@ -30,7 +30,12 @@ private val TASK_PATH = "task/"
             // Handle exception if needed
             println("Firebase: Error from getTaskCardsForUser.")
             e.printStackTrace()
+            return emptyList()
         }
+    }
+
+    private fun hashMapToListofTasks(hashMapOfTasks: HashMap<String, TaskCardData>): List<TaskCardData> {
+        return hashMapOfTasks.map { entry: Map.Entry<String, TaskCardData> ->  entry.value.copy(id = entry.key.toInt()) }
     }
 
     //PUT check a tarea

@@ -6,9 +6,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class Tasks(
+data class Tasks(
     //Mismo nombre que en Firebase
-    val tasks: List<TaskCardData> = emptyList()
+    val tasks: HashMap<String, TaskCardData> = HashMap()
 )
 
 data class TaskCardData(
