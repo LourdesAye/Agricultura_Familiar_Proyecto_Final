@@ -314,6 +314,7 @@ fun IniciarSesionGoogle(
             content = {
                 // mensaje de error y cerrar
                 Text(text = "se produjo un error al intentar iniciar sesión con su cuenta de google, intentelo de nuevo")
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { errorAutenticacion = false },
                     modifier =Modifier.fillMaxWidth()
                 ) {
@@ -397,10 +398,10 @@ fun LoginScreen(
     //esto es por si falto definir alguna navegacion
     var mostrarNoDefinidaNavegacion by remember { mutableStateOf(false) }
 
+    /* esto se va a borrar */
 // Campos de entrada para correo electrónico y contraseña
-    var email by rememberSaveable { viewModelLogin.email }
+   /* var email by rememberSaveable { viewModelLogin.email }
     var password by rememberSaveable { viewModelLogin.password }
-
     // esta vacio email
     var sinCorreo by rememberSaveable { mutableStateOf(true) }
     //esta vacia contraseña
@@ -410,6 +411,9 @@ fun LoginScreen(
     //apreta para login sin credenciales
     var sinCredencialesLogin by rememberSaveable { mutableStateOf(false) }
     //para validar si hay internet o no en el celular
+
+    */
+
     var sinInternetCelular by rememberSaveable { mutableStateOf(false) }
     var cerrarMensajesViewModel by rememberSaveable { mutableStateOf(false) }
 
@@ -420,15 +424,17 @@ fun LoginScreen(
             .verticalScroll(
                 state = rememberScrollState()
             ),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
 
         ) {
 
         //logo
         LogoAA()
+
+        //esto se va a borrar
 //correo electronico
-        Text(
+      /*  Text(
             text = "Correo Electrónico",
             textAlign = TextAlign.Start,
             modifier = Modifier.padding(5.dp)
@@ -523,13 +529,15 @@ fun LoginScreen(
                 color = Color.Red
             )
         }
+*/
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (sinInternetCelular) {
             cerrarMensajesViewModel = true
             Text(text = "El celuar no tiene conexión a internet",color=Color.Red)
         }
 
-        if (!sinContrasenia && !sinCorreo) {
+      /*  if (!sinContrasenia && !sinCorreo) {
             // Mostrar el mensaje de error si existe
             viewModelLogin.mensajeError.value?.let { mensaje ->
                 Text(
@@ -547,7 +555,9 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+       */
+
+      /*  Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
@@ -559,6 +569,8 @@ fun LoginScreen(
         ) {
             Text(text = "Registrarse")
         }
+
+       */
 
         Spacer(modifier = Modifier.height(16.dp))
 
