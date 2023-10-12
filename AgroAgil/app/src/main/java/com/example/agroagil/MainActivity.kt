@@ -1,9 +1,11 @@
 package com.example.agroagil
 import BuyAddScreen
 import BuyInfoScreen
+import DashboardViewModel
 import SellAddScreen
 import SellInfoScreen
 import SellScreen
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -63,11 +65,13 @@ import com.example.agroagil.Task.ui.TaskScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
+import dash
 
 class MainActivity : ComponentActivity() {
 
     //declara autenticación
     private lateinit var auth: FirebaseAuth
+    @SuppressLint("SuspiciousIndentation")
     @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +101,8 @@ class MainActivity : ComponentActivity() {
                     val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
+                    val dashViewModel = DashboardViewModel()
+
                     //destino inicial principal si inicia sesion correctamente
                     val destinoPrincipal: String = "inicio"
                     NavHost(navController = navController, startDestination = destinoPrincipal){
@@ -209,10 +215,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             titleCurrentPage.value = "Inicio"
-                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {
-                            /*aca iria la funcion de home*/
-                            })
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {dash(dashViewModel)})
                         }
+
                         composable("sell") {
                             titleCurrentPage.value="Mis ventas"
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
