@@ -379,8 +379,6 @@ fun GetDialogEditHome() {
                                 context.resources.getResourceEntryName(profileImageTemp.value)
                             farmViewModelCurrent?.updateImage(nameImage)
                         }
-
-
                     }
                 ) {
                     Text("Guardar")
@@ -524,7 +522,7 @@ fun GetDialogEditMember() {
                             text_nombre.value = it
                             error_nombre.value = false
                         },
-                        label = { Text("Nombre") },
+                        label = { Text("Nombre cultivo") },
                         modifier = Modifier.padding(bottom = 16.dp),
                         isError = error_nombre.value
                     )
@@ -534,7 +532,7 @@ fun GetDialogEditMember() {
                             text_correo.value = it
                             error_correo.value = false
                         },
-                        label = { Text("Correo") },
+                        label = { Text("tipo cultivo") },
                         modifier = Modifier.padding(bottom = 16.dp),
                         isError = error_correo.value
 
