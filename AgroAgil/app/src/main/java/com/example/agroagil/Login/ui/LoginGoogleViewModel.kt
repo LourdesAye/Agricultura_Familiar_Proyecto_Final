@@ -45,12 +45,15 @@ class LoginGoogleViewModel @Inject constructor() : ViewModel() {
     fun signInWithGoogleCredentials(credential: AuthCredential, registrateConGoogle: () -> Unit, andaAlMenu: () -> Unit) =
         viewModelScope.launch {
             // Mostrar el cuadro de diálogo de carga
+            Log.i("view model"," ingresamos alo view model")
             showLoadingDialog()
             try {
+                Log.i("view model","se itenta iniciar sesion con google")
                 // se utiliza en Firebase Authentication para autenticar a un usuario, usa credential
                 auth.signInWithCredential(credential)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful){
+                            Log.i("view model","autenticacion exitosa!")
                             // Para obtener el usuario autenticado actual
                             val currentUser: FirebaseUser? = auth.currentUser
                             // Verificar si el usuario está autenticado
@@ -90,8 +93,10 @@ class LoginGoogleViewModel @Inject constructor() : ViewModel() {
                     }
             }
             catch (ex: Exception) {
+                Log.i("view model","se itenta iniciar sesion con google pero algo fallo")
                 //esto es solo por las dudas de que haya un error, hasta ahora lo probé y no había ninguno
-                Log.d("Autenticacion", "El error fue : ${ex.localizedMessage}")
+                Log.d("view modelo", "El error fue : ${ex.localizedMessage}")
+                Log.i("view model","el error es : $ex")
             }
         }
 

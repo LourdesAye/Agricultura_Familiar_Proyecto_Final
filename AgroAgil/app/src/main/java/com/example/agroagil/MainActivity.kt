@@ -52,6 +52,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.Perfil.ui.EditarDatosPerfil
+import com.example.agroagil.Perfil.ui.NavigationEventPerfil
+import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -94,7 +97,6 @@ class MainActivity : ComponentActivity() {
                     //destino inicial principal si inicia sesion correctamente
                     val destinoPrincipal: String = "inicio"
                     NavHost(navController = navController, startDestination = destinoPrincipal){
-                    //"loan") {
 
                         composable("inicio") {
                             // La pantalla de inicio, que es el logo,se mostrará durante 3 segundos
@@ -168,9 +170,6 @@ class MainActivity : ComponentActivity() {
 
                             }
                         }
-
-
-
                         composable("farm"){
                             titleCurrentPage.value="Mi campo"
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
@@ -276,6 +275,38 @@ class MainActivity : ComponentActivity() {
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
                             { TaskEditScreen(taskViewModel = taskViewModel, navController = navController) }
                         }
+
+                        composable("miPerfil") {
+                            VerDatosDelPerfil() { evento ->
+                                when (evento) {
+                                    NavigationEventPerfil.ToEditPerfil ->
+                                        navController.navigate("editarPerfil")
+
+                                    NavigationEventPerfil.ToPantallaPrincipal ->
+                                        navController.navigate("miMenu")
+
+                                    else -> {}
+                                }
+                            }
+                        }
+
+                        composable("editarPerfil") {
+                            EditarDatosPerfil() { evento ->
+                                when (evento) {
+                                    NavigationEventPerfil.ToDatosPerfil ->
+                                        navController.navigate("miPerfil")
+
+                                    NavigationEventPerfil.ToPantallaPrincipal ->
+                                        navController.navigate("miMenu")
+
+                                    else -> {}
+                                }
+
+                            }
+                        }
+
+
+
 
                     }
                     //Greeting("Android", model= LoanViewModel(), navController = navController)

@@ -94,6 +94,8 @@ fun MensajeDialogoNohayNavegacionDefinida(
 @Composable
 fun ScreenDeBienvenida(onNavigate: (NavigationInicio) -> Unit) {
 
+    Log.i("INICIO","bienvenido esta ingresando a Agroagil")
+
     //esto es por si falto definir alguna navegacion
     var mostrarNoDefinidaNavegacion by remember { mutableStateOf(false) }
 
@@ -101,6 +103,7 @@ fun ScreenDeBienvenida(onNavigate: (NavigationInicio) -> Unit) {
     BackHandler(enabled = false, onBack = {})
     // Manejar la navegación después de esos 3 segundos.
     LaunchedEffect(true) {
+        Log.i("INICIO","se mostrara logo 3 segundos")
         //ni bien se forma el composable
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
@@ -109,6 +112,7 @@ fun ScreenDeBienvenida(onNavigate: (NavigationInicio) -> Unit) {
             val currentUser = auth.currentUser
 
             if (currentUser != null) {
+                Log.i("AUTENTICACION","hay un usuario autenticado ")
                 // El usuario está autenticado, verifica si su perfil está completo
                 val userReference = FirebaseDatabase.getInstance().getReference("usuarios")
                     .child(currentUser.uid)
@@ -116,11 +120,15 @@ fun ScreenDeBienvenida(onNavigate: (NavigationInicio) -> Unit) {
                 userReference.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         if (dataSnapshot.exists()) {
+                            Log.i("AUTENTICACION","Ya estaba registrado el usuario, pasa a la página home o de inicio")
                             // El perfil del usuario está completo, redirige a la pantalla de inicio
                             onNavigate(NavigationInicio.PantallaMenu)
                         } else {
+                            Log.i("AUTENTICACION","el usurio autenticado pero sin datos en base de datos")
                             // El usuario estaba autenticado pero sin cargar sus datos en la firebase realtime database
                             auth.signOut()
+                            Log.i("AUTENTICACION","se cierra sesion")
+                            Log.i("AUTENTICACION","de pasar a página de inicio de sesion")
                             onNavigate(NavigationInicio.PantallaLogin)
                             //se cierra sesion y va a la página de login
                         }
@@ -211,6 +219,8 @@ fun IniciarSesionGoogle(
 
     //el ID de cliente web esta en el proyectro agroagil de Firebase, con él se permite que los usuarios inicien sesión en la app utilizando sus cuentas de Google.
     val token = "989896107665-5h9gkbt15gn5b5fk7imcia4sn7a43rhs.apps.googleusercontent.com"
+
+    Log.i("google token"," el token es: $token")
     //se obtiene contexto actual de la aplicación
     val context = LocalContext.current
     //se utilizará para iniciar una actividad y recibir el resultado cuando esa actividad finalice.
@@ -219,10 +229,13 @@ fun IniciarSesionGoogle(
     ) {
         //funcion lambda que se ejecutará cuando se obtenga un resultado.
         // después de que el usuario intente iniciar sesión con Google.
+        Log.i("AUTENTICACION"," configurando para el inicio de sesión")
+        Log.i("launcher"," entrando en el launcher")
 
         val isConnected = VariablesFuncionesGlobales.isConnected(context)
         //se valida si el celular tiene internet
         if (!isConnected) {
+            Log.i("correo de google"," no hay internet, no vas a poder ingresar")
             // Mostrar error si no hay conexión a Internet
             celularSinInternet = true // Actualizado
             // Mostrar error si no hay conexión a Internet
@@ -230,6 +243,7 @@ fun IniciarSesionGoogle(
             return@rememberLauncherForActivityResult
         }
         else{
+            Log.i("correo de google"," hay internet,vas a poder ingresar")
             //aca se marca que tiene
             celularSinInternet = false
         }
@@ -239,7 +253,9 @@ fun IniciarSesionGoogle(
         getSignedInAccountFromIntent: extraer la cuenta de Google, recibiendo información sobre el resultado del inicio de sesión.
         */
         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+        Log.i("task "," se trata de iniciar sesion con cuenta de google, el task es $task")
         try {
+            Log.i("correo de google try "," se trata de iniciar sesion con cuenta de google")
             /*
         obtiene el resultado y la cuenta de Google que el usuario ha utilizado para iniciar sesión.
         se crea una credencial de autenticación de Firebase utilizando el token de identificación para las cuentas de Google.
@@ -247,6 +263,7 @@ fun IniciarSesionGoogle(
         account.idToken es un token de seguridad generado por Google que se utiliza para verificar la identidad del usuario.
             * */
             val account = task.getResult(ApiException::class.java)
+            Log.i("correo de google"," por las dudas verifico token ${account.idToken}")
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             // La variable credential (AuthCredential) almacena credenciales de autenticación, en este caso, de Google.
             // GoogleAuthProvider es una clase de Firebase Authentication que crea credenciales de autenticación específicas de Google.
@@ -256,6 +273,8 @@ fun IniciarSesionGoogle(
         catch (ex: Exception) {
             //esto es por las dudas de que haya un error, por ahora nunca paso por aca
             Log.d("Autenticacion", "El error fue  ${ex.localizedMessage}")
+            Log.d("Autenticacion", "El error fue  $ex")
+
             //este es para que me muestre un mensaje de error en la autenticacion por las dudas, pero nunca ocurrio por ahora
             errorAutenticacion=true
 
@@ -275,13 +294,15 @@ fun IniciarSesionGoogle(
             .padding(5.dp)
             .clip(RoundedCornerShape(10.dp)) //esquinas un poquito redondeadas
             .clickable {
-
+                Log.i("GOOGLE","Aprestaste el botón de inicio de sesion con google")
                 val options = GoogleSignInOptions
                     .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(token)
                     .requestEmail()
                     .build()
+                Log.i("AUTENTICACION"," configurando para el inicio de sesión")
                 val googleSignInClient = GoogleSignIn.getClient(context, options)
+                Log.i("AUTENTICACION"," aca el launcher")
                 launcher.launch(googleSignInClient.signInIntent)
 
             }
