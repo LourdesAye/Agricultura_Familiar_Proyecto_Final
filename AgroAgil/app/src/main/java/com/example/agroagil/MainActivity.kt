@@ -206,7 +206,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             titleCurrentPage.value = "Inicio"
-                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {/*aca iria la funcion de home*/})
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {
+                            /*aca iria la funcion de home*/
+                            })
                         }
                         composable("sell") {
                             titleCurrentPage.value="Mis ventas"
@@ -283,7 +285,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("editarPerfil")
 
                                     NavigationEventPerfil.ToPantallaPrincipal ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
 
                                     else -> {}
                                 }
@@ -297,7 +299,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("miPerfil")
 
                                     NavigationEventPerfil.ToPantallaPrincipal ->
-                                        navController.navigate("miMenu")
+                                        navController.navigate("home")
 
                                     else -> {}
                                 }
@@ -322,7 +324,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
         when (event) {
             //navegar a perfil (PENDIENTE) (NO ME BORREN LOS COMENTARIOS POR FAVOR :))
             NavigationEventMenu.ToConfigPerfil -> {
-                navController.navigate("home")
+                navController.navigate("miPerfil")
             }
             //navegar a notificaciones
             NavigationEventMenu.ToNotificaciones -> {

@@ -3,13 +3,10 @@ package com.example.agroagil.Perfil.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -17,36 +14,63 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.agroagil.R
-
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun VerDatosDelPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
-    var state:Int = 0
-    //debe llegarme el nombre de la base de datos
-    var nombreUsuario by remember { mutableStateOf("John") }
-    //debe llegar apellido de base de datos
-    var apellidoUsuario by remember { mutableStateOf("Doe") }
-    // debe llegar correo electronico de la base de datos
-    var correoElectronico by remember { mutableStateOf("john@example.com") }
-    //debe llegar el Rol desde base de datos
-    var rol by remember { mutableStateOf("Developer") }
-    //debe llegar el password desde base de datos
-    var password by remember { mutableStateOf("********") }
-
-    var isEditing by remember { mutableStateOf(false) }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
+fun VerDatosDelPerfil(
+    viewModelDatosPerfil: PerfilViewModel,
+    onNavigationEvent: (NavigationEventPerfil) -> Unit
+) {
 
     Scaffold(
         topBar = {
@@ -54,26 +78,22 @@ fun VerDatosDelPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                 title = { Text(text = "Mi Perfil") },
                 navigationIcon = {
                     IconButton(
-                        onClick = {  onNavigationEvent(NavigationEventPerfil.ToPantallaPrincipal) }
+                        onClick = { onNavigationEvent(NavigationEventPerfil.ToPantallaPrincipal) }
                     ) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                     }
                 }
             )
         }
-    ) {
+    ) { espaciado ->
         //ahora entiendo porque si o si pasa un padding, es por el topBar , para que no se superponga con el contenido
-            espaciado -> if (state == 1) {
-        Box(
-            modifier = Modifier.padding(espaciado)
-        )
-    }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(espaciado)
         ) {
             item {
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -89,10 +109,88 @@ fun VerDatosDelPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                         modifier = Modifier
                             .size(200.dp)
                             .clip(RoundedCornerShape(16.dp))
-                        //.clip(CircleShape) forma de circulo se corta mucho la imagen
                     )
 
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+
+            item {
+
+                val errorMessage = viewModelDatosPerfil.errorMessageLiveData.observeAsState().value
+                val user = viewModelDatosPerfil.userLiveData.observeAsState().value
+
+                if (!errorMessage.isNullOrBlank()) {
+                    Text(text = errorMessage!!, color = Color.Red)
+                } else if (user != null) {
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "Nombre", modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(
+                            value = user.nombre,
+                            onValueChange = { /* No es necesario cambiar el valor ya que es de solo lectura */ },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
+                                focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
+                                unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
+
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(text = "Apellido", modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(
+                            value = user.apellido,
+                            onValueChange = { /* No es necesario cambiar el valor ya que es de solo lectura */ },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =TextFieldDefaults.outlinedTextFieldColors(
+                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
+                                focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
+                                unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(text = "Rol", modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(
+                            value = user.rol,
+                            onValueChange = { /* No es necesario cambiar el valor ya que es de solo lectura */ },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
+                                focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
+                                unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(text = "Correo Electrónico", modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(
+                            value = user.correoElectronico,
+                            onValueChange = { /* No es necesario cambiar el valor ya que es de solo lectura */ },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =TextFieldDefaults.outlinedTextFieldColors(
+                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
+                                focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
+                                unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
+                        )
+                    }
+
+                } else {
+                    Text(text = "Ocurrió un problema, inténtelo más tarde", color=Color.Red)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
             }
 
 
@@ -105,8 +203,10 @@ fun VerDatosDelPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                         .fillMaxWidth()
                         .padding(top = 16.dp),
                 ) {
-                    Text(text = "Editar Perfil",
-                        style = TextStyle(fontSize = 18.sp))
+                    Text(
+                        text = "Editar Perfil",
+                        style = TextStyle(fontSize = 18.sp)
+                    )
                 }
             }
         }
@@ -126,45 +226,68 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
         item {
 
             Row(
-                modifier = Modifier.fillMaxSize().padding(10.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
 
 
             ) {
                 Button(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(end = 8.dp) // Agrega espacio entre los botones
                         .fillMaxWidth() // Hace que el botón ocupe el ancho máximo disponible
                     ,
                     onClick = {
                         mostrarDialogoRechazo = true
                     })
-                { Text(text = " Cancelar",
-                    style = TextStyle(fontSize = 18.sp)) }
+                {
+                    Text(
+                        text = " Cancelar",
+                        style = TextStyle(fontSize = 18.sp)
+                    )
+                }
 
 
                 Button(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(end = 8.dp) // Agrega espacio entre los botones
                         .fillMaxWidth() // Hace que el botón ocupe el ancho máximo disponible
                     ,
                     onClick = {
                         mostrarDialogoConfirmacion = true
                     })
-                { Text(text = " Guardar",
-                    style = TextStyle(fontSize = 18.sp)) }
+                {
+                    Text(
+                        text = " Guardar",
+                        style = TextStyle(fontSize = 18.sp)
+                    )
+                }
 
                 // Diálogo de rechazo de cambios
                 if (mostrarDialogoRechazo) {
                     AlertDialog(
                         onDismissRequest = { //mostrarDialogoRechazo = false
                         },
-                        title = { Text(text="No guardar cambios",style = TextStyle(fontSize = 18.sp)) },
-                        text = { Text(text="¿Está seguro de NO GUARDAR los CAMBIOS?",style = TextStyle(fontSize = 18.sp)) },
+                        title = {
+                            Text(
+                                text = "No guardar cambios",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = "¿Está seguro de NO GUARDAR los CAMBIOS?",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
                         confirmButton = {
                             // confirma que NO VA A GUARDAR LOS CAMBIOS
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(), // Hace que el botón ocupe el ancho máximo disponible
                                 onClick = {
                                     //cierra dialogo actual
@@ -173,14 +296,17 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                                     mostrarMensajeDeCancelacionDeCambios = true
                                 }
                             ) {
-                                Text(text = "NO GUARDAR CAMBIOS",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    text = "NO GUARDAR CAMBIOS",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
                         },
                         dismissButton = {
                             //indica que desea guardar o ahcer algo con los cambios
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(),
                                 onClick = {
                                     // Cierra el diálogo
@@ -189,8 +315,10 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                                     //checkear esto si los cambios permanecen en pantalla luego de este click o hay que hacer algo más
                                 }
                             ) {
-                                Text("VOLVER A EDITAR PERFIL",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    "VOLVER A EDITAR PERFIL",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
 
 
@@ -205,7 +333,8 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                         text = { Text(" Sus Cambios no han sido guardados") },
                         confirmButton = {
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(),
                                 onClick = {
                                     mostrarMensajeDeCancelacionDeCambios = false
@@ -213,8 +342,10 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                                     onNavigationEvent(NavigationEventPerfil.ToDatosPerfil)
                                 }
                             ) {
-                                Text("Cerrar",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    "Cerrar",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
                         })
                 }
@@ -223,28 +354,42 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                     AlertDialog(
                         onDismissRequest = {
                         },
-                        title = { Text(text="Realizar Cambios",style = TextStyle(fontSize = 18.sp))},
-                        text = { Text(text= "¿Está seguro GUARDAR los CAMBIOS?",style = TextStyle(fontSize = 18.sp)) },
+                        title = {
+                            Text(
+                                text = "Realizar Cambios",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = "¿Está seguro GUARDAR los CAMBIOS?",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
                         confirmButton = {
                             // confirma que VA A GUARDAR LOS CAMBIOS
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(),
                                 onClick = {
                                     //cierra dialogo actual
                                     mostrarDialogoConfirmacion = false
                                     //abre dialogo de que se guardaron los cambios para seguridad del usuario
-                                    mostrarMensajeDeCambios= true
+                                    mostrarMensajeDeCambios = true
                                 }
                             ) {
-                                Text("GUARDAR CAMBIOS",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    "GUARDAR CAMBIOS",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
                         },
                         dismissButton = {
                             //indica que desea no quiere guaradar todavia los cambios
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(),
                                 onClick = {
                                     // Cierra el diálogo
@@ -253,8 +398,10 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                                     //checkear esto si los cambios permanecen en pantalla luego de este click o hay que hacer algo más
                                 }
                             ) {
-                                Text("VOLVER A EDITAR PERFIL",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    "VOLVER A EDITAR PERFIL",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
 
 
@@ -265,22 +412,33 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
                     AlertDialog(
                         onDismissRequest = {
                         },
-                        title = { Text(text= "Cambios Realizados ",
-                            style = TextStyle(fontSize = 18.sp)) },
-                        text = { Text(text = " sus CAMBIOS han sido GUARDADOS con éxito",
-                            style = TextStyle(fontSize = 18.sp))},
+                        title = {
+                            Text(
+                                text = "Cambios Realizados ",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = " sus CAMBIOS han sido GUARDADOS con éxito",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        },
                         confirmButton = {
                             Button(
-                                modifier = Modifier.padding(end = 8.dp) // Agrega espacio entre los botones
+                                modifier = Modifier
+                                    .padding(end = 8.dp) // Agrega espacio entre los botones
                                     .fillMaxWidth(),
                                 onClick = {
-                                    mostrarMensajeDeCambios= false
+                                    mostrarMensajeDeCambios = false
                                     // y navega a la pantalla de perfil con los datos actualizados
                                     onNavigationEvent(NavigationEventPerfil.ToDatosPerfil)
                                 }
                             ) {
-                                Text("Cerrar",
-                                    style = TextStyle(fontSize = 18.sp))
+                                Text(
+                                    "Cerrar",
+                                    style = TextStyle(fontSize = 18.sp)
+                                )
                             }
                         },
                         dismissButton = {
@@ -292,8 +450,6 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
             }
 
 
-
         }
     }
 }
-
