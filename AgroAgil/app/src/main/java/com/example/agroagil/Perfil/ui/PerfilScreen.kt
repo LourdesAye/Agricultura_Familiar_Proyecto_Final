@@ -65,6 +65,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.agroagil.R
+
+//ok
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VerDatosDelPerfil(
@@ -85,7 +87,8 @@ fun VerDatosDelPerfil(
                 }
             )
         }
-    ) { espaciado ->
+    ) {
+            espaciado ->
         //ahora entiendo porque si o si pasa un padding, es por el topBar , para que no se superponga con el contenido
         LazyColumn(
             modifier = Modifier
@@ -117,6 +120,8 @@ fun VerDatosDelPerfil(
 
 
             item {
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 val errorMessage = viewModelDatosPerfil.errorMessageLiveData.observeAsState().value
                 val user = viewModelDatosPerfil.userLiveData.observeAsState().value
@@ -208,11 +213,15 @@ fun VerDatosDelPerfil(
                         style = TextStyle(fontSize = 18.sp)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
 
+//pendiente
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
 
@@ -220,23 +229,30 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
     var mostrarDialogoRechazo by rememberSaveable { mutableStateOf(false) }
     var mostrarMensajeDeCambios by rememberSaveable { mutableStateOf(false) }
     var mostrarMensajeDeCancelacionDeCambios by rememberSaveable { mutableStateOf(false) }
+    var mostrarConfirmaciónHaciaDatosPerfil by rememberSaveable {mutableStateOf(false)}
 
-    LazyColumn() {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Editando Mi Perfil") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            mostrarConfirmaciónHaciaDatosPerfil =true
+                            //onNavigationEvent(NavigationEventPerfil.ToPantallaPrincipal)
+                    }
+                    ) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                    }
+                }
+            )
+        }
+    ) {
+    LazyColumn(modifier=Modifier.padding(it)) {
 
         item {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-
-
-            ) {
                 Button(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp) // Agrega espacio entre los botones
                         .fillMaxWidth() // Hace que el botón ocupe el ancho máximo disponible
                     ,
                     onClick = {
@@ -252,7 +268,6 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
 
                 Button(
                     modifier = Modifier
-                        .weight(1f)
                         .padding(end = 8.dp) // Agrega espacio entre los botones
                         .fillMaxWidth() // Hace que el botón ocupe el ancho máximo disponible
                     ,
@@ -451,5 +466,46 @@ fun EditarDatosPerfil(onNavigationEvent: (NavigationEventPerfil) -> Unit) {
 
 
         }
+
+        if( mostrarConfirmaciónHaciaDatosPerfil){
+            AlertDialog(
+                modifier= Modifier.fillMaxSize(),
+                onDismissRequest = {},
+                title = {
+                    Text(
+                        text = "Volver a Mi Perfil",
+                        style = TextStyle(fontSize = 18.sp)
+                    )
+                },
+                text = {
+                    Text(
+                        text = "¿Esta seguro que desea volver a 'Mi Perfil'? Si ha realizado cambios en sus datos, esos cambios no serán guardados",
+                        style = TextStyle(fontSize = 18.sp)
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        modifier = Modifier
+                            .padding(end = 8.dp) // Agrega espacio entre los botones
+                            .fillMaxWidth(),
+                        onClick = {
+                            mostrarMensajeDeCambios = false
+                            // y navega a la pantalla de perfil con los datos actualizados
+                            onNavigationEvent(NavigationEventPerfil.ToDatosPerfil)
+                        }
+                    ) {
+                        Text(
+                            "Cerrar",
+                            style = TextStyle(fontSize = 18.sp)
+                        )
+                    }
+                },
+                dismissButton = {
+                }
+            )
+
+        }
     }
+
+
 }

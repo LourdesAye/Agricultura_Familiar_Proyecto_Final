@@ -28,8 +28,24 @@ android {
         }
     }
 
+    /* esto es para la clave sha256*/
+    signingConfigs {
+        prepro {
+            storeFile rootProject.file("copiaDedebug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+    /*hasta aca es para clave sha 256*/
+
 
     buildTypes {
+        /*esto es para la clave sha 256 */
+        debug {
+            signingConfig signingConfigs.prepro
+        }
+        /*hasta aca es para clave sha 256*/
         release {
             minifyEnabled = false
             proguardFiles(
