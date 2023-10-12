@@ -52,7 +52,8 @@ import androidx.navigation.NavController
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
-
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 data class CardColor(val surfaceColor: String, val textColor:String)
 const val CHECK_ICON_SIZE = 24
@@ -117,6 +118,7 @@ fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTa
     )
 
     val cardColor: CardColor = getCardColor(taskCardData.highPriority, taskCardData.completed)
+    val coroutineScope = rememberCoroutineScope()
 
     if(filterTasksBy != null && taskCardData.passFilters(filterTasksBy)) {
 
@@ -156,7 +158,11 @@ fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTa
                 //Checkcircle
                 RoundCheckbox(
                     checked = taskCardData.completed,
-                    onCheckedChange = { taskViewModel?.toggleTaskCompletedStatusOffline(taskCardData.id) },
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            taskViewModel?.toggleTaskCompletedStatus(taskCardData)
+                        }
+                   },
                     color = Color(cardColor.textColor.toColorInt())
                 )
             }

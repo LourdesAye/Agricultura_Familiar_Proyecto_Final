@@ -17,6 +17,14 @@ class TaskRepository {
     }
 
 
+    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: Int): Boolean {
+        if(!OFFLINE)
+            return firebaseApi.editCompletedFieldOfTask(newStatus, userId, taskId)
+        //TODO: Else Actualiza el estado de la tarea en BD local
+        else return false
+    }
+
+
 
 
 }

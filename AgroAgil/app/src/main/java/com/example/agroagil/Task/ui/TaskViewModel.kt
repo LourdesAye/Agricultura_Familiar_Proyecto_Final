@@ -64,25 +64,10 @@ class TaskViewModel: ViewModel() {
     val appliedFiltersForTasks : LiveData<AppliedFiltersForTasks> = _appliedFiltersForTasks
 
 
-    //Setea el check de completo en una card de tarea. Encuentra la tarea por Id
-    //TODO: Esto se tiene que mover a un repository. Es para actualizar una tarea en modo offline
-    fun toggleTaskCompletedStatusOffline(taskId: Int) {
-        val currentList = _taskCardDataListMock.value ?: return // Get the current list; return if it's null
+    suspend fun toggleTaskCompletedStatus(taskCard: TaskCardData) {
+        val result = taskRepository.editCompletedFieldOfTask(newStatus = !taskCard.completed, userId = 0, taskId = taskCard.id)
+     //TODO:   if(result)
 
-        // Find the index of the task with the matching id
-        val taskIndex = currentList.indexOfFirst { it.id == taskId }
-        if (taskIndex == -1) return  // Return if no matching task found
-
-        // Create a copy of the TaskCardData object with the "completed" status toggled
-        val updatedTask = currentList[taskIndex].copy(completed = !currentList[taskIndex].completed)
-
-        // Create a new list with the updated TaskCardData object
-        val updatedList = currentList.toMutableList().apply {
-            this[taskIndex] = updatedTask
-        }
-
-        // Post the new list back to LiveData
-        _taskCardDataListMock.postValue(updatedList)
     }
 
     /**

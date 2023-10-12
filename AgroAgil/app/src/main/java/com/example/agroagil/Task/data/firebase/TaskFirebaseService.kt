@@ -1,5 +1,6 @@
 package com.example.agroagil.Task.data.firebase
 
+import androidx.compose.runtime.snapshots.Snapshot
 import com.example.agroagil.Task.model.Task
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.Tasks
@@ -9,8 +10,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+private const val _COMPLETED = "/completed"
+
 class TaskFirebaseService {
-private val TASK_PATH = "task/"
+private val PARENT_TASK_PATH = "task/"
+private val CHILD_TASK_LIST_PATH = "/tasks/"
 
     /**
      * GET - obtiene todas las tareas para un usuario de id userId
@@ -19,7 +23,7 @@ private val TASK_PATH = "task/"
     suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
         try {
             return suspendCancellableCoroutine<List<TaskCardData>> { continuation ->
-                Firebase.database.getReference("$TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
+                Firebase.database.getReference("$PARENT_TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Tasks::class.java) as Tasks
                     continuation.resume(hashMapToListofTasks(value.tasks))
                 }.addOnFailureListener { exception ->
@@ -38,21 +42,25 @@ private val TASK_PATH = "task/"
         return hashMapOfTasks.map { entry: Map.Entry<String, TaskCardData> ->  entry.value.copy(id = entry.key.toInt()) }
     }
 
-    //PUT check a tarea
-    fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: Int) {
-        // Reference to the 'completed' field of the specific task
-        val taskCompletionStatusRef = Firebase.database.getReference("$TASK_PATH$userId/$taskId/completed")
 
-        // Update the value
-        taskCompletionStatusRef.setValue(newStatus)
-            .addOnSuccessListener {
-                // Successfully updated
-            }
-            .addOnFailureListener { exception ->
-                // Handle failure
-                // For example, you could log the exception
-            }
+    /**
+     * PUT - Actualiza el estado de completitud de una tarea, seteando un booleano en el campo "completed"
+     * @return Un booleano que indica si la operación fue exitosa
+     */
+    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: Int): Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            val taskCompletionStatusRef = Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId$_COMPLETED")
+
+            taskCompletionStatusRef.setValue(newStatus)
+                .addOnSuccessListener {
+                    continuation.resume(true)
+                }
+                .addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+        }
     }
+
 
     //GET tareas filtradas
 
@@ -61,7 +69,7 @@ private val TASK_PATH = "task/"
 
     //POST - Agregar nueva tarea
     fun addNewTaskForUser(newTask: Task, userId: Int) {
-        val databaseReference = Firebase.database.getReference("$TASK_PATH$userId")
+        val databaseReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId")
 
         // Generate a unique key for the new task and set its value
         val newTaskReference = databaseReference.push()
