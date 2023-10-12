@@ -54,6 +54,7 @@ import com.google.firebase.ktx.Firebase
 import com.example.agroagil.Menu.ui.NavigationEventMenu
 import com.example.agroagil.Perfil.ui.EditarDatosPerfil
 import com.example.agroagil.Perfil.ui.NavigationEventPerfil
+import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
@@ -86,6 +87,8 @@ class MainActivity : ComponentActivity() {
                     val viewModelLogin: LoginViewModel by viewModels()
                     //view model para login con cuenta de google
                     val viewModelLoginGoogle : LoginGoogleViewModel by viewModels()
+                    //view model para datos de perfil
+                    val viewModelDatosPerfil : PerfilViewModel by viewModels()
                     val loanViewModel = LoanViewModel()
                     val viewModelMenu: MenuViewModel by viewModels()
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -279,7 +282,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("miPerfil") {
-                            VerDatosDelPerfil() { evento ->
+                            VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
                                 when (evento) {
                                     NavigationEventPerfil.ToEditPerfil ->
                                         navController.navigate("editarPerfil")
