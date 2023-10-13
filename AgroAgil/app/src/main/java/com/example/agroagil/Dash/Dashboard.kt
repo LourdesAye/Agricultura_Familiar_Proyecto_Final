@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.toColorInt
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.ui.CardColor
@@ -38,14 +37,17 @@ import com.example.agroagil.Task.ui.TASK_CARD_DATA_LIST_MOCK
 import com.example.agroagil.Task.ui.TextDate
 import com.example.agroagil.Task.ui.getCardColor
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.ui.unit.times
 import com.example.agroagil.R
+import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.core.models.Loan
 
 val weatherDescriptionsMap = mapOf(
@@ -106,7 +108,7 @@ val weatherDescriptionsMap = mapOf(
 )
 
 @Composable
-fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color, azul: Color) {
+fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color, textColor: Color) {
     weatherJson?.let {
         val gson = Gson()
         val weatherData = gson.fromJson(weatherJson, DashboardViewModel.WeatherData::class.java)
@@ -156,7 +158,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 Column {
                     Text(
                         text = "$location   $temperature°C",
-                        color = azul,
+                        color = textColor,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
@@ -197,14 +199,29 @@ private fun getWeatherIconResourceId(iconName: String): Int {
     }
 }
 
-
-
 @Composable
-fun TaskCard(backgroundColor: Color, borderColor: Color, azul: Color, taskList: List<TaskCardData>) {
+fun TaskCardDash(
+    dashviewModel: DashboardViewModel,
+    backgroundColor: Color,
+    borderColor: Color,
+    textColor: Color
+) {
+    // Obtiene las top 5 tareas del ViewModel de Dashboard y filtra las tareas nulas y sin descripción
+    val topTasksState by dashviewModel.getTopTasks()
+        // dashviewmodel instancia el viewmodel de tasks... ni idea si hay alguna forma mejor de hacerlo
+        .observeAsState(initial = emptyList())
+
+    // Filtra las tareas con descripción no nula
+    val topTasks = topTasksState?.filter { it?.description?.isNotEmpty() == true }
+
+    // Calcula la altura de la tarjeta verde en función de la cantidad de tarjetas celestes
+    // esto fue una mierda pensarlo jaja
+    val greenCardHeight = (topTasks?.size ?: 0) * 100.dp
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(550.dp),
+            .heightIn(min = greenCardHeight),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -215,76 +232,33 @@ fun TaskCard(backgroundColor: Color, borderColor: Color, azul: Color, taskList: 
         ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Próximas tareas", color = azul, fontWeight = FontWeight.Bold)
+            Text(text = "Próximas tareas", color = textColor, fontWeight = FontWeight.Bold)
 
-            // Muestra solo las primeras 5 tareas
-            val tasksToShow = taskList.take(5)
-
-            tasksToShow.forEach { task ->
-                TaskItem(task)
-                Spacer(modifier = Modifier.height(8.dp))
+            if (topTasks != null) {
+                topTasks.forEach { task ->
+                    // Cada tarea se representa como una tarjeta individual con un borde celeste
+                    // no entiendo tu código Mari
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun TaskItem(taskCardData: TaskCardData) {
-    val roundedCornerShape = RoundedCornerShape(
-        topStart = 0.dp,
-        topEnd = 14.dp,
-        bottomEnd = 14.dp,
-        bottomStart = 14.dp
-    )
-
-    val cardColor: CardColor = getCardColor(taskCardData.highPriority, taskCardData.completed)
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .clickable {
-                // TODO: Agrega la acción después de hacer click en la card
-            },
-        shape = roundedCornerShape,
-        colors = CardDefaults.cardColors(
-            containerColor = Color(cardColor.surfaceColor.toColorInt())
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = taskCardData.getLimitedDescription(),
-                    fontWeight = FontWeight.Bold,
-                    color = Color(cardColor.textColor.toColorInt()),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                TextDate(taskCardData)
-            }
-
-            RoundCheckbox(
-                checked = taskCardData.completed,
-                onCheckedChange = { /* acá hay que tocar para la acción */ },
-                color = Color(cardColor.textColor.toColorInt())
-            )
-        }
-    }
-}
-
-@Composable
-fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, azul: Color) {
+fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
     var totalwidth = ingresos + egresos
     Card(
         modifier = Modifier
@@ -300,24 +274,24 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
         ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Caja", color = azul, fontWeight = FontWeight.Bold)
+            Text(text = "Caja", color = textColor, fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Dibuja la barra de ingresos con el número al lado
-            DrawBar(ingresos, totalwidth, Color(0xFFE57373), azul)
+            DrawBar(ingresos, totalwidth, Color(0xFFE57373), textColor)
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Dibuja la barra de egresos con el número al lado
-            DrawBar(egresos, totalwidth, Color(0xFF81C784), azul)
+            DrawBar(egresos, totalwidth, Color(0xFF81C784), textColor)
 
             Spacer(modifier = Modifier.height(16.dp))
             var total = ingresos - egresos
             // Muestra el total con el borde suave
             Text(
                 text = "Total: $total",
-                color = azul,
+                color = textColor,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyLarge,
             )
@@ -326,43 +300,50 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 }
 
 @Composable
-fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, azul: Color) {
+fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(540.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
-        ),
-        shape = MaterialTheme.shapes.small,
+            .height(720.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
         border = BorderStroke(5.dp, borderColor),
-        colors = CardDefaults.cardColors(
-            containerColor = backgroundColor
-        ),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Préstamos", color = azul, fontWeight = FontWeight.Bold)
+            Text(text = "Préstamos", color = textColor, fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             for (loan in topLoans.take(5)) {
-                // Muestra la información del préstamo
-                Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
-                // Muestra los productos del préstamo utilizando la función itemProduct
-                loan.items.forEach { product ->
-                    itemProduct(product)
+                // Cada préstamo se representa como una tarjeta individual con un borde
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Muestra la información del préstamo
+                        Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
+                        // Muestra los productos del préstamo utilizando la función itemProduct
+                        loan.items.forEach { product ->
+                            itemProduct(product)
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
 
-
-
 @Composable
-fun DrawBar(value: Int, total: Int, color: Color, azul: Color) {
-    Canvas(modifier = Modifier.fillMaxWidth().height(40.dp)) {
+fun DrawBar(value: Int, total: Int, color: Color, textColor: Color) {
+    Canvas(modifier = Modifier
+        .fillMaxWidth()
+        .height(40.dp)) {
         val width = (value.toFloat() / total.toFloat()) * size.width
 
         val gradientShader = Brush.verticalGradient(
@@ -375,7 +356,7 @@ fun DrawBar(value: Int, total: Int, color: Color, azul: Color) {
             width + 50f,
             size.height / 2,
             android.graphics.Paint().apply {
-                // color = azul
+                //color = textColor
                 textSize = 40f
                 isAntiAlias = true
                 typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
@@ -408,9 +389,9 @@ fun dash(viewModel: DashboardViewModel) {
         }
 
         item {
-            val taskList = TASK_CARD_DATA_LIST_MOCK.sortedByDescending { it.date }
-            val limitedTaskList = taskList.take(5)
-            TaskCard(backgroundColor, borderColor, textColor, limitedTaskList)
+            // Usa las tareas filtradas del ViewModel en TaskCard
+            TaskCardDash(viewModel, backgroundColor, borderColor, textColor//, filterTasksBy
+            )
         }
 
         item {

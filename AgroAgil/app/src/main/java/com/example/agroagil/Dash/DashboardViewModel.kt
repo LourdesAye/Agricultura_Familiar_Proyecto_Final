@@ -3,12 +3,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agroagil.Task.data.TaskRepository
+import com.example.agroagil.Task.model.TaskCardData
+import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
-import com.example.agroagil.core.models.Product
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,15 +18,8 @@ import java.net.URL
 import com.google.firebase.ktx.Firebase
 
 class DashboardViewModel : ViewModel() {
-    private val firebaseDatabase = Firebase.database.reference.child("loans")
-    private val TAG = "DashboardViewModel"
 
     private val _loans = MutableLiveData<List<Loan>>()
-    val loans: LiveData<List<Loan>> get() = _loans
-
-        init {
-            fetchTopLoans()
-        }
 
     private fun fetchTopLoans() {
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
@@ -36,7 +28,37 @@ class DashboardViewModel : ViewModel() {
                 _loans.postValue(it.loans)
             }
         }.addOnFailureListener { exception ->
-        // Maneja errores si es necesario
+            // Maneja errores si es necesario
+        }
+    }
+    val loans: LiveData<List<Loan>> get() = _loans
+
+        init {
+            fetchTopLoans()
+        }
+
+
+    private val taskViewModel = TaskViewModel()
+    private val _taskCardDataList = MutableLiveData<List<TaskCardData>?>()
+    val taskCardDataList: LiveData<List<TaskCardData>?> get() = _taskCardDataList
+
+    private suspend fun fetchTopTasks(userId: Int) {
+        try {
+            val tasks = taskViewModel.taskRepository.getTaskCardsForUser(userId).take(5) // Solo toma las primeras 5 tareas
+            _taskCardDataList.postValue(tasks)
+        } catch (e: Exception) {
+            // Maneja errores si es necesario
+            _taskCardDataList.postValue(null)
+        }
+    }
+
+    fun getTopTasks(): LiveData<List<TaskCardData>?> {
+        return taskCardDataList
+    }
+
+    init {
+        viewModelScope.launch {
+            fetchTopTasks(0)
         }
     }
 
