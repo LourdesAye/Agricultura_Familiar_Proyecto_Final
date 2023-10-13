@@ -11,10 +11,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 private const val _COMPLETED = "/completed"
+private const val PARENT_TASK_PATH = "task/"
+private const val CHILD_TASK_LIST_PATH = "/tasks/"
 
 class TaskFirebaseService {
-private val PARENT_TASK_PATH = "task/"
-private val CHILD_TASK_LIST_PATH = "/tasks/"
 
     /**
      * GET - obtiene todas las tareas para un usuario de id userId
@@ -22,7 +22,7 @@ private val CHILD_TASK_LIST_PATH = "/tasks/"
      */
     suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
         try {
-            return suspendCancellableCoroutine<List<TaskCardData>> { continuation ->
+            return suspendCancellableCoroutine { continuation ->
                 Firebase.database.getReference("$PARENT_TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Tasks::class.java) as Tasks
                     continuation.resume(hashMapToListofTasks(value.tasks))
@@ -38,6 +38,11 @@ private val CHILD_TASK_LIST_PATH = "/tasks/"
         }
     }
 
+    /**
+     * Este método se creó porque las tareas llegaban de firebase como un hashmap con key idTarea y
+     * value la tarea en sí.
+     * @return Una liesta de TaskCardData con id igual a la key del hashmap
+     */
     private fun hashMapToListofTasks(hashMapOfTasks: HashMap<String, TaskCardData>): List<TaskCardData> {
         return hashMapOfTasks.map { entry: Map.Entry<String, TaskCardData> ->  entry.value.copy(id = entry.key.toInt()) }
     }
@@ -61,13 +66,33 @@ private val CHILD_TASK_LIST_PATH = "/tasks/"
         }
     }
 
+    /**
+     * GET top N tareas por fecha descendente
+     */
+    suspend fun getNLastTaskCardsForUser(userId: Int, numberTasks: Int): List<TaskCardData> {
+        try {
+            return suspendCancellableCoroutine<List<TaskCardData>> { continuation ->
+                Firebase.database.getReference("$PARENT_TASK_PATH$userId")
+                    .orderByChild("isoDate")
+                    .limitToLast(numberTasks)
+                    .get().addOnSuccessListener { snapshot ->
+                    val value = snapshot.getValue(Tasks::class.java) as Tasks
+                    continuation.resume(hashMapToListofTasks(value.tasks))
+                }.addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+            }
+        } catch (e: Exception) {
+            // Handle exception if needed
+            println("Firebase: Error from getNLastTaskCardsForUser.")
+            e.printStackTrace()
+            return emptyList()
+        }
+    }
 
-    //GET tareas filtradas
-
-
-    //GET top 5 tareas por fecha descendente
-
-    //POST - Agregar nueva tarea
+    /**
+     * POST - Agregar nueva tarea
+     */
     fun addNewTaskForUser(newTask: Task, userId: Int) {
         val databaseReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId")
 
@@ -76,5 +101,25 @@ private val CHILD_TASK_LIST_PATH = "/tasks/"
         newTaskReference.setValue(newTask)
     }
 
-
+    /**
+     * GET tarea full con todos los datos
+     */
+    suspend fun getTaskForUser(userId: Int, taskId: Int): Task {
+        try {
+            return suspendCancellableCoroutine { continuation ->
+                Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId").get().addOnSuccessListener { snapshot ->
+                    val value = snapshot.getValue(Task::class.java) as Task
+                    continuation.resume(value)
+                }.addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+            }
+        } catch (e: Exception) {
+            // Handle exception if needed
+            println("Firebase: Error from getTaskForUser.")
+            e.printStackTrace()
+            return Task()
+        }
+    }
 }
+

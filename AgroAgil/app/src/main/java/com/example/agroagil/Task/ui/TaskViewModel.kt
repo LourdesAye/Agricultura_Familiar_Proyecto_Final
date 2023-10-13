@@ -5,12 +5,13 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.example.agroagil.Task.data.TaskRepository
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 const val COMPLETED_TASK_CARD_COLOR = "#E2F2F2"
 const val INCOMPLETE_IMPORTANT_TASK_CARD_COLOR = "#FAE9E8"
@@ -45,29 +46,38 @@ val TASK_CARD_DATA_LIST_MOCK = listOf(
 class TaskViewModel: ViewModel() {
     val taskRepository = TaskRepository()
 
-    //Mock
-    private val _taskCardDataListMock = MutableLiveData<List<TaskCardData>>(
-        TASK_CARD_DATA_LIST_MOCK
-    )
-
     private val _appliedFiltersForTasks = MutableLiveData<AppliedFiltersForTasks>(
         TASKS_FILTERS_DEFAULT_VALUES
     )
 
-
-    val taskCardDataList: LiveData<List<TaskCardData>?> = liveData(Dispatchers.IO) {
-        emit(null)
-        val realValue = taskRepository.getTaskCardsForUser(0)
-        emit(realValue)
-    }
-
     val appliedFiltersForTasks : LiveData<AppliedFiltersForTasks> = _appliedFiltersForTasks
 
+    private val _taskCardDataList = MutableLiveData<List<TaskCardData>?>()
+    val taskCardDataList: LiveData<List<TaskCardData>?> = _taskCardDataList
 
+    init {
+        refreshTaskCardsLiveData(0)
+    }
+
+    private fun refreshTaskCardsLiveData(userId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val realValue = taskRepository.getTaskCardsForUser(userId)
+                _taskCardDataList.postValue(realValue)
+            } catch (e: Exception) {
+                // Handle exception, e.g., log it
+                _taskCardDataList.postValue(null)
+            }
+        }
+    }
+
+    /**
+     * Actualiza el atributo "completed" de la tarea en firebase
+     */
     suspend fun toggleTaskCompletedStatus(taskCard: TaskCardData) {
-        val result = taskRepository.editCompletedFieldOfTask(newStatus = !taskCard.completed, userId = 0, taskId = taskCard.id)
-     //TODO:   if(result)
-
+        val updated = taskRepository.editCompletedFieldOfTask(newStatus = !taskCard.completed, userId = 0, taskId = taskCard.id)
+        if(updated)
+            refreshTaskCardsLiveData(0)
     }
 
     /**
