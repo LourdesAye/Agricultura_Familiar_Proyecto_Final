@@ -70,13 +70,13 @@ val weatherDescriptionsMap = mapOf(
     "shower drizzle" to "Chubascos de llovizna",
     "light rain" to "Lluvia ligera",
     "moderate rain" to "Lluvia moderada",
-    "heavy intensity rain" to "Lluvia de intensidad intensa",
+    "heavy intensity rain" to "Lluvia de intensidad fuerte",
     "very heavy rain" to "Lluvia muy intensa",
     "extreme rain" to "Lluvia extrema",
     "freezing rain" to "Lluvia congelante",
     "light intensity shower rain" to "Chubascos de lluvia de intensidad ligera",
     "shower rain" to "Chubascos de lluvia",
-    "heavy intensity shower rain" to "Chubascos de lluvia de intensidad intensa",
+    "heavy intensity shower rain" to "Chubascos de lluvia de intensidad fuerte",
     "ragged shower rain" to "Chubascos de lluvia desordenados",
     "light snow" to "Nieve ligera",
     "snow" to "Nieve",
@@ -179,20 +179,20 @@ private fun getWeatherIconResourceId(iconName: String): Int {
         "01n" -> R.drawable._01n
         "02d" -> R.drawable._02d
         "02n" -> R.drawable._02n
-        "03d" -> R.drawable._02d
-        "03n" -> R.drawable._02n
-        "04d" -> R.drawable._02d
-        "04n" -> R.drawable._02n
-        "09d" -> R.drawable._02d
-        "09n" -> R.drawable._02n
-        "10d" -> R.drawable._02d
-        "10n" -> R.drawable._02n
-        "11d" -> R.drawable._02d
-        "11n" -> R.drawable._02n
-        "13d" -> R.drawable._02d
-        "13n" -> R.drawable._02n
-        "50d" -> R.drawable._02d
-        "50n" -> R.drawable._02n
+        "03d" -> R.drawable._03d
+        "03n" -> R.drawable._03n
+        "04d" -> R.drawable._04d
+        "04n" -> R.drawable._04n
+        "09d" -> R.drawable._09d
+        "09n" -> R.drawable._09n
+        "10d" -> R.drawable._10d
+        "10n" -> R.drawable._10n
+        "11d" -> R.drawable._11d
+        "11n" -> R.drawable._11n
+        "13d" -> R.drawable._13d
+        "13n" -> R.drawable._13n
+        "50d" -> R.drawable._50d
+        "50n" -> R.drawable._50n
         else -> R.drawable._01n // Un ícono por defecto para casos no reconocidos
     }
 }
@@ -327,12 +327,10 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 
 @Composable
 fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, azul: Color) {
-    val sortedTopLoans = topLoans.sortedByDescending { it.percentagePaid }.take(3)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp),
+            .height(540.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -347,18 +345,19 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, a
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            sortedTopLoans.forEach { loan ->
+            for (loan in topLoans.take(5)) {
                 // Muestra la información del préstamo
-                Text(text = "Usuario: ${loan.nameUser}", color = Color.Black)
-                Text(text = "Porcentaje Pagado: ${loan.percentagePaid}%", color = Color.Black)
+                Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
+                // Muestra los productos del préstamo utilizando la función itemProduct
                 loan.items.forEach { product ->
-                    Text(text = "Producto: ${product.name} - ${product.amount} ${product.units}", color = Color.Black)
+                    itemProduct(product)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
+
 
 
 @Composable
@@ -391,26 +390,16 @@ fun dash(viewModel: DashboardViewModel) {
     val borderColor = Color(android.graphics.Color.parseColor("#A6DB68"))
     val textColor = Color(android.graphics.Color.parseColor("#0CBFDF"))
 
-    // Obtiene el jsonResponseLiveData del
-    val jsonResponse by viewModel.jsonResponseLiveData.observeAsState(
-        initial = "{\"coord\":{\"lon\":0,\"lat\":0},\"weather\":[{\"id\":800,\"main\":\"???\",\"description\":\"Sin conexión\",\"icon\":\"01n\"}],\"base\":\"stations\",\"main\":{\"temp\":273,\"feels_like\":0,\"temp_min\":273,\"temp_max\":273,\"pressure\":0,\"humidity\":0},\"visibility\":0,\"wind\":{\"speed\":0,\"deg\":0,\"gust\":2.24},\"clouds\":{\"all\":7},\"dt\":1697144825,\"sys\":{\"type\":2,\"id\":2031595,\"country\":\"AR\",\"sunrise\":1697102124,\"sunset\":1697148263},\"timezone\":-10800,\"id\":3435910,\"name\":\"Buenos Aires\",\"cod\":200}\n")
-    // acá si inicializo en null hay que scrollear para arriba (tarda en generarla).
-    // eso es pq genera primero las tarjetas y dsp va a buscar datos
-
-    val ingresos = 200000
-    val egresos = 150000
-
-    val taskList = TASK_CARD_DATA_LIST_MOCK.sortedByDescending { it.date }
-    val limitedTaskList = taskList.take(5)
-
-    var topLoans = MutableLiveData<List<Loan>>()
-
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         item {
+            // crea tarjeta y luego busca datos, para que no tarde en crearla no la inicializo en null
+            val jsonResponse by viewModel.jsonResponseLiveData.observeAsState(
+                initial = "{\"coord\":{\"lon\":0,\"lat\":0},\"weather\":[{\"id\":800,\"main\":\"???\",\"description\":\"Sin conexión\",\"icon\":\"01n\"}],\"base\":\"stations\",\"main\":{\"temp\":273,\"feels_like\":0,\"temp_min\":273,\"temp_max\":273,\"pressure\":0,\"humidity\":0},\"visibility\":0,\"wind\":{\"speed\":0,\"deg\":0,\"gust\":2.24},\"clouds\":{\"all\":7},\"dt\":1697144825,\"sys\":{\"type\":2,\"id\":2031595,\"country\":\"AR\",\"sunrise\":1697102124,\"sunset\":1697148263},\"timezone\":-10800,\"id\":3435910,\"name\":\"Buenos Aires\",\"cod\":200}\n")
+
             WeatherCard(jsonResponse, borderColor, backgroundColor, textColor)
         }
 
@@ -419,6 +408,8 @@ fun dash(viewModel: DashboardViewModel) {
         }
 
         item {
+            val taskList = TASK_CARD_DATA_LIST_MOCK.sortedByDescending { it.date }
+            val limitedTaskList = taskList.take(5)
             TaskCard(backgroundColor, borderColor, textColor, limitedTaskList)
         }
 
@@ -427,6 +418,8 @@ fun dash(viewModel: DashboardViewModel) {
         }
 
         item {
+            val ingresos = 200000
+            val egresos = 150000
             CashCard(ingresos, egresos, backgroundColor, borderColor, textColor)
         }
 
@@ -435,7 +428,8 @@ fun dash(viewModel: DashboardViewModel) {
         }
 
         item {
-            LoanCard(topLoans.value ?: emptyList(), backgroundColor, borderColor, textColor)
+            val topLoans by viewModel.loans.observeAsState(listOf())
+            LoanCard(topLoans, backgroundColor, borderColor, textColor)
         }
     }
 }

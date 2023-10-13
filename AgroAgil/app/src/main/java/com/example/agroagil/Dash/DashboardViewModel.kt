@@ -1,15 +1,44 @@
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agroagil.core.models.Loan
+import com.example.agroagil.core.models.Loans
+import com.example.agroagil.core.models.Product
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import com.google.firebase.ktx.Firebase
 
 class DashboardViewModel : ViewModel() {
+    private val firebaseDatabase = Firebase.database.reference.child("loans")
+    private val TAG = "DashboardViewModel"
+
+    private val _loans = MutableLiveData<List<Loan>>()
+    val loans: LiveData<List<Loan>> get() = _loans
+
+        init {
+            fetchTopLoans()
+        }
+
+    private fun fetchTopLoans() {
+        Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Loans::class.java) as? Loans
+            value?.let {
+                _loans.postValue(it.loans)
+            }
+        }.addOnFailureListener { exception ->
+        // Maneja errores si es necesario
+        }
+    }
 
     // LiveData para almacenar la respuesta de la solicitud de red
     val jsonResponseLiveData = MutableLiveData<String?>()
