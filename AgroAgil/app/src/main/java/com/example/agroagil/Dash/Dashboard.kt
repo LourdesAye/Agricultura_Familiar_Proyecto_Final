@@ -33,15 +33,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.agroagil.R
+import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Loan
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
 import java.util.Calendar
+import java.util.Locale
 
 val weatherDescriptionsMap = mapOf(
     "thunderstorm with light rain" to "Tormenta con lluvia ligera",
@@ -112,9 +117,9 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         val temperatureMin = (weatherData.main.temp_min - 273.15).toInt()
         val temperatureMax = (weatherData.main.temp_max - 273.15).toInt()
         val translatedDescription = weatherDescriptionsMap[description] ?: description
-        val date = SimpleDateFormat("dd-MM-yyyy")
-            .apply { timeZone = TimeZone.getTimeZone("America/Argentina/Buenos_Aires") }
-            .format(Date(weatherData.dt * 1000L))
+
+        val currentDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
 
         val iconName = weatherData.weather.firstOrNull()?.icon ?: "01d"
         val iconResourceId = getWeatherIconResourceId(iconName)
@@ -176,17 +181,19 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                             // Muestra la ubicación, la temperatura y la descripción en una Columna
                             Column {
                                 Text(
-                                    text = "$location   $temperature°C     $date",
+                                    text = "$location   $temperature°C     $currentDate",
                                     color = textColor,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
-                                    color = Color.Black
+                                    text = translatedDescription,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = translatedDescription,
-                                    color = Color.Black
+                                    text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
@@ -194,7 +201,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 }
 
                 // Muestra la WeatherCard hardcodeada
-                ForecastWeatherCard(date, temperatureMin, temperatureMax)
+                ForecastWeatherCard(currentDate, temperatureMin, temperatureMax, description)
             }
         }
     }
@@ -202,19 +209,25 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
 
 
 @Composable
-fun ForecastWeatherCard(date: String, minTemp: Int, maxTemp: Int) {
-    // Calcula la fecha del día siguiente
-    val sdf = SimpleDateFormat("dd-MM-yyyy")
-    val calendar = Calendar.getInstance()
-    calendar.time = sdf.parse(date)
-    calendar.add(Calendar.DAY_OF_YEAR, 1)
-    val nextDayDate = sdf.format(calendar.time)
-    calendar.add(Calendar.DAY_OF_YEAR, 1)
-    val nextDayDate2 = sdf.format(calendar.time)
+fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, description: String) {
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    val calendar = Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
+    calendar.time = dateFormat.parse(currentDate)
 
-    // iconos para los 2 días siguientes
-    val iconResourceId = R.drawable._01d
-    val iconResourceId2 = R.drawable._10d
+// Calcula la fecha del próximo día
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    val nextDayDate = dateFormat.format(calendar.time)
+
+// Calcula la fecha del día siguiente al próximo día
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    val nextDayDate2 = dateFormat.format(calendar.time)
+
+
+    val iconResourceId = if (description != "Sin conexión") R.drawable._01d else R.drawable._01n
+    val iconResourceId2 = if (description != "Sin conexión") R.drawable._10d else R.drawable._01n
+
+    val text1 = "$nextDayDate   ${if (description != "Sin conexión") "Cielo despejado" else "Sin conexión"}\n  Min: ${if (description != "Sin conexión") minTemp + 1 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp + 1 else maxTemp}°C"
+    val text2 = "$nextDayDate2   ${if (description != "Sin conexión") "Lluvia ligera" else "Sin conexión"}\nMin: ${if (description != "Sin conexión") minTemp - 5 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp - 4 else maxTemp}°C"
 
     Card(
         modifier = Modifier
@@ -245,8 +258,8 @@ fun ForecastWeatherCard(date: String, minTemp: Int, maxTemp: Int) {
                     modifier = Modifier.size(40.dp) // Tamaño del icono
                 )
                 Text(
-                    text = "$nextDayDate   Cielo despejado\n  Min: ${minTemp + 1}°C - Max: ${maxTemp + 1}°C",
-                    fontWeight = FontWeight.Bold
+                    text = "$text1",
+                    // fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -280,8 +293,7 @@ fun ForecastWeatherCard(date: String, minTemp: Int, maxTemp: Int) {
                     modifier = Modifier.size(40.dp) // Tamaño del icono
                 )
                 Text(
-                    text = "$nextDayDate2   Lluvia ligera\nMin: ${minTemp - 5}°C - Max: ${maxTemp - 4}°C",
-                    fontWeight = FontWeight.Bold
+                    text = "$text2"
                 )
             }
         }
@@ -319,22 +331,16 @@ fun TaskCardDash(
     borderColor: Color,
     textColor: Color
 ) {
-    // Obtiene las top 5 tareas del ViewModel de Dashboard y filtra las tareas nulas y sin descripción
-    val topTasksState by dashviewModel.getTopTasks()
-        // dashviewmodel instancia el viewmodel de tasks... ni idea si hay alguna forma mejor de hacerlo
-        .observeAsState(initial = emptyList())
-
-    // Filtra las tareas con descripción no nula
+    val topTasksState by dashviewModel.getTopTasks().observeAsState(initial = emptyList())
     val topTasks = topTasksState?.filter { it?.description?.isNotEmpty() == true }
 
     // Calcula la altura de la tarjeta verde en función de la cantidad de tarjetas celestes
-    // esto fue una mierda pensarlo jaja
-    val greenCardHeight = (topTasks?.size ?: 0) * 100.dp
+    val greenCardHeight = (topTasks?.size ?: 0) * 200.dp
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = greenCardHeight),
+            .heightIn(max = greenCardHeight),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -350,7 +356,6 @@ fun TaskCardDash(
             if (topTasks != null) {
                 topTasks.forEach { task ->
                     // Cada tarea se representa como una tarjeta individual con un borde celeste
-                    // no entiendo tu código Mari
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -361,6 +366,7 @@ fun TaskCardDash(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
+                            Text(text = task?.isoDate ?: "Fecha no disponible") // Muestra la fecha
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
@@ -373,6 +379,7 @@ fun TaskCardDash(
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
     var totalwidth = ingresos + egresos
+    // Tarjeta verde que envuelve la tarjeta celeste
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -381,43 +388,172 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
             defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(5.dp, borderColor),
+        border = BorderStroke(5.dp, borderColor), // Borde de la tarjeta verde
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
     ) {
+        // Contenido de la tarjeta verde
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Caja", color = textColor, fontWeight = FontWeight.Bold)
 
+            // Tarjeta celeste
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                colors = CardDefaults.cardColors(containerColor = backgroundColor)
+                ){
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Dibuja la barra de ingresos con el número al lado
+                    DrawBar(ingresos, totalwidth, Color(0xFFE57373), textColor)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Dibuja la barra de egresos con el número al lado
+                    DrawBar(egresos, totalwidth, Color(0xFF81C784), textColor)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    var total = ingresos - egresos
+                    // Muestra el total con el borde suave
+                    Text(
+                        text = "Total: $total",
+                        color = textColor,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier: Modifier = Modifier) {
+    val xOffset = 20f
+    Canvas(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 10.dp) // Espacio a la izquierda de la barra
+        .height(40.dp) then modifier) {
+        val width = (value.toFloat() / total.toFloat()) * size.width
+
+        val gradientShader = Brush.verticalGradient(
+            colors = listOf(barcolor, Color.Black)
+        )
+
+        drawRect(brush = gradientShader, size = Size(width, 50f))
+        drawContext.canvas.nativeCanvas.drawText(
+            "$value",
+            width + xOffset,
+            size.height / 2,
+            android.graphics.Paint().apply {
+                color = textColor.toArgb()// Conversión a Int
+                textSize = 40f
+                isAntiAlias = true
+                typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
+            }
+        )
+    }
+}
+
+@Composable
+fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    // Calcula la altura de la tarjeta verde en función de la cantidad de compras
+    val greenCardHeight = (topBuys.size * 200).dp
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = greenCardHeight),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(5.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Compras", color = textColor, fontWeight = FontWeight.Bold)
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Dibuja la barra de ingresos con el número al lado
-            DrawBar(ingresos, totalwidth, Color(0xFFE57373), textColor)
+            for (buy in topBuys.take(5)) {
+                // Cada compra se representa como una tarjeta individual con un borde
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Muestra la información de la compra
+                        Text(text = "${buy.nameUser}  ${buy.date}", color = Color.Black)
+                        // Muestra los productos de la compra utilizando la función itemProduct
+                        buy.items.forEach { product ->
+                            itemProduct(product)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(8.dp))
+@Composable
+fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    // Calcula la altura de la tarjeta verde en función de la cantidad de ventas
+    val greenCardHeight = (topSells.size * 200).dp
 
-            // Dibuja la barra de egresos con el número al lado
-            DrawBar(egresos, totalwidth, Color(0xFF81C784), textColor)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = greenCardHeight),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(5.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Ventas", color = textColor, fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(16.dp))
-            var total = ingresos - egresos
-            // Muestra el total con el borde suave
-            Text(
-                text = "Total: $total",
-                color = textColor,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyLarge,
-            )
+
+            for (sell in topSells.take(5)) {
+                // Cada venta se representa como una tarjeta individual con un borde
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Muestra la información de la venta
+                        Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
+                        // Muestra los productos de la venta utilizando la función itemProductDash
+                        sell.items.forEach { product ->
+                            itemProduct(product)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
 fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    // Calcula la altura de la tarjeta verde en función de la cantidad de préstamos
+    val greenCardHeight = (topLoans.size * 200).dp
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(720.dp),
+            .heightIn(max = greenCardHeight),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(5.dp, borderColor),
@@ -449,32 +585,6 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DrawBar(value: Int, total: Int, color: Color, textColor: Color) {
-    Canvas(modifier = Modifier
-        .fillMaxWidth()
-        .height(40.dp)) {
-        val width = (value.toFloat() / total.toFloat()) * size.width
-
-        val gradientShader = Brush.verticalGradient(
-            colors = listOf(color, Color.Black)
-        )
-
-        drawRect(brush = gradientShader, size = Size(width, 50f))
-        drawContext.canvas.nativeCanvas.drawText(
-            "$value",
-            width + 50f,
-            size.height / 2,
-            android.graphics.Paint().apply {
-                //color = textColor
-                textSize = 40f
-                isAntiAlias = true
-                typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
-            }
-        )
     }
 }
 
@@ -515,6 +625,24 @@ fun dash(viewModel: DashboardViewModel) {
             val ingresos = 200000
             val egresos = 150000
             CashCard(ingresos, egresos, backgroundColor, borderColor, textColor)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val topBuys by viewModel.topBuys.observeAsState(listOf())
+            BuyCard(topBuys, backgroundColor, borderColor, textColor)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val topSells by viewModel.topSells.observeAsState(listOf())
+            SellCard(topSells, backgroundColor, borderColor, textColor)
         }
 
         item {

@@ -3,9 +3,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.agroagil.Task.data.TaskRepository
+import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.ui.TaskViewModel
+import com.example.agroagil.core.models.Buy
+import com.example.agroagil.core.models.Buys
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
 import com.google.firebase.database.ktx.database
@@ -18,25 +20,74 @@ import java.net.URL
 import com.google.firebase.ktx.Firebase
 
 class DashboardViewModel : ViewModel() {
+    // ----------------------- Ventas
 
+    private val _topSells = MutableLiveData<List<Sell>>()
+
+    init {
+        fetchTopSells()
+    }
+
+    val topSells: LiveData<List<Sell>> get() = _topSells
+
+    private fun fetchTopSells() {
+        Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Sells::class.java) as? Sells
+            value?.let {
+                // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
+                val topSells = it.sells.sortedByDescending { it.date }
+                    .take(5)
+                _topSells.postValue(topSells)
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+        }
+    }
+
+    // ----------------------- Compras
+    private val _topBuys = MutableLiveData<List<Buy>>()
+    val topBuys: LiveData<List<Buy>> get() = _topBuys
+
+    init {
+        fetchTopBuys()
+    }
+
+    private fun fetchTopBuys() {
+        Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Buys::class.java) as? Buys
+            value?.let {
+                // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
+                val topBuys = it.buys.sortedByDescending { it.date }
+                    .take(5)
+                _topBuys.postValue(topBuys)
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+        }
+    }
+    // --------------------------
+    // -- Loans
     private val _loans = MutableLiveData<List<Loan>>()
 
     private fun fetchTopLoans() {
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Loans::class.java) as? Loans
             value?.let {
-                _loans.postValue(it.loans)
+                val sortedLoans = it.loans.sortedByDescending { loan -> loan.date }
+                _loans.postValue(sortedLoans)
             }
         }.addOnFailureListener { exception ->
             // Maneja errores si es necesario
         }
     }
+
     val loans: LiveData<List<Loan>> get() = _loans
 
         init {
             fetchTopLoans()
         }
-
+    // --------------------------
+    // Tasks
 
     private val taskViewModel = TaskViewModel()
     private val _taskCardDataList = MutableLiveData<List<TaskCardData>?>()
@@ -45,7 +96,12 @@ class DashboardViewModel : ViewModel() {
     private suspend fun fetchTopTasks(userId: Int) {
         try {
             val tasks = taskViewModel.taskRepository.getTaskCardsForUser(userId).take(5) // Solo toma las primeras 5 tareas
-            _taskCardDataList.postValue(tasks)
+
+            val sortedTasks = tasks.sortedByDescending { task ->
+                task.isoDate
+            }
+
+            _taskCardDataList.postValue(sortedTasks)
         } catch (e: Exception) {
             // Maneja errores si es necesario
             _taskCardDataList.postValue(null)
@@ -62,6 +118,8 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
+    // --------------------------
+    // -- Clima
     // LiveData para almacenar la respuesta de la solicitud de red
     val jsonResponseLiveData = MutableLiveData<String?>()
 
@@ -159,13 +217,15 @@ class DashboardViewModel : ViewModel() {
                     inputStream.close()
                 } else {
                     // Manejo de errores, hay que ver qué hacemos
-                    jsonResponseLiveData.postValue(null)
+                    jsonResponseLiveData.postValue(  "{\"coord\":{\"lon\":0,\"lat\":0},\"weather\":[{\"id\":800,\"main\":\"???\",\"description\":\"Sin conexión\",\"icon\":\"01n\"}],\"base\":\"stations\",\"main\":{\"temp\":273,\"feels_like\":0,\"temp_min\":273,\"temp_max\":273,\"pressure\":0,\"humidity\":0},\"visibility\":0,\"wind\":{\"speed\":0,\"deg\":0,\"gust\":2.24},\"clouds\":{\"all\":7},\"dt\":1697144825,\"sys\":{\"type\":2,\"id\":2031595,\"country\":\"AR\",\"sunrise\":1697102124,\"sunset\":1697148263},\"timezone\":-10800,\"id\":3435910,\"name\":\"Buenos Aires\",\"cod\":200}\n"
+                    )
                 }
 
                 connection.disconnect()
             } catch (e: Exception) {
                 // errores de conexión
-                jsonResponseLiveData.postValue(null)
+                jsonResponseLiveData.postValue( "{\"coord\":{\"lon\":0,\"lat\":0},\"weather\":[{\"id\":800,\"main\":\"???\",\"description\":\"Sin conexión\",\"icon\":\"01n\"}],\"base\":\"stations\",\"main\":{\"temp\":273,\"feels_like\":0,\"temp_min\":273,\"temp_max\":273,\"pressure\":0,\"humidity\":0},\"visibility\":0,\"wind\":{\"speed\":0,\"deg\":0,\"gust\":2.24},\"clouds\":{\"all\":7},\"dt\":1697144825,\"sys\":{\"type\":2,\"id\":2031595,\"country\":\"AR\",\"sunrise\":1697102124,\"sunset\":1697148263},\"timezone\":-10800,\"id\":3435910,\"name\":\"Buenos Aires\",\"cod\":200}\n"
+                )
             }
         }
     }
