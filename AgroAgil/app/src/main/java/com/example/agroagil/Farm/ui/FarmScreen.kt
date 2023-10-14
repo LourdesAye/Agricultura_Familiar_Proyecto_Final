@@ -163,6 +163,7 @@ fun GetImageFarm(){
                         }
                     }
                 }
+
             }
         )
     }
@@ -739,5 +740,3 @@ fun Farm(farmViewModel: FarmViewModel){
         }
     }
 }
-
-
