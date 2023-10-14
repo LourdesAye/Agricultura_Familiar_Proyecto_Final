@@ -29,26 +29,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.core.graphics.toColorInt
-import com.example.agroagil.Task.model.TaskCardData
-import com.example.agroagil.Task.ui.CardColor
-import com.example.agroagil.Task.ui.RoundCheckbox
-import com.example.agroagil.Task.ui.TASK_CARD_DATA_LIST_MOCK
-import com.example.agroagil.Task.ui.TextDate
-import com.example.agroagil.Task.ui.getCardColor
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.times
 import com.example.agroagil.R
-import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.core.models.Loan
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
+import java.util.Calendar
 
 val weatherDescriptionsMap = mapOf(
     "thunderstorm with light rain" to "Tormenta con lluvia ligera",
@@ -119,6 +112,9 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         val temperatureMin = (weatherData.main.temp_min - 273.15).toInt()
         val temperatureMax = (weatherData.main.temp_max - 273.15).toInt()
         val translatedDescription = weatherDescriptionsMap[description] ?: description
+        val date = SimpleDateFormat("dd-MM-yyyy")
+            .apply { timeZone = TimeZone.getTimeZone("America/Argentina/Buenos_Aires") }
+            .format(Date(weatherData.dt * 1000L))
 
         val iconName = weatherData.weather.firstOrNull()?.icon ?: "01d"
         val iconResourceId = getWeatherIconResourceId(iconName)
@@ -127,7 +123,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .height(340.dp),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 12.dp
             ),
@@ -137,39 +133,156 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 containerColor = backgroundColor
             ),
         ) {
-            Row(
+            // Card principal (verde)
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Muestra el ícono del clima
-                Image(
-                    painter = iconPainter,
-                    contentDescription = null,
+                // Card cyan interna
+                Card(
                     modifier = Modifier
-                        .size(80.dp)  // tamaño icono
-                        .clip(CircleShape),
-                    contentScale = ContentScale.FillBounds  // escala sin estirar
-                )
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 12.dp
+                    ),
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke(3.dp, textColor),
+                    colors = CardDefaults.cardColors(
+                        containerColor = backgroundColor
+                    ),
+                ) {
+                    // Contenido de la card cyan
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Muestra el ícono del clima
+                            Image(
+                                painter = iconPainter,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(80.dp)  // tamaño icono
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.FillBounds  // escala sin estirar
+                            )
 
-                // Muestra la ubicación, la temperatura y la descripción en una Columna
-                Column {
-                    Text(
-                        text = "$location   $temperature°C",
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
-                        color = Color.Black
-                    )
-                    Text(
-                        text = translatedDescription,
-                        color = Color.Black
-                    )
+                            // Muestra la ubicación, la temperatura y la descripción en una Columna
+                            Column {
+                                Text(
+                                    text = "$location   $temperature°C     $date",
+                                    color = textColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = translatedDescription,
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    }
                 }
+
+                // Muestra la WeatherCard hardcodeada
+                ForecastWeatherCard(date, temperatureMin, temperatureMax)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ForecastWeatherCard(date: String, minTemp: Int, maxTemp: Int) {
+    // Calcula la fecha del día siguiente
+    val sdf = SimpleDateFormat("dd-MM-yyyy")
+    val calendar = Calendar.getInstance()
+    calendar.time = sdf.parse(date)
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    val nextDayDate = sdf.format(calendar.time)
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    val nextDayDate2 = sdf.format(calendar.time)
+
+    // iconos para los 2 días siguientes
+    val iconResourceId = R.drawable._01d
+    val iconResourceId2 = R.drawable._10d
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 12.dp
+        ),
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Mañana
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(iconResourceId),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp) // Tamaño del icono
+                )
+                Text(
+                    text = "$nextDayDate   Cielo despejado\n  Min: ${minTemp + 1}°C - Max: ${maxTemp + 1}°C",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 12.dp
+        ),
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Pasado mañana
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(iconResourceId2),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp) // Tamaño del icono
+                )
+                Text(
+                    text = "$nextDayDate2   Lluvia ligera\nMin: ${minTemp - 5}°C - Max: ${maxTemp - 4}°C",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
