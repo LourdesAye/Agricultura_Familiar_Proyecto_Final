@@ -8,10 +8,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agroagil.Task.data.TaskRepository
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
+import com.example.agroagil.Task.model.Task
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 const val COMPLETED_TASK_CARD_COLOR = "#E2F2F2"
 const val INCOMPLETE_IMPORTANT_TASK_CARD_COLOR = "#FAE9E8"
@@ -21,30 +26,16 @@ const val COMPLETED_TASK_TEXT_COLOR = "#38B9BC"
 const val INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR= "#E73226"
 const val INCOMPLETE_NORMAL_TASK_TEXT_COLOR = "#5B92E3"
 
-val TASKS_FILTERS_DEFAULT_VALUES = AppliedFiltersForTasks(
-    false, false,
-    false, false,
-    false, false
-)
 
-val TASK_CARD_DATA_LIST_MOCK = listOf(
-    TaskCardData(111,"Sembrar choclo", "2023-10-07T15:30:00-03:00", 3, true, false),
-    TaskCardData(112,"Fertilizar campo", "2023-10-07T15:30:00-03:00",4, false, false),
-    TaskCardData(113,"Poda de árboles", "2023-10-07T15:30:00-03:00",5, true, false),
-    TaskCardData(114,"Riego semanal", "2023-10-07T15:30:00-03:00",6, false, true),
-    TaskCardData(115,"Revisar plagas", "2023-10-07T15:30:00-03:00",7, true, true),
-    TaskCardData(116,"Rotar cultivos", "2023-12-07T15:30:00-03:00",8, false, true),
-    TaskCardData(117,"Cosechar tomate", "2023-10-07T15:30:00-03:00",9, true, true),
-    TaskCardData(118,"Venta de productos", "2023-12-07T15:30:00-03:00",4, false, false),
-    TaskCardData(119,"Limpiar equipo", "2023-10-07T15:30:00-03:00",5, true, false),
-    TaskCardData(120,"Actualizar inventario", "2023-12-07T15:30:00-03:00",6, false, true),
-    TaskCardData(121,"Reparar tractor", "2023-10-07T15:30:00-03:00",7, true, true),
-    TaskCardData(122,"Vacunar ganado", "2023-12-07T15:30:00-03:00",8, false, true),
-    TaskCardData(123,"Comprar semillas", "2023-10-07T15:30:00-03:00",9, true, true)
-)
 
 class TaskViewModel: ViewModel() {
     val taskRepository = TaskRepository()
+
+    private val TASKS_FILTERS_DEFAULT_VALUES = AppliedFiltersForTasks(
+        false, false,
+        false, false,
+        false, false
+    )
 
     private val _appliedFiltersForTasks = MutableLiveData<AppliedFiltersForTasks>(
         TASKS_FILTERS_DEFAULT_VALUES
@@ -102,4 +93,36 @@ class TaskViewModel: ViewModel() {
             is TaskFilter.ByDone -> return Color(COMPLETED_TASK_TEXT_COLOR.toColorInt())
         }
     }
+
+    //Pantalla para crear una nueva tarea -----------------------------------
+    private val _taskToCreate =  MutableLiveData<Task>(Task())
+    val taskToCreate: LiveData<Task> = _taskToCreate
+
+    fun onDescriptionChange(description: String) {
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        _taskToCreate.postValue(currentTaskToCreate.copy(description = description))
+    }
+
+    private val _dateOftaskToCreate =  MutableLiveData<Calendar>(Calendar.getInstance())
+    val dateOftaskToCreate: LiveData<Calendar> = _dateOftaskToCreate
+
+    private val _timeOftaskToCreate =  MutableLiveData<Calendar>(Calendar.getInstance())
+    val timeOftaskToCreate: LiveData<Calendar> = _timeOftaskToCreate
+
+    fun onDateTimeChange(date: Calendar, time: Calendar) {
+        _dateOftaskToCreate.postValue(date)
+        _timeOftaskToCreate.postValue(time) //2001-01-01T00:00:00-03:00
+
+        // Create a SimpleDateFormat object with the desired format
+        val timeFormatter = SimpleDateFormat("HH:mm:ssXXX", Locale.getDefault())
+
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd")
+        val isoDate: String = "${ dateFormatter.format(date.time) }T${ timeFormatter.format(time.time) }"
+
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        _taskToCreate.postValue(currentTaskToCreate.copy(isoDate = isoDate))
+    }
+
+
+
 }
