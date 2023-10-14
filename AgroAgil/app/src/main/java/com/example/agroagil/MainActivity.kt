@@ -1,9 +1,11 @@
 package com.example.agroagil
 import BuyAddScreen
 import BuyInfoScreen
+import DashboardViewModel
 import SellAddScreen
 import SellInfoScreen
 import SellScreen
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -39,16 +41,39 @@ import com.example.agroagil.Loan.ui.LoanEditScreen
 import com.example.agroagil.Loan.ui.LoanInfoScreen
 import com.example.agroagil.Loan.ui.LoanScreen
 import com.example.agroagil.Loan.ui.LoanViewModel
+import com.example.agroagil.Login.ui.LoginGoogleViewModel
+import com.example.agroagil.Login.ui.LoginScreen
+import com.example.agroagil.Login.ui.LoginViewModel
+import com.example.agroagil.Login.ui.NavigationInicio
+import com.example.agroagil.Login.ui.RegistroConCuentaGoogle
+import com.example.agroagil.Login.ui.RegistroScreen
+import com.example.agroagil.Login.ui.ScreenDeBienvenida
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.lourd.myapplication.featureMenu.NavigationEventMenu
+import com.example.agroagil.Menu.ui.NavigationEventMenu
+import com.example.agroagil.Perfil.ui.EditarDatosPerfil
+import com.example.agroagil.Perfil.ui.NavigationEventPerfil
+import com.example.agroagil.Perfil.ui.PerfilViewModel
+import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
+import com.example.agroagil.Task.ui.TaskAddScreen
+import com.example.agroagil.Task.ui.TaskEditScreen
+import com.example.agroagil.Task.ui.TaskInfoScreen
+import com.example.agroagil.Task.ui.TaskScreen
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
+import dash
 
 class MainActivity : ComponentActivity() {
+
+    //declara autenticación
+    private lateinit var auth: FirebaseAuth
+    @SuppressLint("SuspiciousIndentation")
     @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,22 +86,109 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     FirebaseApp.initializeApp(LocalContext.current)
+                    auth = Firebase.auth
                     Firebase.database.setPersistenceEnabled(true)
                     val navController = rememberNavController()
+                    //view model para login con usuario y contraseña
+                    val viewModelLogin: LoginViewModel by viewModels()
+                    //view model para login con cuenta de google
+                    val viewModelLoginGoogle : LoginGoogleViewModel by viewModels()
+                    //view model para datos de perfil
+                    val viewModelDatosPerfil : PerfilViewModel by viewModels()
                     val loanViewModel = LoanViewModel()
                     val viewModelMenu: MenuViewModel by viewModels()
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
+                    val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
                     NavHost(navController = navController, startDestination = "loan") {
+                    val dashViewModel = DashboardViewModel()
+
+                    //destino inicial principal si inicia sesion correctamente
+                    val destinoPrincipal: String = "inicio"
+                    NavHost(navController = navController, startDestination = destinoPrincipal){
+
+                        composable("inicio") {
+                            // La pantalla de inicio, que es el logo,se mostrará durante 3 segundos
+                            // y luego navegará a la pantalla de login, menu o resgistro según corresponda .
+                            ScreenDeBienvenida() { evento ->
+                                when (evento) {
+
+                                    NavigationInicio.PantallaMenu ->
+                                        navController.navigate("home")
+
+                                    NavigationInicio.PantallaLogin ->
+                                        navController.navigate("login")
+
+                                    NavigationInicio.PantallaRegistroGoogle ->
+                                        navController.navigate("registroConGoogle")
+
+                                    else -> {
+                                        VariablesFuncionesGlobales.navegacionDefinida = false // La ruta no está definida
+                                    }
+                                }
+
+                            }
+
+                        }
+                        composable("login") {
+                            // La pantalla de inicio de sesión
+                            LoginScreen(viewModelLogin, viewModelLoginGoogle, auth) { evento ->
+                                when (evento) {
+                                    NavigationInicio.PantallaMenu ->
+                                        navController.navigate("home")
+
+                                    NavigationInicio.PantallaRegistro ->
+                                        navController.navigate("miRegistro")
+
+                                    NavigationInicio.PantallaRegistroGoogle ->
+                                        navController.navigate("registroConGoogle")
+
+                                    else -> {
+                                        VariablesFuncionesGlobales.navegacionDefinida = false // La ruta no está definida
+                                    }
+                                }
+                            }
+                        }
+                        //PENDIENTE
+                        composable("miRegistro") {
+                            RegistroScreen(viewModelLogin, auth) { evento ->
+                                when (evento) {
+                                    NavigationInicio.PantallaMenu ->
+                                        navController.navigate("home")
+
+                                    else -> {
+                                        VariablesFuncionesGlobales.navegacionDefinida = false // La ruta no está definida
+                                    }
+                                }
+                            }
+                        }
+
+                        composable("registroConGoogle") {
+                            RegistroConCuentaGoogle(viewModelLoginGoogle) { event ->
+                                // Observador de eventos de navegación
+                                when (event) {
+                                    NavigationInicio.PantallaMenu ->
+                                        navController.navigate("home")
+                                    NavigationInicio.PantallaLogin ->
+                                        navController.navigate("login")
+
+                                    else -> {
+                                        VariablesFuncionesGlobales.navegacionDefinida = false // La ruta no está definida
+                                    }
+                                }
+
+                            }
+                        }
                         composable("farm"){
                             titleCurrentPage.value="Mi campo"
                             Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController) {
                                 Farm(farmViewModel)
                             }
+
                         }
                         composable("loan") {
                             titleCurrentPage.value="Mis prestamos"
@@ -107,7 +219,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             titleCurrentPage.value = "Inicio"
-                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {/*aca iria la funcion de home*/})
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController),true, navController, {dash(dashViewModel)})
                         }
                         composable("sell") {
                             titleCurrentPage.value="Mis ventas"
@@ -169,6 +281,71 @@ class MainActivity : ComponentActivity() {
 //                        }
                     }
                     Greeting("Android", model= LoanViewModel(), navController = navController)
+
+                        composable("task") {
+                            titleCurrentPage.value="Mis Tareas"
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), true, navController)
+                            { TaskScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("task/add") {
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskAddScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+
+                       composable("task/{taskId}/info", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskInfoScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+
+
+                        composable("task/{taskId}/edit", arguments = listOf(navArgument("taskId") { type = NavType.IntType })){
+                                backStackEntry ->
+                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                            if (taskId is Int)
+                            Menu(scope, drawerState, viewModelMenu, title=titleCurrentPage,NavigationEventFunction(navController), false, navController)
+                            { TaskEditScreen(taskViewModel = taskViewModel, navController = navController) }
+                        }
+
+                        composable("miPerfil") {
+                            VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
+                                when (evento) {
+                                    NavigationEventPerfil.ToEditPerfil ->
+                                        navController.navigate("editarPerfil")
+
+                                    NavigationEventPerfil.ToPantallaPrincipal ->
+                                        navController.navigate("home")
+
+                                    else -> {}
+                                }
+                            }
+                        }
+
+                        composable("editarPerfil") {
+                            EditarDatosPerfil() { evento ->
+                                when (evento) {
+                                    NavigationEventPerfil.ToDatosPerfil ->
+                                        navController.navigate("miPerfil")
+
+                                    NavigationEventPerfil.ToPantallaPrincipal ->
+                                        navController.navigate("home")
+
+                                    else -> {}
+                                }
+
+                            }
+                        }
+
+
+
+
+                    }
+                    //Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
             }
         }
@@ -179,9 +356,9 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
     return{event ->
         // Observador de eventos de navegación
         when (event) {
-            //navegar a perfil
+            //navegar a perfil (PENDIENTE) (NO ME BORREN LOS COMENTARIOS POR FAVOR :))
             NavigationEventMenu.ToConfigPerfil -> {
-                navController.navigate("home")
+                navController.navigate("miPerfil")
             }
             //navegar a notificaciones
             NavigationEventMenu.ToNotificaciones -> {
@@ -197,7 +374,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a misTareas
             NavigationEventMenu.ToMisTareas -> {
-                navController.navigate("home")
+                navController.navigate("task")
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {
@@ -222,7 +399,9 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             NavigationEventMenu.ToHome -> {
                 navController.navigate("home")
             }
+
             else -> {}
+
     }}
 }
 
