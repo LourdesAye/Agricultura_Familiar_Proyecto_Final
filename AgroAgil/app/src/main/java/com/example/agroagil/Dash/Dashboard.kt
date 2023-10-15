@@ -133,7 +133,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(340.dp),
+                .height(370.dp),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 12.dp
             ),
@@ -150,12 +150,15 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Card cyan interna
+                Text(text = "Clima", color = textColor, fontWeight = FontWeight.Bold)
+
+                // Card celeste interna
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(8.dp)
                         .height(120.dp),
-                    elevation = CardDefaults.cardElevation(
+                        elevation = CardDefaults.cardElevation(
                         defaultElevation = 12.dp
                     ),
                     shape = MaterialTheme.shapes.small,
@@ -204,7 +207,6 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                         }
                     }
                 }
-
                 // Muestra la WeatherCard hardcodeada
                 ForecastWeatherCard(currentDate, temperatureMin, temperatureMax, description)
             }
@@ -223,7 +225,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     calendar.add(Calendar.DAY_OF_YEAR, 1)
     val nextDayDate = dateFormat.format(calendar.time)
 
-// Calcula la fecha del día siguiente al próximo día
+// Calcula la fecha de pasado mañana
     calendar.add(Calendar.DAY_OF_YEAR, 1)
     val nextDayDate2 = dateFormat.format(calendar.time)
 
@@ -234,16 +236,19 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     val text1 = "$nextDayDate   ${if (description != "Sin conexión") "Cielo despejado" else "Sin conexión"}\n  Min: ${if (description != "Sin conexión") minTemp + 1 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp + 1 else maxTemp}°C"
     val text2 = "$nextDayDate2   ${if (description != "Sin conexión") "Lluvia ligera" else "Sin conexión"}\nMin: ${if (description != "Sin conexión") minTemp - 5 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp - 4 else maxTemp}°C"
 
+    val textColor = Color(android.graphics.Color.parseColor("#0CBFDF"))
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
             .height(80.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
+            defaultElevation = 12.dp,
         ),
         shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, textColor),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White,
         ),
     ) {
         Column(
@@ -272,11 +277,13 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
             .height(80.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, textColor),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -365,7 +372,8 @@ fun TaskCardDash(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
-                            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                            .border(BorderStroke(3.dp, textColor),
+                                shape = MaterialTheme.shapes.small),
                         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                     ) {
@@ -549,7 +557,7 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Muestra la información de la compra
             Text(text = "${buy.nameUser}  ${buy.date}", color = Color.Black)
-            // Muestra los productos de la compra utilizando la función itemProduct
+            // Muestra los productos de la compra utilizando la función itemProductDash
             buy.items.forEach { product ->
                 itemProductDash(product)
                 val totalPrice = String.format("%.2f", buy.price * product.amount)
@@ -653,7 +661,7 @@ fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Muestra la información del préstamo
             Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
-            // Muestra los productos del préstamo utilizando la función itemProduct
+            // Muestra los productos del préstamo utilizando la función itemProductDash
             loan.items.forEach { product ->
                 itemProductDash(product)
             }
