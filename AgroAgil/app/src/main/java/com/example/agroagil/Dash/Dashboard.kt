@@ -20,11 +20,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Divider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -32,16 +34,19 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.times
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Loan
+import com.example.agroagil.core.models.Product
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
@@ -156,7 +161,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                     shape = MaterialTheme.shapes.small,
                     border = BorderStroke(3.dp, textColor),
                     colors = CardDefaults.cardColors(
-                        containerColor = backgroundColor
+                        containerColor = Color.White
                     ),
                 ) {
                     // Contenido de la card cyan
@@ -362,7 +367,7 @@ fun TaskCardDash(
                             .padding(8.dp)
                             .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
                         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
@@ -404,7 +409,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                     .padding(8.dp)
                     .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
                 elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                colors = CardDefaults.cardColors(containerColor = backgroundColor)
+                colors = CardDefaults.cardColors(containerColor = Color.White)
                 ){
                 Column(modifier = Modifier.padding(16.dp)) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -460,6 +465,52 @@ fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier:
 }
 
 @Composable
+fun itemProductDash(item: Product) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 5.dp)
+    ) {
+        Column(modifier = Modifier.padding(bottom = 5.dp)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Row() {
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .align(Alignment.CenterVertically)
+                            .padding(end = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            drawCircle(SolidColor(Color("#00687A".toColorInt())))
+                        }
+                        Text(
+                            text = item.name.substring(0, 2).capitalize(),
+                            color = Color.White
+                        )
+                    }
+                    Text(
+                        item.name,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+                Row(modifier = Modifier.align(Alignment.CenterEnd)) {
+                    Text(
+                        "${item.amount} ${item.units}",
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+            }
+            Divider()
+        }
+    }
+}
+
+
+@Composable
 fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     // Calcula la altura de la tarjeta verde en función de la cantidad de compras
     val greenCardHeight = (topBuys.size * 200).dp
@@ -475,32 +526,41 @@ fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, text
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Compras", color = textColor, fontWeight = FontWeight.Bold)
-
             Spacer(modifier = Modifier.height(16.dp))
 
             for (buy in topBuys.take(5)) {
                 // Cada compra se representa como una tarjeta individual con un borde
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        // Muestra la información de la compra
-                        Text(text = "${buy.nameUser}  ${buy.date}", color = Color.Black)
-                        // Muestra los productos de la compra utilizando la función itemProduct
-                        buy.items.forEach { product ->
-                            itemProduct(product)
-                        }
-                    }
-                }
+                DisplayBuyItem(buy, textColor)
             }
         }
     }
 }
+
+@Composable
+fun DisplayBuyItem(buy: Buy, textColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Muestra la información de la compra
+            Text(text = "${buy.nameUser}  ${buy.date}", color = Color.Black)
+            // Muestra los productos de la compra utilizando la función itemProduct
+            buy.items.forEach { product ->
+                itemProductDash(product)
+                val totalPrice = String.format("%.2f", buy.price * product.amount)
+                Text(
+                    "$$totalPrice"
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -518,28 +578,36 @@ fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, t
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Ventas", color = textColor, fontWeight = FontWeight.Bold)
-
             Spacer(modifier = Modifier.height(16.dp))
 
             for (sell in topSells.take(5)) {
                 // Cada venta se representa como una tarjeta individual con un borde
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        // Muestra la información de la venta
-                        Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
-                        // Muestra los productos de la venta utilizando la función itemProductDash
-                        sell.items.forEach { product ->
-                            itemProduct(product)
-                        }
-                    }
-                }
+                DisplaySellItem(sell, textColor, backgroundColor)
+            }
+        }
+    }
+}
+
+@Composable
+fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Muestra la información de la venta
+            Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
+            // Muestra los productos de la venta utilizando la función itemProductDash
+            sell.items.forEach { product ->
+                itemProductDash(product)
+                val totalPrice = String.format("%.2f", sell.price * product.amount)
+                Text(
+                    "$$totalPrice"
+                )
             }
         }
     }
@@ -566,23 +634,28 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
 
             for (loan in topLoans.take(5)) {
                 // Cada préstamo se representa como una tarjeta individual con un borde
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        // Muestra la información del préstamo
-                        Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
-                        // Muestra los productos del préstamo utilizando la función itemProduct
-                        loan.items.forEach { product ->
-                            itemProduct(product)
-                        }
-                    }
-                }
+                DisplayLoanItem(loan, textColor, backgroundColor)
+            }
+        }
+    }
+}
+
+@Composable
+fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Muestra la información del préstamo
+            Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
+            // Muestra los productos del préstamo utilizando la función itemProduct
+            loan.items.forEach { product ->
+                itemProductDash(product)
             }
         }
     }
