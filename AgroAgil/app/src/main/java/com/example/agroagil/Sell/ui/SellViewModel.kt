@@ -63,7 +63,7 @@ class SellViewModel : ViewModel()  {
             Firebase.database.getReference("sell/0").setValue(Sells(currentSells))
             var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
             val updates = HashMap<String, Any>()
-            updates["/$getKey"] = EventOperationBox(sell.price, sell.date, "Registro de la venta", "Sell",   (currentSells.size-1).toString())
+            updates["/$getKey"] = EventOperationBox(sell.date, "Registro de la venta", "Sell",   (currentSells.size-1).toString())
             Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
             setFarm()
         }

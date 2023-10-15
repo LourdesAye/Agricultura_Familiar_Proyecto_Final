@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
+import com.example.agroagil.core.models.EventOperation
 import com.example.agroagil.core.models.EventOperationBox
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ktx.database
@@ -50,6 +51,7 @@ class SummaryViewModel: ViewModel() {
             // Handle exception if needed
         }
     }
+
     var events = liveData(Dispatchers.IO) {
         emit(null)
 
@@ -72,6 +74,24 @@ class SummaryViewModel: ViewModel() {
             emit(realValue)
         } catch (e: Exception) {
             // Handle exception if needed
+        }
+    }
+    fun getAllEvents(event:EventOperation): List<EventOperationBox> {
+        var index: Int
+        if(event.type == "Sell"){
+            index = sells.value!!.indexOf(event.sell!!)
+            return events.value!!.filter{
+                it.operation.equals("Sell")
+                        &&
+                        it.referenceID.equals(index.toString())
+            }
+        }else{
+            index = buys.value!!.indexOf(event.buy!!)
+            return events.value!!.filter{
+                it.operation.equals("Buy")
+                        &&
+                        it.referenceID.equals(index.toString())
+            }
         }
     }
 
