@@ -2,7 +2,6 @@ package com.example.agroagil
 
 import BuyAddScreen
 import BuyInfoScreen
-import DashboardViewModel
 import SellAddScreen
 import SellInfoScreen
 import SellScreen
@@ -51,7 +50,6 @@ import com.example.agroagil.Login.ui.RegistroScreen
 import com.example.agroagil.Login.ui.ScreenDeBienvenida
 import com.example.agroagil.Menu.ui.featureMenu.menu.ui.Menu
 import com.example.agroagil.Sell.ui.SellViewModel
-import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.ui.theme.AgroAgilTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ktx.database
@@ -63,14 +61,9 @@ import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
-import com.example.agroagil.Task.ui.TaskAddScreen
-import com.example.agroagil.Task.ui.TaskEditScreen
-import com.example.agroagil.Task.ui.TaskInfoScreen
-import com.example.agroagil.Task.ui.TaskScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
-import dash
 
 class MainActivity : ComponentActivity() {
 
@@ -104,11 +97,10 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
-                    val taskViewModel = TaskViewModel()
+                    //val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
-                    val dashViewModel = DashboardViewModel()
                     val summaryViewModel = SummaryViewModel()
 
                     //destino inicial principal si inicia sesion correctamente
@@ -291,7 +283,7 @@ class MainActivity : ComponentActivity() {
                                 NavigationEventFunction(navController),
                                 true,
                                 navController,
-                                { dash(dashViewModel) })
+                                { })
                         }
                         composable("sell") {
                             titleCurrentPage.value = "Mis ventas"
@@ -415,6 +407,7 @@ class MainActivity : ComponentActivity() {
                                 Cultivo(cultivoViewModel)
                             }
                         }
+                        /*
                         composable("task") {
                             titleCurrentPage.value = "Mis Tareas"
                             Menu(
@@ -499,7 +492,7 @@ class MainActivity : ComponentActivity() {
                                         navController = navController
                                     )
                                 }
-                        }
+                        }*/
 
                         composable("miPerfil") {
                             VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
@@ -565,7 +558,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a misTareas
             NavigationEventMenu.ToMisTareas -> {
-                navController.navigate("task")
+                navController.navigate("home")
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {

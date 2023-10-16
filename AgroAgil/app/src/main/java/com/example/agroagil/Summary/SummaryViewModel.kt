@@ -103,6 +103,30 @@ class SummaryViewModel: ViewModel() {
             // Handle exception if needed
         }
     }
+    var eventsStock = liveData(Dispatchers.IO) {
+        emit(null)
+
+        try {
+            val realValue = suspendCancellableCoroutine<List<EventOperationStock>> { continuation ->
+                Firebase.database.getReference("events/0/stock").get().addOnSuccessListener { snapshot ->
+                    val genericType = object : GenericTypeIndicator<HashMap<String, EventOperationStock>>() {}
+                    val value = snapshot.getValue(genericType)
+                    val result = value?.values?.toList() ?: emptyList()
+                    continuation.resume(result)
+                    /*
+                    val value = snapshot.getValue(HashMap<String, EventOperationBox>()::class.java) as HashMap<String, EventOperationBox>
+                    var result = mutableListOf<EventOperationBox>()
+                    result = value.values.toMutableList()
+                    continuation.resume(result)*/
+                }.addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+            }
+            emit(realValue)
+        } catch (e: Exception) {
+            // Handle exception if needed
+        }
+    }
     fun getAllEvents(event:EventOperation): List<EventOperationBox> {
         var index: Int
         if(event.type == "Sell"){
@@ -120,6 +144,14 @@ class SummaryViewModel: ViewModel() {
                         it.referenceID.equals(index.toString())
             }
         }
+    }
+
+    fun getAllEventsStock(event:Stock): List<EventOperationStock> {
+
+        return eventsStock.value!!.filter{
+                        it.referenceID.equals(event.id)
+            }
+
     }
 
     fun getSummaryDataStock(dateStart: String, dateEnd: String): List<Pair<String, Double>> {
