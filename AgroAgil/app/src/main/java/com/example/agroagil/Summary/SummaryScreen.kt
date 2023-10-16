@@ -143,7 +143,6 @@ fun BarChartDemo(dataPoints: List<Pair<String, Float>>) {
     var dashboardHeight = with(LocalDensity.current) {
         screenHeight * 0.5f
     }
-    //chart.value.setValueTextSize(50f)
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
@@ -182,7 +181,6 @@ fun BarChartDemo(dataPoints: List<Pair<String, Float>>) {
             barchart
         },
         update = { chartView ->
-           // chartView.data = chart.data
             chartView.notifyDataSetChanged()
             chartView.invalidate()
         }
@@ -346,7 +344,6 @@ fun OneOperation(itemData: EventOperation, navController: NavController,summaryV
     Column(){
         Card(
             onClick={
-                //navController.navigate("buy/${com.example.agroagil.Buy.ui.listItemData.indexOf(itemData)}/info")
             },
             modifier = Modifier
                 .defaultMinSize(minHeight = 100.dp)
@@ -530,53 +527,62 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
             }
         }
 
-        Column(){
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp, end = 10.dp)){
-        Button(onClick = {expandedFilter=!expandedFilter}){
-            Icon(
-                ImageVector.vectorResource(R.drawable.filter),
-                contentDescription = "Localized description",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Fechas")
-        }
-
-            DropdownMenu(
-                expanded = expandedFilter,
-                onDismissRequest = { expandedFilter = false }
+        Column(modifier = Modifier.fillMaxWidth()){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.TopEnd)
             ) {
-                DropdownMenuItem(
-                    text = { Text("Hoy") },
-                    onClick = {
-                        val currentDateTime = LocalDateTime.now()
-                        dataDateStart.value = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                        dataDateEnd.value = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                        filters.add(::filterDates)
-                        dateFilterChip.value = true
-                        expandedFilter = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text("Ultimo mes") },
-                    onClick = {
-                        val currentDateTime = LocalDateTime.now()
-                        val firstDayOfLastMonth = currentDateTime.minusMonths(1).withDayOfMonth(1)
-                        val lastDayOfLastMonth =currentDateTime.withDayOfMonth(1).minusDays(1)
-                        dataDateStart.value = firstDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                        dataDateEnd.value = lastDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                        filters.add(::filterDates)
-                        dateFilterChip.value = true
-                        expandedFilter = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text("Personalizado") },
-                    onClick = { /* Handle settings! */ },
-                )
-            }}}
+                Button(onClick = { expandedFilter = !expandedFilter },) {
+                    Icon(
+                        ImageVector.vectorResource(R.drawable.filter),
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text("Fechas")
+                }
+
+                DropdownMenu(
+                    expanded = expandedFilter,
+                    onDismissRequest = { expandedFilter = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Hoy") },
+                        onClick = {
+                            val currentDateTime = LocalDateTime.now()
+                            dataDateStart.value =
+                                currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            dataDateEnd.value =
+                                currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            filters.add(::filterDates)
+                            dateFilterChip.value = true
+                            expandedFilter = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Ultimo mes") },
+                        onClick = {
+                            val currentDateTime = LocalDateTime.now()
+                            val firstDayOfLastMonth =
+                                currentDateTime.minusMonths(1).withDayOfMonth(1)
+                            val lastDayOfLastMonth = currentDateTime.withDayOfMonth(1).minusDays(1)
+                            dataDateStart.value =
+                                firstDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            dataDateEnd.value =
+                                lastDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            filters.add(::filterDates)
+                            dateFilterChip.value = true
+                            expandedFilter = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Personalizado") },
+                        onClick = { /* Handle settings! */ },
+                    )
+                }
+            }
+        }
             Box( modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.TopEnd)
