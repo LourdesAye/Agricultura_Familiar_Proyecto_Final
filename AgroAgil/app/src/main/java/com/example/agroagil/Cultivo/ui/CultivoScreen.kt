@@ -1,4 +1,5 @@
-package com.example.agroagil.Farm.ui
+package com.example.agroagil.Cultivo.ui
+
 import android.annotation.SuppressLint
 import android.view.Gravity
 import androidx.compose.foundation.Image
@@ -19,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -35,12 +35,9 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,16 +45,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.activity.viewModels
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.toColorInt
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -65,16 +59,19 @@ import com.google.firebase.ktx.Firebase
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Member
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.window.DialogWindowProvider
 
-val openDialogImageFarm =  mutableStateOf(false)
-val openDialogConfirmDelete =  mutableStateOf(false)
-val openDialogMemberDetails =  mutableStateOf(false)
-val openDialogMember =  mutableStateOf(false)
-val openDialogHome =  mutableStateOf(false)
+val openDialogImageFarm = mutableStateOf(false)
+val openDialogConfirmDelete = mutableStateOf(false)
+val openDialogMemberDetails = mutableStateOf(false)
+val openDialogMember = mutableStateOf(false)
+val openDialogHome = mutableStateOf(false)
 val currentMember = mutableStateOf(Member())
-var farmViewModelCurrent: FarmViewModel? = null
+var farmViewModelCurrent: CultivoViewModel? = null
 
 
 var members = mutableStateListOf<Member>()
@@ -92,13 +89,13 @@ val profileImages = mutableStateListOf(
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun GetImageFarm(){
-    var currentImage =  mutableStateOf(profileImage.value)
+fun GetImageFarm() {
+    var currentImage = mutableStateOf(profileImage.value)
     var currentSelected = mutableStateOf(0)
     var currentColor = ButtonDefaults.textButtonColors()
     if (openDialogImageFarm.value) {
         AlertDialog(
-            modifier= Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(0.dp),
             shape = MaterialTheme.shapes.extraLarge,
@@ -129,29 +126,30 @@ fun GetImageFarm(){
             text = {
                 val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
                 dialogWindowProvider.window.setGravity(Gravity.BOTTOM)
-                Column(modifier = Modifier
-                    .verticalScroll(rememberScrollState())) {
-
-
-                    for(i in 0..Math.ceil((profileImages.size/3).toDouble()).toInt()) {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    for (i in 0..Math.ceil((profileImages.size / 3).toDouble()).toInt()) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
-                            for (item in 0..Math.min(3, profileImages.size - (i * 3)) -1) {
-                                if (currentSelected.value == (i*3)+item+1){
-                                    currentColor = ButtonDefaults.filledTonalButtonColors()}
-                                else{
+                            for (item in 0..Math.min(3, profileImages.size - (i * 3)) - 1) {
+                                if (currentSelected.value == (i * 3) + item + 1) {
+                                    currentColor = ButtonDefaults.filledTonalButtonColors()
+                                } else {
                                     currentColor = ButtonDefaults.textButtonColors()
                                 }
-                                TextButton(onClick = { currentImage.value =  profileImages[(i*3)+item]
-                                    currentSelected.value = (i*3)+item+1
+                                TextButton(onClick = {
+                                    currentImage.value = profileImages[(i * 3) + item]
+                                    currentSelected.value = (i * 3) + item + 1
                                 }, colors = currentColor) {
 
 
                                     Image(
-                                        painter = painterResource(id = profileImages[(i*3)+item]),
+                                        painter = painterResource(id = profileImages[(i * 3) + item]),
                                         contentDescription = stringResource(id = R.string.app_name),
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
@@ -203,7 +201,7 @@ fun GetDialogConfirmDelete() {
                 Text("Eliminar")
             },
 
-            text = {Text("¿Desea eliminar trabajador?")}
+            text = { Text("¿Desea eliminar cultivo?") }
         )
     }
 }
@@ -211,13 +209,13 @@ fun GetDialogConfirmDelete() {
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetDialogMemberDetails(){
-    val text_nombre =  mutableStateOf(currentMember.value.name)
+fun GetDialogMemberDetails() {
+    val text_nombre = mutableStateOf(currentMember.value.name)
     val error_nombre = mutableStateOf(false)
-    val text_correo =  mutableStateOf(currentMember.value.correo)
+    val text_correo = mutableStateOf(currentMember.value.correo)
     val error_correo = mutableStateOf(false)
-    var expanded_role =  mutableStateOf(false)
-    var selected_role =  mutableStateOf(currentMember.value.role)
+    var expanded_role = mutableStateOf(false)
+    var selected_role = mutableStateOf(currentMember.value.role)
     val error_role = mutableStateOf(false)
     if (openDialogMemberDetails.value) {
         AlertDialog(
@@ -227,17 +225,22 @@ fun GetDialogMemberDetails(){
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if(text_nombre.value ==""){
+                        if (text_nombre.value == "") {
                             error_nombre.value = true
                         }
-                        if(text_correo.value == ""){
+                        if (text_correo.value == "") {
                             error_correo.value = true
                         }
-                        if(selected_role.value == ""){
+                        if (selected_role.value == "") {
                             error_role.value = true
                         }
-                        if ((text_nombre.value !="") && (text_correo.value != "") && (selected_role.value != "")){
-                            members[members.indexOf(currentMember.value)] = Member(text_nombre.value,selected_role.value, text_correo.value, currentMember.value.image)
+                        if ((text_nombre.value != "") && (text_correo.value != "") && (selected_role.value != "")) {
+                            members[members.indexOf(currentMember.value)] = Member(
+                                text_nombre.value,
+                                selected_role.value,
+                                text_correo.value,
+                                currentMember.value.image
+                            )
                             farmViewModelCurrent?.updateMembers(members)
                             openDialogMemberDetails.value = false
 
@@ -259,21 +262,22 @@ fun GetDialogMemberDetails(){
                 }
             },
             title = {
-                Box(modifier = Modifier.fillMaxWidth()){
-                    Text("Detalles del usuario",modifier = Modifier.align(Alignment.CenterStart))
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text("Detalles de cultivo", modifier = Modifier.align(Alignment.CenterStart))
                     TextButton(
                         onClick = {
-                            openDialogConfirmDelete.value=true
+                            openDialogConfirmDelete.value = true
                             openDialogMemberDetails.value = false
                         },
                         modifier = Modifier.align(Alignment.CenterEnd)
-                    ){
+                    ) {
                         Icon(
                             Icons.Filled.Delete,
                             contentDescription = "Localized description",
                             modifier = Modifier.size(30.dp),
-                            tint= Color("#C70707".toColorInt())
-                        )}
+                            tint = Color("#C70707".toColorInt())
+                        )
+                    }
                 }
             },
 
@@ -350,7 +354,7 @@ fun GetDialogMemberDetails(){
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetDialogEditHome(){
+fun GetDialogEditHome() {
     val context = LocalContext.current
     var text_name = mutableStateOf(nameFarm.value)
     var error_name = mutableStateOf(false)
@@ -362,20 +366,19 @@ fun GetDialogEditHome(){
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if(text_name.value ==""){
+                        if (text_name.value == "") {
                             error_name.value = true
-                        }else{
+                        } else {
                             nameFarm.value = text_name.value
                             Firebase.database.getReference("title").setValue(text_name.value)
                             openDialogHome.value = false
                             error_name.value = false
                             profileImage.value = profileImageTemp.value
                             farmViewModelCurrent?.updateName(nameFarm.value)
-                            val nameImage = context.resources.getResourceEntryName(profileImageTemp.value)
+                            val nameImage =
+                                context.resources.getResourceEntryName(profileImageTemp.value)
                             farmViewModelCurrent?.updateImage(nameImage)
                         }
-
-
                     }
                 ) {
                     Text("Guardar")
@@ -394,7 +397,10 @@ fun GetDialogEditHome(){
             },
 
             text = {
-                Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally ){
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Box() {
                         Image(
                             painter = painterResource(id = profileImageTemp.value),
@@ -406,7 +412,7 @@ fun GetDialogEditHome(){
                         )
                         FilledIconButton(
                             onClick = {
-                                openDialogImageFarm.value=true
+                                openDialogImageFarm.value = true
                             },
                             modifier = Modifier
                                 .size(50.dp)
@@ -423,29 +429,30 @@ fun GetDialogEditHome(){
                     OutlinedTextField(
                         value = text_name.value,
                         onValueChange = {
-                            text_name.value=it
+                            text_name.value = it
                             error_name.value = false
                         },
                         label = { Text("Nombre") },
-                        modifier = Modifier.padding( top = 16.dp),
+                        modifier = Modifier.padding(top = 16.dp),
                         isError = error_name.value
                     )
                 }
             }
-        )}
+        )
+    }
 
 }
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetDialogEditMember(){
-    val text_nombre =  mutableStateOf("")
+fun GetDialogEditMember() {
+    val text_nombre = mutableStateOf("")
     val error_nombre = mutableStateOf(false)
-    val text_correo =  mutableStateOf("")
+    val text_correo = mutableStateOf("")
     val error_correo = mutableStateOf(false)
-    var expanded_role =  mutableStateOf(false)
-    var selected_role =  mutableStateOf("")
+    var expanded_role = mutableStateOf(false)
+    var selected_role = mutableStateOf("")
     val error_role = mutableStateOf(false)
 
     if (openDialogMember.value) {
@@ -456,22 +463,29 @@ fun GetDialogEditMember(){
             confirmButton = {
                 Button(
                     onClick = {
-                        if(text_nombre.value ==""){
+                        if (text_nombre.value == "") {
                             error_nombre.value = true
                         }
-                        if(text_correo.value == ""){
+                        if (text_correo.value == "") {
                             error_correo.value = true
                         }
-                        if(selected_role.value == ""){
+                        if (selected_role.value == "") {
                             error_role.value = true
                         }
-                        if ((text_nombre.value !="") && (text_correo.value != "") && (selected_role.value != "")){
-                            members.add(Member(text_nombre.value,selected_role.value, text_correo.value, "farmer2"))
+                        if ((text_nombre.value != "") && (text_correo.value != "") && (selected_role.value != "")) {
+                            members.add(
+                                Member(
+                                    text_nombre.value,
+                                    selected_role.value,
+                                    text_correo.value,
+                                    "farmer2"
+                                )
+                            )
                             farmViewModelCurrent?.updateMembers(members)
                             openDialogMember.value = false
                             text_nombre.value = ""
                             text_correo.value = ""
-                            selected_role.value=""
+                            selected_role.value = ""
 
                         }
 
@@ -498,35 +512,35 @@ fun GetDialogEditMember(){
                     Text("Cancelar")
                 }
             },
-            title = {Text("Agregar Trabajador")},
+            title = { Text("Agregar Cultivo") },
 
             text = {
                 Column(modifier = Modifier.padding(16.dp)) {
                     OutlinedTextField(
                         value = text_nombre.value,
                         onValueChange = {
-                            text_nombre.value=it
+                            text_nombre.value = it
                             error_nombre.value = false
                         },
-                        label = { Text("Nombre") },
-                        modifier = Modifier.padding(bottom=16.dp),
+                        label = { Text("Nombre cultivo") },
+                        modifier = Modifier.padding(bottom = 16.dp),
                         isError = error_nombre.value
                     )
                     OutlinedTextField(
                         value = text_correo.value,
                         onValueChange = {
-                            text_correo.value=it
+                            text_correo.value = it
                             error_correo.value = false
                         },
-                        label = { Text("Correo") },
-                        modifier = Modifier.padding(bottom=16.dp),
+                        label = { Text("tipo cultivo") },
+                        modifier = Modifier.padding(bottom = 16.dp),
                         isError = error_correo.value
 
                     )
                     ExposedDropdownMenuBox(
                         expanded = expanded_role.value,
                         onExpandedChange = { expanded_role.value = !expanded_role.value },
-                        modifier = Modifier.padding(bottom=16.dp),
+                        modifier = Modifier.padding(bottom = 16.dp),
                     ) {
                         TextField(
                             // The `menuAnchor` modifier must be passed to the text field for correctness.
@@ -546,7 +560,7 @@ fun GetDialogEditMember(){
                             DropdownMenuItem(
                                 text = { Text("Administrador") },
                                 onClick = {
-                                    selected_role.value="Administrador"
+                                    selected_role.value = "Administrador"
                                     expanded_role.value = false
                                     error_role.value = false
                                 },
@@ -555,7 +569,7 @@ fun GetDialogEditMember(){
                             DropdownMenuItem(
                                 text = { Text("Trabajador") },
                                 onClick = {
-                                    selected_role.value="Trabajador"
+                                    selected_role.value = "Trabajador"
                                     expanded_role.value = false
                                     error_role.value = false
                                 },
@@ -569,32 +583,46 @@ fun GetDialogEditMember(){
             })
     }
 }
+
 @Composable
-fun GetFarmDescription(){
-    Box() {
-        Image(
-            painter = painterResource(id = profileImage.value),
-            contentDescription = stringResource(id = R.string.app_name),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
+fun GetCultivosSemillas() {
+//    Box() {
+//        Image(
+//            painter = painterResource(id = profileImage.value),
+//            contentDescription = stringResource(id = R.string.app_name),
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .size(20.dp)
+//                .clip(CircleShape)
+//        )
+//        FilledIconButton(
+//            onClick = { openDialogHome.value=true},
+//            modifier = Modifier
+//                .size(50.dp)
+//                .align(Alignment.BottomEnd),
+//            shape = Shapes().small
+//        ) {
+//            Icon(
+//                Icons.Filled.Edit,
+//                contentDescription = "Localized description",
+//                modifier = Modifier.size(ButtonDefaults.IconSize)
+//            )
+//        }
+//    }
+//    Button(onClick = { /*..*/ }) {
+//        Text(text = "My Button")
+//    }// Button with sufficient contrast ratio
+    Button(
+        onClick = { },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         )
-        FilledIconButton(
-            onClick = { openDialogHome.value=true},
-            modifier = Modifier
-                .size(50.dp)
-                .align(Alignment.BottomEnd),
-            shape = Shapes().small
-        ) {
-            Icon(
-                Icons.Filled.Edit,
-                contentDescription = "Localized description",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
-        }
+    ) {
+        Text(text = "Mis Semillas / Tipos de Cultivos", fontSize = 17.sp)
     }
-    Text(text = nameFarm.value, fontSize = 32.sp)
+//    Text(text = nameFarm.value, fontSize = 16.sp)
+//    Text(text = "Mis Semillas / Tipos de Cultivos", fontSize = 16.sp)
     Row(
 
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -602,38 +630,40 @@ fun GetFarmDescription(){
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .fillMaxWidth()
     ) {
-        Text(text = members.size.toString()+" Trabajadores", fontSize = 28.sp)
-        Button(onClick = { openDialogMember.value = true}) {
+        Text(text = members.size.toString() + " Cultivos", fontSize = 28.sp)
+        Button(onClick = { openDialogMember.value = true }) {
             Icon(
                 Icons.Filled.Add,
                 contentDescription = "Localized description",
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Invitar")
+            Text("Crear Cultivo")
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetMembers(){
-    for(i in 0..Math.ceil((members.size/2).toDouble()).toInt()){
+fun GetMembers() {
+    for (i in 0..Math.ceil((members.size / 2).toDouble()).toInt()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
         ) {
-            for(item in 0..Math.min(2, members.size-(i*2))-1){
+            for (item in 0..Math.min(2, members.size - (i * 2)) - 1) {
                 Card(
-                    modifier = Modifier.size(width =  200.dp, height = 240.dp).padding(start=5.dp, end=5.dp, top=10.dp),
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 240.dp)
+                        .padding(start = 5.dp, end = 5.dp, top = 10.dp),
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 10.dp
                     ),
-                    onClick={
+                    onClick = {
                         openDialogMemberDetails.value = true
-                        currentMember.value = members[(i*2)+item]
+                        currentMember.value = members[(i * 2) + item]
                     }
 
                 ) {
@@ -642,20 +672,20 @@ fun GetMembers(){
                         modifier = Modifier.fillMaxSize()
                     ) {
                         val context = LocalContext.current
-                        val drawableId = remember(members[(i*2)+item].image) {
+                        val drawableId = remember(members[(i * 2) + item].image) {
                             context.resources.getIdentifier(
-                                members[(i*2)+item].image,
+                                members[(i * 2) + item].image,
                                 "drawable",
                                 context.packageName
                             )
                         }
                         Image(
-                            painter = painterResource(id = drawableId),
+                            painter = painterResource(id = R.drawable.farm1),
                             contentDescription = stringResource(id = R.string.app_name),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.size(150.dp)
                         )
-                        members[(i*2)+item].name?.let {
+                        members[(i * 2) + item].name?.let {
                             Text(
                                 it,
                                 modifier = Modifier
@@ -667,7 +697,7 @@ fun GetMembers(){
                                 fontSize = 17.sp
                             )
                         }
-                        members[(i*2)+item].role?.let {
+                        members[(i * 2) + item].role?.let {
                             Text(
                                 it,
                                 modifier = Modifier
@@ -681,30 +711,31 @@ fun GetMembers(){
                         }
                     }
 
-                }}
+                }
+            }
         }
     }
 }
 
-
-
-
-
-
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun Farm(farmViewModel: FarmViewModel){
-    val farm = farmViewModel.farm.observeAsState().value
-    farmViewModelCurrent = farmViewModel
-    if (farm == null){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
-            .fillMaxSize()) {
-            CircularProgressIndicator(
-                modifier = Modifier.semantics(mergeDescendants = true) {}.padding(10.dp)
+fun Cultivo(cultivoViewModel: CultivoViewModel) {
+    val farm = cultivoViewModel.farm.observeAsState().value
+    farmViewModelCurrent = cultivoViewModel
+    if (farm == null) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .semantics(mergeDescendants = true) {}
+                    .padding(10.dp)
             )
         }
-    }else {
-        members.clear()
+    } else {
         members.addAll(farm.members)
         nameFarm.value = farm.name
         val context = LocalContext.current
@@ -729,12 +760,12 @@ fun Farm(farmViewModel: FarmViewModel){
             )
 
             {
-                GetFarmDescription()
+                GetCultivosSemillas()
                 GetMembers()
                 GetDialogEditMember()
                 GetDialogMemberDetails()
                 GetDialogEditHome()
-                GetDialogConfirmDelete()
+//                GetDialogConfirmDelete()
                 GetImageFarm()
             }
         }

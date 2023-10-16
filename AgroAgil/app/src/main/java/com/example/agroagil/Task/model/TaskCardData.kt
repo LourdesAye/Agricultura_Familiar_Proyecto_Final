@@ -1,32 +1,52 @@
 package com.example.agroagil.Task.model
 
-import com.example.agroagil.Task.ui.AppliedFiltersForTasks
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+data class Tasks(
+    //Mismo nombre que en Firebase
+    val tasks: HashMap<String, TaskCardData> = HashMap()
+)
+
 data class TaskCardData(
-    val id: Int,
-    val description: String,
-    val date: Date,
-    val durationHours: Int,
-    var completed: Boolean,
-    val highPriority: Boolean
+    val id: Int = 0,
+    val description: String = "",
+    val isoDate: String = "2023-10-07T15:30:00-03:00",
+    val durationHours: Int = 0,
+    var completed: Boolean = false,
+    val highPriority: Boolean = false
 ) {
+
+
+    private val LOCALE_AR = Locale("es", "AR")
+
+    fun getDate(): Date? {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", LOCALE_AR)
+        try {
+            return sdf.parse(isoDate)
+        } catch (e: Exception) {
+            println("Failed to parse date: ${e.message}")
+        }
+        return null
+    }
+
     private val _maxDescriptionSize = 24
     fun getTaskFormatDate(): String {
+        val date = getDate() ?: return ""
+
         // Formatear el día de la semana (Domingo, Lunes, etc.)
-        val formatoDiaSemana = SimpleDateFormat("EEEE", Locale("es", "ES"))
+        val formatoDiaSemana = SimpleDateFormat("EEEE", LOCALE_AR)
         val diaSemana = formatoDiaSemana.format(date)
 
         // Formatear la fecha (10/09)
-        val dateFormat = SimpleDateFormat("dd/MM", Locale("es", "ES"))
+        val dateFormat = SimpleDateFormat("dd/MM", LOCALE_AR)
         val formattedDate = dateFormat.format(date)
 
         // Formatear la hora (13:24)
-        val hourFormat = SimpleDateFormat("HH:mm", Locale("es", "ES"))
+        val hourFormat = SimpleDateFormat("HH:mm", LOCALE_AR)
         val fromHour = hourFormat.format(date)
         val toHour = hourFormat.format(addHoursToDate(date, durationHours))
 
@@ -46,12 +66,13 @@ data class TaskCardData(
     }
 
     fun passFilters(appliedFilters : AppliedFiltersForTasks): Boolean {
+        val date = getDate() ?: return true
         val currentDate = Calendar.getInstance().time
         if(appliedFilters.noFilterApplied()) //Se muestra la tarea si cumple por lo menos un filtro
             return true
 
         var passDateFilters = appliedFilters.noDateFilterApplied()
-        var passPriorityFilters = appliedFilters.noPriorityFiolterApplied()
+        var passPriorityFilters = appliedFilters.noPriorityFilterApplied()
 
         if(appliedFilters.filterByOverdue && isDate1OverdueComparedToDate2(date, currentDate) )
             passDateFilters = true
