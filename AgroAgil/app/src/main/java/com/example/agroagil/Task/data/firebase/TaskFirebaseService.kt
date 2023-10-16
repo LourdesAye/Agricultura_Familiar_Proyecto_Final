@@ -63,6 +63,7 @@ class TaskFirebaseService {
                     continuation.resume(true)
                 }
                 .addOnFailureListener { exception ->
+                    exception.printStackTrace()
                     continuation.resumeWithException(exception)
                 }
         }

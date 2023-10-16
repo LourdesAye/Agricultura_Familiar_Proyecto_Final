@@ -72,4 +72,16 @@ data class Task(
 
         return "$hour"
     }
+
+    fun getISODateFromCalendar(): String {
+        // Create a SimpleDateFormat object with ISO 8601 format
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
+
+        if(calendarDate != null ) {
+            // Apply the time zone of the calendar to the SimpleDateFormat
+            sdf.timeZone = calendarDate.timeZone
+            // Convert the Calendar object to a Date and then format it to an ISO 8601 string
+            return sdf.format(calendarDate.time)
+        } else return ""
+    }
 }

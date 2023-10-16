@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
@@ -43,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
@@ -52,92 +50,55 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.agroagil.R
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
-    Text(text = "Agregar tarea...", fontWeight = FontWeight.Bold)
     val showDatePickerDialog = remember { mutableStateOf(false) }
     var showTimePicker = remember { mutableStateOf(false) }
     val dateSelectedString = taskViewModel.dateSelectedString.observeAsState().value
     val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
     var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
+    val scrollState = rememberScrollState()
 
-
-    //Descripción (título)
-    OutlinedTextField(
-        value = taskToCreate!!.description,
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
-        label = { Text("Descripción") }
-    )
-    //Fecha
-    TextButtonWithIcon(
-        onClick = { showDatePickerDialog.value = true },
-        icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
-        text = dateSelectedString!!
-    )
-    DatePickerScreen(showDatePickerDialog, taskViewModel)
-
-    //Hora
-    TextButtonWithIcon(
-        onClick = { showTimePicker.value = true },
-        icon = { Icon(
-            painter = painterResource(id = R.drawable.clock_24),
-            contentDescription = "Time Picker Icon"
-        )
-        },
-        text = timeSelectedString!!
-    )
-    TimePickerDialogScreen(showTimePicker, taskViewModel)
-
-    //Estimación de tiempo
-    OutlinedTextField(
-        value = taskToCreate!!.durationHours.toString(),
-        onValueChange = { taskViewModel.onEstimationChange(it) },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { /* Handle done event, if necessary */ }
-        ),
-        visualTransformation = VisualTransformation.None,
-        label = { Text("Estimación de tiempo necesário (Hs)") }
-    )
-
-    //Ubicación en el campo
-    OutlinedTextField(
-        value = taskToCreate!!.locationInFarm,
-        onValueChange = { taskViewModel.onLocationInFarmChange(it) },
-        label = { Text("Ubicación en el campo") }
-    )
-    //Responsables de la tarea
-    OutlinedTextField(
-        value = taskToCreate!!.getTaskFormatTime(),
-        onValueChange = { taskViewModel.onResponsiblesChange() },
-        label = { Text("Responsables de la tarea") }
-    )
-    //Prioridad alta
-    SwitchWithIcon("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
-    //Instrucciones detalladas
-    OutlinedTextField(
-        value = taskToCreate!!.detailedInstructions,
-        onValueChange = { taskViewModel.onDetailedInstructionsChange(it) },
-        label = { Text("Instrucciones detalladas") }
-    )
-    //TODO: recursos necesários. Validar si es útil este campo
-
-    //Repetición
-    SwitchWithIcon("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
-    //Frecuencia de repetición
-    if(taskToCreate!!.repeatable) {
+    Column(
+        modifier = Modifier.verticalScroll(scrollState)
+    ){
+        val paddingBottom = 4
+        Text(modifier = Modifier.padding(bottom = paddingBottom.dp),text = "Agregar nueva", style = MaterialTheme.typography.headlineLarge)
+        //Descripción (título)
         OutlinedTextField(
+            modifier = Modifier.padding(bottom = paddingBottom.dp),
+            value = taskToCreate!!.description,
+            onValueChange = { taskViewModel.onDescriptionChange(it) },
+            label = { Text("Descripción") }
+        )
+        //Fecha
+        TextButtonWithIcon(
+            onClick = { showDatePickerDialog.value = true },
+            icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
+            text = dateSelectedString!!
+        )
+        DatePickerScreen(showDatePickerDialog, taskViewModel)
+
+        //Hora
+        TextButtonWithIcon(
+            onClick = { showTimePicker.value = true },
+            icon = { Icon(
+                painter = painterResource(id = R.drawable.clock_24),
+                contentDescription = "Time Picker Icon"
+            )
+            },
+            text = timeSelectedString!!
+        )
+        TimePickerDialogScreen(showTimePicker, taskViewModel)
+
+        //Estimación de tiempo
+        OutlinedTextField(
+            modifier = Modifier.padding(bottom = paddingBottom.dp),
             value = taskToCreate!!.durationHours.toString(),
-            onValueChange = { taskViewModel.onFrequencyOfRepetitionChange(it) },
+            onValueChange = { taskViewModel.onEstimationChange(it) },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
@@ -146,13 +107,57 @@ fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
                 onDone = { /* Handle done event, if necessary */ }
             ),
             visualTransformation = VisualTransformation.None,
-            label = { Text("Días entre repetición") }
+            label = { Text("Estimación de tiempo necesário (Hs)") }
         )
-    }
 
-    //Recordatorio
-    //Botones de guardado y cancelar
-    SaveOrCancelbuttonsRow({ taskViewModel.onSave() }, navController = navController)
+        //Ubicación en el campo
+        OutlinedTextField(
+            modifier = Modifier.padding(bottom = paddingBottom.dp),
+            value = taskToCreate!!.locationInFarm,
+            onValueChange = { taskViewModel.onLocationInFarmChange(it) },
+            label = { Text("Ubicación en el campo") }
+        )
+        //Responsables de la tarea
+        OutlinedTextField(
+            modifier = Modifier.padding(bottom = paddingBottom.dp),
+            value = taskToCreate!!.getTaskFormatTime(),
+            onValueChange = { taskViewModel.onResponsiblesChange() },
+            label = { Text("Responsables de la tarea") }
+        )
+        //Prioridad alta
+        SwitchWithText("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
+        //Instrucciones detalladas
+        OutlinedTextField(
+            value = taskToCreate!!.detailedInstructions,
+            onValueChange = { taskViewModel.onDetailedInstructionsChange(it) },
+            label = { Text("Instrucciones detalladas") }
+        )
+        //TODO: recursos necesários. Validar si es útil este campo
+
+        //Repetición
+        SwitchWithText("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
+        //Frecuencia de repetición
+        if(taskToCreate!!.repeatable) {
+            OutlinedTextField(
+                modifier = Modifier.padding(bottom = paddingBottom.dp),
+                value = taskToCreate!!.durationHours.toString(),
+                onValueChange = { taskViewModel.onFrequencyOfRepetitionChange(it) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { /* Handle done event, if necessary */ }
+                ),
+                visualTransformation = VisualTransformation.None,
+                label = { Text("Días entre repetición", style = MaterialTheme.typography.bodyLarge) }
+            )
+        }
+
+        //Recordatorio
+        //Botones de guardado y cancelar
+        SaveOrCancelbuttonsRow({ taskViewModel.onSave() }, navController = navController)
+    }
 }
 
 
@@ -281,32 +286,26 @@ fun TextButtonWithIcon(onClick: () -> Unit, icon: @Composable () -> Unit = {}, t
             modifier = Modifier.padding(horizontal = 4.dp)
         ) {
             icon()
-            Text(text)
+            Text(text, style = MaterialTheme.typography.titleLarge)
         }
     }
 }
 
 
 @Composable
-fun SwitchWithIcon(description: String, checked: Boolean, onCheckedChange: () -> Unit) {
+fun SwitchWithText(description: String, checked: Boolean, onCheckedChange: () -> Unit) {
 
-    Row {
-        Text(text = description)
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 30.dp))
+    {
+        Text(text = description, style = MaterialTheme.typography.titleLarge)
         Switch(
             checked = checked,
             onCheckedChange = {
                 onCheckedChange()
-            },
-            thumbContent = if (checked) {
-                {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
             }
         )
     }
