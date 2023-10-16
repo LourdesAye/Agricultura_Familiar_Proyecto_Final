@@ -2,6 +2,7 @@ package com.example.agroagil.Task.model
 
 import com.example.agroagil.core.models.Member
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -22,8 +23,10 @@ data class Task(
     val detailedInstructions: String = "",
     val repeatable: Boolean = false,
     val repetitionIntervalInDays: Int = 0,
-    val creator: Member = Member()
+    val creator: Member = Member(),
     //TODO validar si este campo va: val resultExpected: String
+
+    val calendarDate: Calendar?
 ) {
     private val LOCALE_AR = Locale("es", "AR")
 
@@ -39,25 +42,33 @@ data class Task(
 
 
     fun getTaskFormatDate(): String {
-        val date = getDate() ?: return ""
+        if(calendarDate == null)
+            return ""
 
         // Formatear el día de la semana (Domingo, Lunes, etc.)
         val formatoDiaSemana = SimpleDateFormat("EEEE", LOCALE_AR)
-        val diaSemana = formatoDiaSemana.format(date)
+        //TODO Borrar:
+        val date = calendarDate.time
+
+        val diaSemana = formatoDiaSemana.format(calendarDate.time)
 
         // Formatear la fecha (10/09)
         val dateFormat = SimpleDateFormat("dd/MM", LOCALE_AR)
-        val formattedDate = dateFormat.format(date)
+        val formattedDate = dateFormat.format(calendarDate.time)
 
-        return "${diaSemana.replaceFirstChar { a -> a.uppercase() }} $formattedDate"
+        // Formatear el año (2023)
+        val yearFormat = SimpleDateFormat("yyyy", LOCALE_AR)
+        val formattedYear = yearFormat.format(calendarDate.time)
+
+        return "${diaSemana.replaceFirstChar { a -> a.uppercase() }} $formattedDate de $formattedYear"
     }
 
     fun getTaskFormatTime(): String {
-        val date = getDate() ?: return ""
-
+        if(calendarDate == null)
+            return ""
         // Formatear la hora (13:24)
         val hourFormat = SimpleDateFormat("HH:mm", LOCALE_AR)
-        val hour = hourFormat.format(date)
+        val hour = hourFormat.format(calendarDate.time)
 
         return "$hour"
     }

@@ -2,25 +2,33 @@ package com.example.agroagil.Task.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
@@ -32,24 +40,31 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.example.agroagil.R
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Date
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
     Text(text = "Agregar tarea...", fontWeight = FontWeight.Bold)
-    val opendatePickerDialog = remember { mutableStateOf(true) }
+    val showDatePickerDialog = remember { mutableStateOf(false) }
     var showTimePicker = remember { mutableStateOf(false) }
-    // var taskCardDataList = taskViewModel.taskCardDataList.observeAsState().value
+    val dateSelectedString = taskViewModel.dateSelectedString.observeAsState().value
+    val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
     var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
 
 
@@ -59,78 +74,93 @@ fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
         onValueChange = { taskViewModel.onDescriptionChange(it) },
         label = { Text("Descripción") }
     )
-    //Fecha y hora para realizar la tarea
-
-    OutlinedTextField(
-        value = taskToCreate!!.getTaskFormatDate(),
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
-        label = { Text("Fecha") },
-        modifier = Modifier.clickable(
-            onClick = {
-                // Perform your action here
-                opendatePickerDialog.value = true
-            }
-        )
+    //Fecha
+    TextButtonWithIcon(
+        onClick = { showDatePickerDialog.value = true },
+        icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
+        text = dateSelectedString!!
     )
+    DatePickerScreen(showDatePickerDialog, taskViewModel)
 
-    DatePickerScreen(opendatePickerDialog, taskViewModel)
-    OutlinedTextField(
-        value = taskToCreate!!.getTaskFormatTime(),
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
-        label = { Text("Hora") },
-        modifier = Modifier.clickable(
-            onClick = {
-                // Perform your action here
-                showTimePicker.value = true
-            }
+    //Hora
+    TextButtonWithIcon(
+        onClick = { showTimePicker.value = true },
+        icon = { Icon(
+            painter = painterResource(id = R.drawable.clock_24),
+            contentDescription = "Time Picker Icon"
         )
+        },
+        text = timeSelectedString!!
     )
     TimePickerDialogScreen(showTimePicker, taskViewModel)
 
     //Estimación de tiempo
     OutlinedTextField(
-        value = taskToCreate!!.getTaskFormatTime(),
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
-        label = { Text("Estimación de tiempo (Hs)") }
+        value = taskToCreate!!.durationHours.toString(),
+        onValueChange = { taskViewModel.onEstimationChange(it) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { /* Handle done event, if necessary */ }
+        ),
+        visualTransformation = VisualTransformation.None,
+        label = { Text("Estimación de tiempo necesário (Hs)") }
     )
+
     //Ubicación en el campo
     OutlinedTextField(
-        value = taskToCreate!!.getTaskFormatTime(),
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
+        value = taskToCreate!!.locationInFarm,
+        onValueChange = { taskViewModel.onLocationInFarmChange(it) },
         label = { Text("Ubicación en el campo") }
     )
     //Responsables de la tarea
     OutlinedTextField(
         value = taskToCreate!!.getTaskFormatTime(),
-        onValueChange = { taskViewModel.onDescriptionChange(it) },
+        onValueChange = { taskViewModel.onResponsiblesChange() },
         label = { Text("Responsables de la tarea") }
     )
     //Prioridad alta
-
+    SwitchWithIcon("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
     //Instrucciones detalladas
-
-    //TODO: recurosos necesários. Validar si es útil este campo
+    OutlinedTextField(
+        value = taskToCreate!!.detailedInstructions,
+        onValueChange = { taskViewModel.onDetailedInstructionsChange(it) },
+        label = { Text("Instrucciones detalladas") }
+    )
+    //TODO: recursos necesários. Validar si es útil este campo
 
     //Repetición
-
+    SwitchWithIcon("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
     //Frecuencia de repetición
+    if(taskToCreate!!.repeatable) {
+        OutlinedTextField(
+            value = taskToCreate!!.durationHours.toString(),
+            onValueChange = { taskViewModel.onFrequencyOfRepetitionChange(it) },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { /* Handle done event, if necessary */ }
+            ),
+            visualTransformation = VisualTransformation.None,
+            label = { Text("Días entre repetición") }
+        )
+    }
 
     //Recordatorio
-
-
+    //Botones de guardado y cancelar
+    SaveOrCancelbuttonsRow({ taskViewModel.onSave() }, navController = navController)
 }
+
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerScreen(opendatePickerDialog: MutableState<Boolean>, taskViewModel: TaskViewModel) {
-// Decoupled snackbar host state from scaffold state for demo purposes.
-    val snackState = remember { SnackbarHostState() }
-    val snackScope = rememberCoroutineScope()
-    SnackbarHost(hostState = snackState, Modifier)
-
-// TODO demo how to read the selected date from the state.
-    if (opendatePickerDialog.value) {
+fun DatePickerScreen(showDatePickerDialog: MutableState<Boolean>, taskViewModel: TaskViewModel) {
+    if (showDatePickerDialog.value) {
         val datePickerState = rememberDatePickerState()
         val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
         DatePickerDialog(
@@ -138,34 +168,29 @@ fun DatePickerScreen(opendatePickerDialog: MutableState<Boolean>, taskViewModel:
                 // Dismiss the dialog when the user clicks outside the dialog or on the back
                 // button. If you want to disable that functionality, simply use an empty
                 // onDismissRequest.
-                opendatePickerDialog.value = false
+                showDatePickerDialog.value = false
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        opendatePickerDialog.value = false
-                        snackScope.launch {
-
-                            snackState.showSnackbar(
-                                "Selected date timestamp: ${datePickerState.selectedDateMillis}"
-                            )
-                        }
+                        showDatePickerDialog.value = false
+                        taskViewModel.onDateChange(datePickerState.selectedDateMillis)
                     },
                     enabled = confirmEnabled.value
                 ) {
-                    Text("OK")
+                    Text("Aceptar")
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
-                        opendatePickerDialog.value = false
+                        showDatePickerDialog.value = false
                     }
                 ) {
-                    Text("Cancel")
+                    Text("Cancelar")
                 }
             }
-        ) {
+        ){
             DatePicker(state = datePickerState)
         }
     }
@@ -175,32 +200,14 @@ fun DatePickerScreen(opendatePickerDialog: MutableState<Boolean>, taskViewModel:
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerDialogScreen( showTimePicker: MutableState<Boolean>, taskViewModel: TaskViewModel) {
-
-    val date = taskViewModel.dateOftaskToCreate.observeAsState().value
-
-
     val state = rememberTimePickerState(is24Hour = true)
-    val snackState = remember { SnackbarHostState() }
-    Box(propagateMinConstraints = false) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = { showTimePicker.value = true }
-        ) {
-            Text("Set Time")
-        }
-        SnackbarHost(hostState = snackState)
-    }
 
     if (showTimePicker.value) {
-        TimePickerDialog(
+        PickerDialog(
             title = "Ingrese la hora",
             onCancel = { showTimePicker.value = false },
             onConfirm = {
-                val cal = Calendar.getInstance()
-                cal.set(Calendar.HOUR_OF_DAY, state.hour)
-                cal.set(Calendar.MINUTE, state.minute)
-                cal.isLenient = false
-                taskViewModel.onDateTimeChange( date!!, cal)
+                taskViewModel.onTimeChange(state.hour, state.minute)
                 showTimePicker.value = false
             }
         ) {
@@ -210,7 +217,7 @@ fun TimePickerDialogScreen( showTimePicker: MutableState<Boolean>, taskViewModel
 }
 
 @Composable
-fun TimePickerDialog(
+fun PickerDialog(
     title: String = "Select Time",
     onCancel: () -> Unit,
     onConfirm: () -> Unit,
@@ -255,10 +262,76 @@ fun TimePickerDialog(
                     Spacer(modifier = Modifier.weight(1f))
                     TextButton(
                         onClick = onCancel
-                    ) { Text("Cancel") }
+                    ) { Text("Cancelar") }
                     TextButton(
                         onClick = onConfirm
-                    ) { Text("OK") }
+                    ) { Text("Aceptar") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TextButtonWithIcon(onClick: () -> Unit, icon: @Composable () -> Unit = {}, text:String) {
+    TextButton(onClick = onClick) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp), // Space between the Text and the Icon
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        ) {
+            icon()
+            Text(text)
+        }
+    }
+}
+
+
+@Composable
+fun SwitchWithIcon(description: String, checked: Boolean, onCheckedChange: () -> Unit) {
+
+    Row {
+        Text(text = description)
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                onCheckedChange()
+            },
+            thumbContent = if (checked) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                }
+            } else {
+                null
+            }
+        )
+    }
+}
+
+@Composable
+fun SaveOrCancelbuttonsRow(onSave: () -> Unit, navController: NavController) {
+    Column(){
+        Box(modifier = Modifier.fillMaxSize()){
+            Row(horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(30.dp)){
+                Button(onClick = onSave, modifier = Modifier.align(Alignment.CenterVertically)
+
+                ) {
+
+                    Text("Guardar")
+                }
+                TextButton(
+                    onClick = {
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text("Cancelar")
                 }
             }
         }

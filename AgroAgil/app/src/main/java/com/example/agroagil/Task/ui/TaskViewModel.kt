@@ -2,6 +2,7 @@ package com.example.agroagil.Task.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,10 +14,7 @@ import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
-import java.util.TimeZone
 
 const val COMPLETED_TASK_CARD_COLOR = "#E2F2F2"
 const val INCOMPLETE_IMPORTANT_TASK_CARD_COLOR = "#FAE9E8"
@@ -95,7 +93,7 @@ class TaskViewModel: ViewModel() {
     }
 
     //Pantalla para crear una nueva tarea -----------------------------------
-    private val _taskToCreate =  MutableLiveData<Task>(Task())
+    private val _taskToCreate =  MutableLiveData<Task>(Task(calendarDate = null))
     val taskToCreate: LiveData<Task> = _taskToCreate
 
     fun onDescriptionChange(description: String) {
@@ -103,26 +101,105 @@ class TaskViewModel: ViewModel() {
         _taskToCreate.postValue(currentTaskToCreate.copy(description = description))
     }
 
-    private val _dateOftaskToCreate =  MutableLiveData<Calendar>(Calendar.getInstance())
-    val dateOftaskToCreate: LiveData<Calendar> = _dateOftaskToCreate
+    private val _dateSelectedString = MutableLiveData<String>("Definir fecha de la tarea")
+    val dateSelectedString : LiveData<String> = _dateSelectedString
 
-    private val _timeOftaskToCreate =  MutableLiveData<Calendar>(Calendar.getInstance())
-    val timeOftaskToCreate: LiveData<Calendar> = _timeOftaskToCreate
+    private val _timeSelectedString = MutableLiveData<String>("Definir hora de la tarea")
+    val timeSelectedString : LiveData<String> = _timeSelectedString
 
-    fun onDateTimeChange(date: Calendar, time: Calendar) {
-        _dateOftaskToCreate.postValue(date)
-        _timeOftaskToCreate.postValue(time) //2001-01-01T00:00:00-03:00
 
-        // Create a SimpleDateFormat object with the desired format
-        val timeFormatter = SimpleDateFormat("HH:mm:ssXXX", Locale.getDefault())
+    fun onDateChange(timestamp: Long?) {
+        if (timestamp == null)
+            return
 
-        val dateFormatter = SimpleDateFormat("yyyy-MM-dd")
-        val isoDate: String = "${ dateFormatter.format(date.time) }T${ timeFormatter.format(time.time) }"
+        var calendarFromTimestamp = Calendar.getInstance()
+        calendarFromTimestamp.timeInMillis = timestamp // Convert time to Calendar object
 
         val currentTaskToCreate = _taskToCreate.value ?: return
-        _taskToCreate.postValue(currentTaskToCreate.copy(isoDate = isoDate))
+        val currentDate = currentTaskToCreate.calendarDate
+
+        if (currentDate != null) {
+            calendarFromTimestamp.set(Calendar.HOUR_OF_DAY, currentDate.get(Calendar.HOUR_OF_DAY))
+            calendarFromTimestamp.set(Calendar.MINUTE, currentDate.get(Calendar.MINUTE))
+        }
+
+        val updatedTask = currentTaskToCreate.copy(calendarDate = calendarFromTimestamp)
+        _taskToCreate.postValue(updatedTask)
+        _dateSelectedString.postValue("El día ${updatedTask.getTaskFormatDate()}")
     }
 
+    fun onTimeChange(hour: Int, minute: Int) {
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        var currentDate = currentTaskToCreate.calendarDate
+        if(currentDate == null)
+            currentDate = Calendar.getInstance()
+
+        currentDate!!.set(Calendar.HOUR_OF_DAY, hour)
+        currentDate.set(Calendar.MINUTE, minute)
+        currentDate.isLenient = false
+
+        val updatedTask = currentTaskToCreate.copy(calendarDate = currentDate)
+        _taskToCreate.postValue(updatedTask)
+        _timeSelectedString.postValue("A las ${ updatedTask.getTaskFormatTime() } horas")
+    }
+
+    fun onEstimationChange(estimationText: String) {
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        if(estimationText.isDigitsOnly()) {
+            val estimation = estimationText.toInt()
+            val updatedTask = currentTaskToCreate.copy(durationHours = estimation)
+            _taskToCreate.postValue(updatedTask)
+        }
+    }
+
+    fun onLocationInFarmChange(location: String) {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+
+        val updatedTask = currentTaskToCreate.copy(locationInFarm = location)
+        _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onResponsiblesChange() {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+
+        val updatedTask = currentTaskToCreate.copy()
+        _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onHighPriorityChange() {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+
+    val updatedTask = currentTaskToCreate.copy(highPriority = !currentTaskToCreate.highPriority)
+    _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onDetailedInstructionsChange(detailedInstructions: String) {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+    val updatedTask = currentTaskToCreate.copy(detailedInstructions = detailedInstructions)
+    _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onRepetitionChange() {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+
+        val updatedTask = currentTaskToCreate.copy()
+    _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onFrequencyOfRepetitionChange(frecuencyText: String) {
+    val currentTaskToCreate = _taskToCreate.value ?: return
+
+        if(frecuencyText.isDigitsOnly()) {
+            val frequency = frecuencyText.toInt()
+            val updatedTask = currentTaskToCreate.copy(repetitionIntervalInDays = frequency)
+            _taskToCreate.postValue(updatedTask)
+
+        }
+    }
+
+    fun onSave() {
+
+    }
 
 
 }

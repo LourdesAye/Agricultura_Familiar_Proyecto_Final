@@ -23,7 +23,9 @@ class TaskFirebaseService {
     suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
         try {
             return suspendCancellableCoroutine { continuation ->
-                Firebase.database.getReference("$PARENT_TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
+                Firebase.database.getReference("$PARENT_TASK_PATH$userId")
+                    .orderByChild("isoDate")
+                    .get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Tasks::class.java) as Tasks
                     continuation.resume(hashMapToListofTasks(value.tasks))
                 }.addOnFailureListener { exception ->
@@ -118,7 +120,7 @@ class TaskFirebaseService {
             // Handle exception if needed
             println("Firebase: Error from getTaskForUser.")
             e.printStackTrace()
-            return Task()
+            return Task(calendarDate = null)
         }
     }
 }
