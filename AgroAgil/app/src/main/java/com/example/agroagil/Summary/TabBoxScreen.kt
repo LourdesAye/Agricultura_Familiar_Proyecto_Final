@@ -72,6 +72,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import java.util.Locale
 
 var filters = mutableStateListOf<Function1<List<EventOperation>, List<EventOperation>>>()
+var filtersDate = mutableStateListOf<Function1<List<EventOperation>, List<EventOperation>>>()
 var listItemData = mutableStateListOf<EventOperation>()
 var listItemDataFilter = mutableStateListOf<EventOperation>(
 )
@@ -175,6 +176,13 @@ fun resetFilter(){
         var filtroExecute = mutableListOf<List<EventOperation>>()
         filtroExecute.addAll(listOf(filters[i](listItemData)))
         listItemDataFilter.addAll(filtroExecute.flatten())
+    }
+    for (i in 0 .. filtersDate.size-1) {
+        var filtroExecute = mutableListOf<List<EventOperation>>()
+        filtroExecute.addAll(listOf(filtersDate[i](listItemDataFilter)))
+        listItemDataFilter.clear()
+        listItemDataFilter.addAll(filtroExecute.flatten())
+
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)

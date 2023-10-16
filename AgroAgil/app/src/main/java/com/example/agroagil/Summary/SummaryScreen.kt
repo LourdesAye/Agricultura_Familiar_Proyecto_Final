@@ -267,7 +267,7 @@ fun DialogCustomDate(){
                             if(!checkEndDate){
                                 dataDateEnd.value = dataDateStart.value
                             }
-                            filters.add(::filterDates)
+                            filtersDate.add(::filterDates)
                             dateFilterChip.value = true
                         }
                         expandedFilter.value = false
@@ -345,7 +345,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                                 currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
                             dataDateEnd.value =
                                 currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                            filters.add(::filterDates)
+                            filtersDate.add(::filterDates)
                             dateFilterChip.value = true
                             expandedFilter.value = false
                         },
@@ -361,7 +361,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                                 firstDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
                             dataDateEnd.value =
                                 lastDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                            filters.add(::filterDates)
+                            filtersDate.add(::filterDates)
                             dateFilterChip.value = true
                             expandedFilter.value = false
                         },
@@ -382,7 +382,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                     InputChip(
                         selected = false,
                         onClick = {
-                            filters.remove(::filterDates)
+                            filtersDate.remove(::filterDates)
                             resetFilter()
                             dateFilterChip.value = false
                         },
