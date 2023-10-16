@@ -8,6 +8,9 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
 import com.example.agroagil.core.models.EventOperation
 import com.example.agroagil.core.models.EventOperationBox
+import com.example.agroagil.core.models.EventOperationStock
+import com.example.agroagil.core.models.Product
+import com.example.agroagil.core.models.Stock
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -34,6 +37,7 @@ class SummaryViewModel: ViewModel() {
             // Handle exception if needed
         }
     }
+
     var buys = liveData(Dispatchers.IO) {
         emit(null)
 
@@ -51,7 +55,30 @@ class SummaryViewModel: ViewModel() {
             // Handle exception if needed
         }
     }
+    var stocks = liveData(Dispatchers.IO) {
+        emit(null)
 
+        try {
+            val realValue = suspendCancellableCoroutine<List<Stock>> { continuation ->
+                Firebase.database.getReference("stock/0/").get().addOnSuccessListener { snapshot ->
+                    val genericType = object : GenericTypeIndicator<HashMap<String, Stock>>() {}
+                    val value = snapshot.getValue(genericType)
+                    val result = value?.values?.toList() ?: emptyList()
+                    continuation.resume(result)
+                    /*
+                    val value = snapshot.getValue(HashMap<String, EventOperationBox>()::class.java) as HashMap<String, EventOperationBox>
+                    var result = mutableListOf<EventOperationBox>()
+                    result = value.values.toMutableList()
+                    continuation.resume(result)*/
+                }.addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+            }
+            emit(realValue)
+        } catch (e: Exception) {
+            // Handle exception if needed
+        }
+    }
     var events = liveData(Dispatchers.IO) {
         emit(null)
 
@@ -95,6 +122,21 @@ class SummaryViewModel: ViewModel() {
         }
     }
 
+    fun getSummaryDataStock(dateStart: String, dateEnd: String): List<Pair<String, Double>> {
+        var result = HashMap<String, Double>()
+        for (i in stocks.value!!){
+            if (!(i.type in result.keys)){
+                result[i.type] = 0.0
+            }
+            result[i.type] = result[i.type]!! + (i.product.price * i.product.amount)
+        }
+        var results = mutableListOf<Pair<String, Double>>()
+        for (i in result){
+            results.add(i.key to i.value)
+        }
+        return results
+    }
+
     fun getSummaryData(dateStart: String, dateEnd: String): List<Pair<String, Float>> {
         var sellPaid = sells.value?.filter{it.paid}
         var buyPaid = buys.value?.filter{it.paid}
@@ -114,12 +156,14 @@ class SummaryViewModel: ViewModel() {
             "Ingresos" to totalPriceSell,
             "Egresos" to totalPriceBuy,
         )
+    }
+
+    fun init(){
+        var getKey = Firebase.database.getReference("events/0/stock").push().key
+        val updates = HashMap<String, Any>()
+        updates["/$getKey"] = EventOperationStock()
+        Firebase.database.getReference("events/0/stock").updateChildren(updates)
 
 
     }
-    /*
-    fun init(){
-        Firebase.database.getReference("events/0/boxs").setValue(EventsOperationBox(listOf(EventOperationBox(1000.0, typeEvent="Registro de venta", operation="Sell",referenceID="1"),
-            EventOperationBox(1000.0, typeEvent="Ingreso de pago de la venta", operation="Sell",referenceID="1"))))
-    }*/
 }

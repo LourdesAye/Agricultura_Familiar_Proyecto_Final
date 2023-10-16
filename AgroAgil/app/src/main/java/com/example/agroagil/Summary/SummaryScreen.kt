@@ -402,7 +402,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
             if (state == 1){
 
             }else{
-
+                StockSummary(summaryViewModel,navController)
             }
         }
 

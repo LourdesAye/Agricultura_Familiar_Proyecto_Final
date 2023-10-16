@@ -42,3 +42,11 @@ data class EventOperationBox (
     val referenceID: String = ""
 ){
 }
+
+data class EventOperationStock (
+    val date: String = "01/01/2023 00:00",
+    var nameUser:String = "Usuario 1", //Usuario que ejecuto la accion
+    val typeEvent: String = "",
+    val referenceID: String = ""
+){
+}
