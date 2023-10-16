@@ -39,6 +39,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -50,6 +51,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.agroagil.R
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +63,7 @@ fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
     val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
     var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
     val scrollState = rememberScrollState()
-
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier.verticalScroll(scrollState)
     ){
@@ -156,7 +158,10 @@ fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
 
         //Recordatorio
         //Botones de guardado y cancelar
-        SaveOrCancelbuttonsRow({ taskViewModel.onSave() }, navController = navController)
+        SaveOrCancelbuttonsRow({
+            coroutineScope.launch {
+                taskViewModel.onSave()
+            }}, navController = navController)
     }
 }
 

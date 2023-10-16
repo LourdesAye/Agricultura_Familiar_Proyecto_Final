@@ -200,12 +200,17 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    fun onSave() {
+    private val _showSnackbarFortaskSaved = MutableLiveData<Boolean>(false)
+    val showSnackbarFortaskSaved: LiveData<Boolean> = _showSnackbarFortaskSaved
+
+    suspend fun onSave() {
         val currentTaskToCreate = _taskToCreate.value ?: return
         val isoDate = currentTaskToCreate.getISODateFromCalendar()
         //TODO: Agregar validaciones a todos los campos de la tarea
         //TODO: El userId es 0 por defecto. Cambiar luego al ID del usuario logueado
-        taskRepository.addNewTaskForUser(currentTaskToCreate.copy(isoDate = isoDate), 0)
+        val result = taskRepository.addNewTaskForUser(currentTaskToCreate.copy(isoDate = isoDate), 0)
+
+        _showSnackbarFortaskSaved.postValue(result)
     }
 
 
