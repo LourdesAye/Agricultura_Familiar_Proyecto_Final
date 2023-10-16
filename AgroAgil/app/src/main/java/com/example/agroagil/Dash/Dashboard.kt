@@ -156,9 +156,9 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(horizontal = 8.dp)
                         .height(120.dp),
-                        elevation = CardDefaults.cardElevation(
+                    elevation = CardDefaults.cardElevation(
                         defaultElevation = 12.dp
                     ),
                     shape = MaterialTheme.shapes.small,
@@ -167,15 +167,26 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                         containerColor = Color.White
                     ),
                 ) {
-                    // Contenido de la card cyan
+                    // Contenido de la card celeste
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(start = 32.dp , top = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = "$location   $temperature°C",
+                            color = textColor,
+                            fontWeight = FontWeight.Bold
+                        )}
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
+
                             // Muestra el ícono del clima
                             Image(
                                 painter = iconPainter,
@@ -186,22 +197,22 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                                 contentScale = ContentScale.FillBounds  // escala sin estirar
                             )
 
-                            // Muestra la ubicación, la temperatura y la descripción en una Columna
+                            // Muestra la fecha, la descripción traducida y la min y max
                             Column {
                                 Text(
-                                    text = "$location   $temperature°C     $currentDate",
+                                    text = translatedDescription,
                                     color = textColor,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = translatedDescription,
+                                    text = currentDate,
                                     color = Color.Black,
-                                    fontWeight = FontWeight.Bold
+                                  //  fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
                                     color = Color.Black,
-                                    fontWeight = FontWeight.Bold
+                                    // fontWeight = FontWeight.Bold
                                 )
                             }
                         }
