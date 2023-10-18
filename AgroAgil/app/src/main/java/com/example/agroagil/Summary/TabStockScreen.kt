@@ -2,6 +2,7 @@ package com.example.agroagil.Summary
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,13 +20,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,11 +50,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Buy.ui.Pagado
+import com.example.agroagil.Buy.ui.PagadoClick
+import com.example.agroagil.Buy.ui.SinPagar
+import com.example.agroagil.Buy.ui.SinPagarClick
 import com.example.agroagil.core.models.EventOperation
 import com.example.agroagil.core.models.EventOperationBox
 import com.example.agroagil.core.models.EventOperationStock
@@ -69,6 +78,22 @@ var filtersDateStock = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var listItemDataStock = mutableStateListOf<Stock>()
 var listItemDataFilterStock = mutableStateListOf<Stock>(
 )
+
+fun filterHerramienta(events:List<Stock>): List<Stock> {
+    return events.filter { it -> it.type=="Herramienta" }
+}
+
+fun filterFertilizante(events:List<Stock>): List<Stock> {
+    return events.filter { it -> it.type=="Fertilizante" }
+}
+
+fun filterCultivo(events:List<Stock>): List<Stock> {
+    return events.filter { it -> it.type=="Cultivo" }
+}
+
+fun filterSemilla(events:List<Stock>): List<Stock> {
+    return events.filter { it -> it.type=="Semilla" }
+}
 @SuppressLint("SimpleDateFormat")
 fun filterDatesStock(events:List<Stock>): List<Stock> {
     val date_format = SimpleDateFormat("yyyy/MM/dd")
@@ -98,7 +123,7 @@ fun DashboardStock(dataPoints: List<Pair<String, Double>>) {
         modifier = Modifier
             .fillMaxWidth()
             .height(dashboardHeight)
-            .padding(top=20.dp,bottom=20.dp),
+            .padding(top = 20.dp, bottom = 20.dp),
         factory = { context ->
             var barchart = HorizontalBarChart(context).apply {
                 setBackgroundColor(Color.White.toArgb())
@@ -175,6 +200,225 @@ private fun DashboardStockCreateChart(dataPoints: List<Pair<String, Double>>, co
         setValueFormatter(CurrencyValueFormatter("$"))
     }
     return bardata
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun filterCategory(){
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val cardWidth = with(LocalDensity.current) {
+        screenWidth * 0.44f
+    }
+    var clickHerramienta  by remember{ mutableStateOf(false)}
+    var colorHerramenta by remember{  mutableStateOf<Color>(Color(0))}
+    var clickSemilla  by remember{ mutableStateOf(false)}
+    var colorSemilla by remember{  mutableStateOf<Color>(Color(0))}
+    var clickFertilizante  by remember{ mutableStateOf(false)}
+    var colorFertilizante by remember{  mutableStateOf<Color>(Color(0))}
+    var clickCultivo  by remember{ mutableStateOf(false)}
+    var colorCultivo by remember{  mutableStateOf<Color>(Color(0))}
+    Column(modifier = Modifier.padding(top = 15.dp)) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier= Modifier
+            .fillMaxWidth()
+            ) {
+        if (clickHerramienta) {
+            colorHerramenta = Color(PagadoClick.toColorInt())
+        } else {
+            colorHerramenta = Color(MaterialTheme.colorScheme.background.value)
+        }
+        Card(
+            onClick = {
+                clickHerramienta = !clickHerramienta
+                if (clickHerramienta) {
+                    filtersStock.add(::filterHerramienta)
+                } else {
+                    filtersStock.remove(::filterHerramienta)
+                }
+                resetFilterStock()
+            },
+            modifier = Modifier
+                .width(cardWidth)
+                .padding(2.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+            colors = CardDefaults.cardColors(colorHerramenta)
+        ) {
+            Row() {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(top = 15.dp,bottom = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+
+                ) {
+                    Text(
+                        "Herramientas",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    if (clickHerramienta) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                }
+            }
+        }
+        if (clickSinPagar.value) {
+            colorSinPagar.value = Color(SinPagarClick.toColorInt())
+        } else {
+            colorSinPagar.value = Color(MaterialTheme.colorScheme.background.value)
+        }
+        if (clickFertilizante) {
+            colorFertilizante = Color(PagadoClick.toColorInt())
+        } else {
+            colorFertilizante = Color(MaterialTheme.colorScheme.background.value)
+        }
+        Card(
+            onClick = {
+                clickFertilizante = !clickFertilizante
+                if (clickFertilizante) {
+                    filtersStock.add(::filterFertilizante)
+                } else {
+                    filtersStock.remove(::filterFertilizante)
+                }
+                resetFilterStock()
+            },
+            modifier = Modifier
+                .width(cardWidth)
+                .padding(2.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+            colors = CardDefaults.cardColors(colorFertilizante)
+        ) {
+            Row() {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(top = 15.dp,bottom = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+
+                ) {
+                    Text(
+                        "Fertilizante",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    if (clickFertilizante) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                }
+            }
+        }
+    }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier= Modifier
+            .fillMaxWidth()){
+
+        if (clickSemilla) {
+            colorSemilla = Color(PagadoClick.toColorInt())
+        } else {
+            colorSemilla = Color(MaterialTheme.colorScheme.background.value)
+        }
+        Card(
+            onClick = {
+                clickSemilla = !clickSemilla
+                if (clickSemilla) {
+                    filtersStock.add(::filterSemilla)
+                } else {
+                    filtersStock.remove(::filterSemilla)
+                }
+                resetFilterStock()
+            },
+            modifier = Modifier
+                .width(cardWidth)
+                .padding(2.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+            colors = CardDefaults.cardColors(colorSemilla)
+        ) {
+            Row() {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(top = 15.dp,bottom = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+
+                ) {
+                    Text(
+                        "Semillas",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    if (clickSemilla) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                }
+            }
+        }
+
+        if (clickCultivo) {
+            colorCultivo = Color(PagadoClick.toColorInt())
+        } else {
+            colorCultivo = Color(MaterialTheme.colorScheme.background.value)
+        }
+        Card(
+            onClick = {
+                clickCultivo = !clickCultivo
+                if (clickCultivo) {
+                    filtersStock.add(::filterCultivo)
+                } else {
+                    filtersStock.remove(::filterCultivo)
+                }
+                resetFilterStock()
+            },
+            modifier = Modifier
+                .width(cardWidth)
+                .padding(2.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+            colors = CardDefaults.cardColors(colorCultivo)
+        ) {
+            Row() {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(top = 15.dp,bottom = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+
+                ) {
+                    Text(
+                        "Cultivo",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    if (clickCultivo) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                }
+            }
+        }
+
+
+
+    }
+    }
 }
 @SuppressLint("UnrememberedMutableState", "MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -323,7 +567,7 @@ fun StockSummary(summaryViewModel: SummaryViewModel, navController: NavControlle
                     DashboardStock(dataPoints = summaryViewModel.getSummaryDataStock("", ""))
                 }
                 Row(modifier = Modifier.padding(bottom = 20.dp)) {
-                    //filterStatus()
+                    filterCategory()
                 }
                 Text(
                     "Total de productos: " + listItemDataFilterStock.size.toString(),
