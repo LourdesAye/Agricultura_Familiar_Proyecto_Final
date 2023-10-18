@@ -268,6 +268,7 @@ fun DialogCustomDate(){
                                 dataDateEnd.value = dataDateStart.value
                             }
                             filtersDate.add(::filterDates)
+                            filtersDateStock.add(::filterDatesStock)
                             dateFilterChip.value = true
                         }
                         expandedFilter.value = false
@@ -307,11 +308,22 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
     var state by remember { mutableStateOf(0) }
     Column(modifier = Modifier
         .fillMaxSize()) {
-        TabRow(selectedTabIndex = state) {
+        TabRow(selectedTabIndex = state,
+            ) {
             titles.forEachIndexed { index, title ->
                 Tab(
                     selected = state == index,
-                    onClick = { state = index },
+                    onClick = {
+                        state = index
+                        if (state == 0 && dateFilterChip.value){
+                            filtersDate.clear()
+                            filtersDate.add(::filterDates)
+                        }
+                        if (state == 1 && dateFilterChip.value){
+                            filtersDateStock.clear()
+                            filtersDateStock.add(::filterDatesStock)
+                        }
+                              },
                     text = { Text(text = title, fontSize = 20.sp, maxLines = 2, overflow = TextOverflow.Ellipsis) }
                 )
             }
@@ -346,6 +358,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                             dataDateEnd.value =
                                 currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
                             filtersDate.add(::filterDates)
+                            filtersDateStock.add(::filterDatesStock)
                             dateFilterChip.value = true
                             expandedFilter.value = false
                         },
@@ -362,6 +375,7 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                             dataDateEnd.value =
                                 lastDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
                             filtersDate.add(::filterDates)
+                            filtersDateStock.add(::filterDatesStock)
                             dateFilterChip.value = true
                             expandedFilter.value = false
                         },
@@ -383,7 +397,9 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                         selected = false,
                         onClick = {
                             filtersDate.remove(::filterDates)
+                            filtersDateStock.remove(::filterDatesStock)
                             resetFilter()
+                            resetFilterStock()
                             dateFilterChip.value = false
                         },
                         label = { Text(dataDateStart.value + " - " + dataDateEnd.value) },

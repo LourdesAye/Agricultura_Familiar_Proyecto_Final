@@ -62,10 +62,26 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import java.text.SimpleDateFormat
 
+var filtersStock = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
+var filtersDateStock = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var listItemDataStock = mutableStateListOf<Stock>()
 var listItemDataFilterStock = mutableStateListOf<Stock>(
 )
+@SuppressLint("SimpleDateFormat")
+fun filterDatesStock(events:List<Stock>): List<Stock> {
+    val date_format = SimpleDateFormat("yyyy/MM/dd")
+    val date_format_buy = SimpleDateFormat("dd/MM/yyyy")
+    val filter_date = date_format.parse(dataDateStart.value)
+    val filterDateEnd = date_format.parse(dataDateEnd.value)
+    return events.filter { event ->
+        var date_event = date_format_buy.parse(event.date.split(" ")[0])
+        (filter_date.before(date_event) or filter_date.equals(date_event)
+                )and (filterDateEnd.after(date_event) or filterDateEnd.equals(date_event)
+                )
+    }
+}
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -123,7 +139,24 @@ fun DashboardStock(dataPoints: List<Pair<String, Double>>) {
         }
     )
 }
+fun resetFilterStock(){
+    listItemDataFilterStock.clear()
+    if (filtersStock.size ==0){
+        listItemDataFilterStock.addAll(listItemDataStock)
+    }
+    for (i in 0 .. filtersStock.size-1) {
+        var filtroExecute = mutableListOf<List<Stock>>()
+        filtroExecute.addAll(listOf(filtersStock[i](listItemDataStock)))
+        listItemDataFilterStock.addAll(filtroExecute.flatten())
+    }
+    for (i in 0 .. filtersDateStock.size-1) {
+        var filtroExecute = mutableListOf<List<Stock>>()
+        filtroExecute.addAll(listOf(filtersDateStock[i](listItemDataFilterStock)))
+        listItemDataFilterStock.clear()
+        listItemDataFilterStock.addAll(filtroExecute.flatten())
 
+    }
+}
 private fun DashboardStockCreateChart(dataPoints: List<Pair<String, Double>>, color: Int): BarData {
     val entries = dataPoints.mapIndexed { index, pair ->
         BarEntry(index.toFloat(), pair.second.toFloat(),pair.first)
@@ -166,30 +199,8 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
         ){
             Row(
             ) {
-                /*
-                Column(
-                    modifier = Modifier
-                        .background(Color(SelectColorCard(itemData.type).toColorInt()))
-                        .width(10.dp)
-                        .defaultMinSize(minHeight = heightCard)
-                        .fillMaxHeight()
-                ) {
-
-                }*/
                 Column(){
                     Row(){
-                        /*
-                        Column(modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(start = 5.dp)) {
-                            Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
-
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    drawCircle(SolidColor(Color("#00687A".toColorInt())))
-                                }
-                                Text(text =itemData.getUser().substring(0,2).capitalize(),color= Color.White)
-                            }
-                        }*/
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
@@ -301,8 +312,7 @@ fun StockSummary(summaryViewModel: SummaryViewModel, navController: NavControlle
     }else {
         listItemDataStock.clear()
         listItemDataStock.addAll(valuesStocks!!)
-        listItemDataFilterStock.clear()
-        listItemDataFilterStock.addAll(valuesStocks!!)
+        resetFilterStock()
         Column(modifier = Modifier.padding(start=20.dp, end= 20.dp)){
         LazyColumn(
             modifier = Modifier
