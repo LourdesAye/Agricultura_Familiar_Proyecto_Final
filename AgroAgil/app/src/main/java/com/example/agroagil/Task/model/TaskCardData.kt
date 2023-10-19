@@ -12,7 +12,7 @@ data class Tasks(
 )
 
 data class TaskCardData(
-    val id: Int = 0,
+    val id: String = "",
     val description: String = "",
     val isoDate: String = "2023-10-07T15:30:00-03:00",
     val durationHours: Int = 0,
