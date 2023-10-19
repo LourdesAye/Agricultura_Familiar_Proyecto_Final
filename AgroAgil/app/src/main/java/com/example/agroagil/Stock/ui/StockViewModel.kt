@@ -12,7 +12,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class BuyViewModel : ViewModel()  {
+class StockViewModel : ViewModel()  {
     var farm = liveData(Dispatchers.IO) {
         emit(null)
 

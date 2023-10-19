@@ -61,6 +61,7 @@ import com.example.agroagil.Perfil.ui.EditarDatosPerfil
 import com.example.agroagil.Perfil.ui.NavigationEventPerfil
 import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
+import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -107,9 +108,9 @@ class MainActivity : ComponentActivity() {
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
                     val dashViewModel = DashboardViewModel()
-
+                    val stockViewModel= StockViewModel()
                     //destino inicial principal si inicia sesion correctamente
-                    val destinoPrincipal: String = "task"
+                    val destinoPrincipal: String = "stock"
                     NavHost(navController = navController, startDestination = destinoPrincipal){
 
                         composable("inicio") {
@@ -132,7 +133,6 @@ class MainActivity : ComponentActivity() {
                                                 false // La ruta no está definida
                                         }
                                     }
-
                                 }
 
                             }
@@ -523,6 +523,60 @@ class MainActivity : ComponentActivity() {
 
                                 }
                             }
+
+                        composable("stock") {
+                            titleCurrentPage.value = "Mi Stock"
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                true,
+                                navController
+                            ) {
+                                BuyScreen(
+                                    buyViewModel = buyViewModel,
+                                    navController = navController
+                                )
+                            }
+                        }
+                        composable("stock/add") {
+                            Menu(scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController,
+                                {
+                                    BuyAddScreen(
+                                        buyViewModel = buyViewModel,
+                                        navController = navController
+                                    )
+                                })
+                        }
+                        composable(
+                            "stock/{stockId}/info",
+                            arguments = listOf(navArgument("stockId") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val buyId: Int? = backStackEntry.arguments?.getInt("stockId")
+                            if (buyId is Int)
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        BuyInfoScreen(
+                                            navController = navController,
+                                            buyViewModel = buyViewModel,
+                                            buyId
+                                        )
+                                    })
+                        }
 
 
                         }
