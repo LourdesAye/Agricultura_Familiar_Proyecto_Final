@@ -1,7 +1,7 @@
 package com.example.agroagil.Task.data.firebase
 
-import androidx.compose.runtime.snapshots.Snapshot
 import com.example.agroagil.Task.model.Task
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.Tasks
 import com.google.firebase.database.ktx.database
@@ -110,7 +110,7 @@ class TaskFirebaseService {
                 }
                 .addOnFailureListener { exception ->
                     exception.printStackTrace()
-                    continuation.resumeWithException(exception)
+                    continuation.resume(false)
                 }
         }
     }
@@ -133,7 +133,7 @@ class TaskFirebaseService {
             // Handle exception if needed
             println("Firebase: Error from getTaskForUser.")
             e.printStackTrace()
-            return Task(calendarDate = null)
+            return Task()
         }
     }
 }
