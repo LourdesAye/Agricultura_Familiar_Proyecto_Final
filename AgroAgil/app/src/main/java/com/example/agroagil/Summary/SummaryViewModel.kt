@@ -60,7 +60,7 @@ class SummaryViewModel: ViewModel() {
 
         try {
             val realValue = suspendCancellableCoroutine<List<Stock>> { continuation ->
-                Firebase.database.getReference("stock/0/").get().addOnSuccessListener { snapshot ->
+                Firebase.database.getReference("stockSummary/0/").get().addOnSuccessListener { snapshot ->
                     val genericType = object : GenericTypeIndicator<HashMap<String, Stock>>() {}
                     val value = snapshot.getValue(genericType)
                     val result = value?.values?.toList() ?: emptyList()
@@ -191,10 +191,10 @@ class SummaryViewModel: ViewModel() {
     }
 
     fun init(){
-        var getKey = Firebase.database.getReference("events/0/stock").push().key
+        var getKey = Firebase.database.getReference("stockSummary/0/").push().key
         val updates = HashMap<String, Any>()
-        updates["/$getKey"] = EventOperationStock()
-        Firebase.database.getReference("events/0/stock").updateChildren(updates)
+        updates["/$getKey"] = Stock()
+        Firebase.database.getReference("stockSummary/0/").updateChildren(updates)
 
 
     }
