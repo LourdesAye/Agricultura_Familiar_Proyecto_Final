@@ -1,7 +1,7 @@
 package com.example.agroagil.Task.data.firebase
 
-import androidx.compose.runtime.snapshots.Snapshot
 import com.example.agroagil.Task.model.Task
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.Tasks
 import com.google.firebase.database.ktx.database
@@ -23,7 +23,9 @@ class TaskFirebaseService {
     suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
         try {
             return suspendCancellableCoroutine { continuation ->
-                Firebase.database.getReference("$PARENT_TASK_PATH$userId").get().addOnSuccessListener { snapshot ->
+                Firebase.database.getReference("$PARENT_TASK_PATH$userId")
+                    .orderByChild("isoDate")
+                    .get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Tasks::class.java) as Tasks
                     continuation.resume(hashMapToListofTasks(value.tasks))
                 }.addOnFailureListener { exception ->
@@ -44,7 +46,7 @@ class TaskFirebaseService {
      * @return Una liesta de TaskCardData con id igual a la key del hashmap
      */
     private fun hashMapToListofTasks(hashMapOfTasks: HashMap<String, TaskCardData>): List<TaskCardData> {
-        return hashMapOfTasks.map { entry: Map.Entry<String, TaskCardData> ->  entry.value.copy(id = entry.key.toInt()) }
+        return hashMapOfTasks.map { entry: Map.Entry<String, TaskCardData> ->  entry.value.copy(id = entry.key) }
     }
 
 
@@ -52,7 +54,7 @@ class TaskFirebaseService {
      * PUT - Actualiza el estado de completitud de una tarea, seteando un booleano en el campo "completed"
      * @return Un booleano que indica si la operación fue exitosa
      */
-    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: Int): Boolean {
+    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
             val taskCompletionStatusRef = Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId$_COMPLETED")
 
@@ -61,6 +63,7 @@ class TaskFirebaseService {
                     continuation.resume(true)
                 }
                 .addOnFailureListener { exception ->
+                    exception.printStackTrace()
                     continuation.resumeWithException(exception)
                 }
         }
@@ -93,13 +96,25 @@ class TaskFirebaseService {
     /**
      * POST - Agregar nueva tarea
      */
-    fun addNewTaskForUser(newTask: Task, userId: Int) {
-        val databaseReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId")
+    suspend fun addNewTaskForUser(newTask: Task, userId: Int): Boolean  {
 
-        // Generate a unique key for the new task and set its value
-        val newTaskReference = databaseReference.push()
-        newTaskReference.setValue(newTask)
+        return suspendCancellableCoroutine { continuation ->
+            val databaseReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH")
+
+            // Generate a unique key for the new task and set its value
+            val newTaskReference = databaseReference.push()
+            newTaskReference.setValue(newTask)
+                .addOnSuccessListener {
+                    // The write was successful, invoke the callback with true
+                    continuation.resume(true)
+                }
+                .addOnFailureListener { exception ->
+                    exception.printStackTrace()
+                    continuation.resume(false)
+                }
+        }
     }
+
 
     /**
      * GET tarea full con todos los datos

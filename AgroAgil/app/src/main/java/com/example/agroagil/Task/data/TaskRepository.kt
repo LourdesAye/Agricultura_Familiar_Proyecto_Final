@@ -2,6 +2,7 @@ package com.example.agroagil.Task.data
 
 import com.example.agroagil.Task.data.firebase.TaskFirebaseService
 import com.example.agroagil.Task.model.Task
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 
 
@@ -21,7 +22,7 @@ class TaskRepository {
      * PUT - Actualiza el estado de completitud de una tarea, seteando un booleano en el campo "completed"
      * @return Un booleano que indica si la operación fue exitosa
      */
-    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: Int): Boolean {
+    suspend fun editCompletedFieldOfTask(newStatus: Boolean, userId: Int, taskId: String): Boolean {
         return firebaseApi.editCompletedFieldOfTask(newStatus, userId, taskId)
     }
 
@@ -35,8 +36,8 @@ class TaskRepository {
     /**
      * POST - Agregar nueva tarea
      */
-    fun addNewTaskForUser(newTask: Task, userId: Int) {
-         firebaseApi.addNewTaskForUser(newTask, userId)
+    suspend fun addNewTaskForUser(newTask: Task, userId: Int): Boolean {
+         return firebaseApi.addNewTaskForUser(newTask, userId)
     }
 
     /**
