@@ -61,6 +61,11 @@ import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
+import com.example.agroagil.Task.ui.TaskAddScreen
+import com.example.agroagil.Task.ui.TaskEditScreen
+import com.example.agroagil.Task.ui.TaskInfoScreen
+import com.example.agroagil.Task.ui.TaskScreen
+import com.example.agroagil.Task.ui.TaskViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
@@ -97,7 +102,7 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
-                    //val taskViewModel = TaskViewModel()
+                    val taskViewModel = TaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
@@ -407,7 +412,7 @@ class MainActivity : ComponentActivity() {
                                 Cultivo(cultivoViewModel)
                             }
                         }
-                        /*
+
                         composable("task") {
                             titleCurrentPage.value = "Mis Tareas"
                             Menu(
@@ -492,7 +497,7 @@ class MainActivity : ComponentActivity() {
                                         navController = navController
                                     )
                                 }
-                        }*/
+                        }
 
                         composable("miPerfil") {
                             VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
@@ -558,7 +563,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a misTareas
             NavigationEventMenu.ToMisTareas -> {
-                navController.navigate("home")
+                navController.navigate("task")
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {
