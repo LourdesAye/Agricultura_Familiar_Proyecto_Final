@@ -2,6 +2,7 @@ package com.example.agroagil.Task.data
 
 import com.example.agroagil.Task.data.firebase.TaskFirebaseService
 import com.example.agroagil.Task.model.Task
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 
 

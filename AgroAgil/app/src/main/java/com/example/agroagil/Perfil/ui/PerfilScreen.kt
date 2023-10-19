@@ -141,7 +141,6 @@ fun VerDatosDelPerfil(
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
                                 focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
                                 unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
 
@@ -156,7 +155,6 @@ fun VerDatosDelPerfil(
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors =TextFieldDefaults.outlinedTextFieldColors(
-                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
                                 focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
                                 unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
                         )
@@ -170,7 +168,6 @@ fun VerDatosDelPerfil(
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
                                 focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
                                 unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
                         )
@@ -184,7 +181,6 @@ fun VerDatosDelPerfil(
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors =TextFieldDefaults.outlinedTextFieldColors(
-                                textColor =  if (isSystemInDarkTheme()) {Color.White} else {Color.Black},
                                 focusedBorderColor =   if (isSystemInDarkTheme()) {Color.White} else {Color.Black}, //color cuando estoy encima de la cajita
                                 unfocusedBorderColor = if (isSystemInDarkTheme()) {Color.White} else {Color.Black})
                         )

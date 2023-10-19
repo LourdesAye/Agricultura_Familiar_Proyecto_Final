@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agroagil.Task.data.TaskRepository
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
-import com.example.agroagil.Task.model.Task
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
 import kotlinx.coroutines.Dispatchers
@@ -96,8 +96,8 @@ class TaskViewModel : ViewModel() {
     }
 
     //Pantalla para crear una nueva tarea -----------------------------------
-    private val _taskToCreate = MutableLiveData<Task>(Task(calendarDate = null))
-    val taskToCreate: LiveData<Task> = _taskToCreate
+    private val _taskToCreate = MutableLiveData<TaskForAddScreen>(TaskForAddScreen(calendarDate = null))
+    val taskToCreate: LiveData<TaskForAddScreen> = _taskToCreate
 
     fun onDescriptionChange(description: String) {
         val currentTaskToCreate = _taskToCreate.value ?: return
@@ -148,7 +148,7 @@ class TaskViewModel : ViewModel() {
 
     fun onEstimationChange(estimationText: String) {
         val currentTaskToCreate = _taskToCreate.value ?: return
-        if (estimationText.isDigitsOnly()) {
+        if (estimationText.isDigitsOnly() && estimationText.isNotEmpty()) {
             val estimation = estimationText.toInt()
             val updatedTask = currentTaskToCreate.copy(durationHours = estimation)
             _taskToCreate.postValue(updatedTask)
@@ -192,7 +192,7 @@ class TaskViewModel : ViewModel() {
     fun onFrequencyOfRepetitionChange(frecuencyText: String) {
         val currentTaskToCreate = _taskToCreate.value ?: return
 
-        if (frecuencyText.isDigitsOnly()) {
+        if (frecuencyText.isDigitsOnly() && frecuencyText.isNotEmpty()) {
             val frequency = frecuencyText.toInt()
             val updatedTask = currentTaskToCreate.copy(repetitionIntervalInDays = frequency)
             _taskToCreate.postValue(updatedTask)
@@ -205,13 +205,22 @@ class TaskViewModel : ViewModel() {
 
     suspend fun onSave() {
         val currentTaskToCreate = _taskToCreate.value ?: return
-        val isoDate = currentTaskToCreate.getISODateFromCalendar()
+        val isoDate = currentTaskToCreate.getISODateFromCalendar() //2023-10-26T09:30:00Z --> error
         //TODO: Agregar validaciones a todos los campos de la tarea
         //TODO: El userId es 0 por defecto. Cambiar luego al ID del usuario logueado
-        val result = taskRepository.addNewTaskForUser(currentTaskToCreate.copy(isoDate = isoDate), 0)
+        val taskToSave = currentTaskToCreate.copy(isoDate = isoDate).taskForAddScreenToTask()
+        val result = taskRepository.addNewTaskForUser(taskToSave, 0)
 
-        _showSnackbarFortaskSaved.postValue(result)
+        if(result)
+            showSnackBarForSavedTask()
     }
 
+    private fun showSnackBarForSavedTask() {
+        _showSnackbarFortaskSaved.postValue(true)
+    }
+
+    public fun hideSnackBarForSavedTask() {
+        _showSnackbarFortaskSaved.postValue(false)
+    }
 
 }
