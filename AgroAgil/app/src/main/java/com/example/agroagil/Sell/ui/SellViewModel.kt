@@ -4,12 +4,15 @@ import Sell
 import Sells
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import com.example.agroagil.core.models.EventOperationBox
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -58,6 +61,10 @@ class SellViewModel : ViewModel()  {
             currentSells.addAll(it)
             currentSells.add(sell)
             Firebase.database.getReference("sell/0").setValue(Sells(currentSells))
+            var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
+            val updates = HashMap<String, Any>()
+            updates["/$getKey"] = EventOperationBox(sell.date, "Registro de la venta", "Sell",   (currentSells.size-1).toString())
+            Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
             setFarm()
         }
     }
