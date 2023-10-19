@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                     val dashViewModel = DashboardViewModel()
 
                     //destino inicial principal si inicia sesion correctamente
-                    val destinoPrincipal: String = "inicio"
+                    val destinoPrincipal: String = "task"
                     NavHost(navController = navController, startDestination = destinoPrincipal){
 
                         composable("inicio") {
@@ -162,7 +162,6 @@ class MainActivity : ComponentActivity() {
                                     when (evento) {
                                         NavigationInicio.PantallaMenu ->
                                             navController.navigate("home")
-
                                         else -> {
                                             VariablesFuncionesGlobales.navegacionDefinida =
                                                 false // La ruta no está definida
@@ -170,7 +169,6 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             }
-
                             composable("registroConGoogle") {
                                 RegistroConCuentaGoogle(viewModelLoginGoogle) { event ->
                                     // Observador de eventos de navegación
@@ -202,7 +200,6 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     Farm(farmViewModel)
                                 }
-
                             }
                             composable("loan") {
                                 titleCurrentPage.value = "Mis prestamos"
