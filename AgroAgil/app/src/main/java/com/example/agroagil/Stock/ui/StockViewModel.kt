@@ -12,7 +12,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class StockViewModel : ViewModel()  {
+class StockViewModel : ViewModel() {
     var farm = liveData(Dispatchers.IO) {
         emit(null)
 
@@ -30,7 +30,8 @@ class StockViewModel : ViewModel()  {
             // Handle exception if needed
         }
     }
-    fun setFarm(){
+
+    fun setFarm() {
         farm = liveData(Dispatchers.IO) {
             emit(null)
 
@@ -49,7 +50,8 @@ class StockViewModel : ViewModel()  {
             }
         }
     }
-    fun addBuy(buy: Buy){
+
+    fun addBuy(buy: Buy) {
         val currentBuys = mutableListOf<Buy>()
 
         farm.value?.let {
@@ -61,7 +63,7 @@ class StockViewModel : ViewModel()  {
         }
     }
 
-    fun updateBuy(buy: Buy, indexLoan:Int){
+    fun updateBuy(buy: Buy, indexLoan: Int) {
         val currentBuy = mutableListOf<Buy>()
 
         farm.value?.let {

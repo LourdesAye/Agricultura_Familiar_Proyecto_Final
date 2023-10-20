@@ -191,7 +191,7 @@ fun AddProductBuy(){
     "CoroutineCreationDuringComposition"
 )
 @Composable
-fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
+fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
     var user by rememberSaveable { mutableStateOf("") }
     var error_name by rememberSaveable { mutableStateOf(false) }
     var error_price by rememberSaveable { mutableStateOf(false) }
@@ -200,7 +200,6 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenHeightDp.dp
     AddProductBuy()
-
     Column(modifier = Modifier
         .verticalScroll(rememberScrollState())
         .defaultMinSize(minHeight = screenWidth),
@@ -215,7 +214,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                     .align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    "Agrega una compra",
+                    "Agregar un stock",
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 30.sp,
                     textAlign = TextAlign.Center,
@@ -268,6 +267,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                     .padding(20.dp)
                     .padding(top = 30.dp)
                     .fillMaxWidth()
+                    .fillMaxWidth()
             ) {
                 Text(
                     text = "Lista de productos",
@@ -283,7 +283,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text("Agregar")
+                    Text("➕ Stock")
                 }
             }
             var snackbarHost = SnackbarHost(hostState = snackbarHostState)
@@ -378,8 +378,6 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController) {
             }
         }
         Column(){
-
-
             Box(modifier = Modifier.fillMaxSize()){
                 Row(horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()

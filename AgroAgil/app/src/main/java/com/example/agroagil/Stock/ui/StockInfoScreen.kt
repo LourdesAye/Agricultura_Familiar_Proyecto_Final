@@ -40,14 +40,17 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 
 
-var currentBuy = mutableStateOf(Buy(price=0))
+var currentBuy = mutableStateOf(Buy(price = 0))
+
 @Composable
-fun itemProductBuy(item: Product){
+fun itemProductBuy(item: Product) {
     Row() {
         Column(modifier = Modifier.padding(top = 5.dp)) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 5.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 5.dp)
+            ) {
                 Row() {
                     Box(
                         modifier = Modifier
@@ -72,9 +75,10 @@ fun itemProductBuy(item: Product){
                 }
                 Row(modifier = Modifier.align(Alignment.CenterEnd)) {
                     Text(
-                        item.amount.toString()+" "+ item.units.toString(), modifier = Modifier
+                        item.amount.toString() + " " + item.units.toString(), modifier = Modifier
                             .padding(end = 10.dp)
-                            .align(Alignment.CenterVertically))
+                            .align(Alignment.CenterVertically)
+                    )
                 }
             }
             Divider()
@@ -83,26 +87,27 @@ fun itemProductBuy(item: Product){
 }
 
 
-
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int){
+fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int) {
     var valuesBuy = buyViewModel.farm.observeAsState().value
-    if (valuesBuy == null){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
-            .fillMaxSize()) {
+    if (valuesBuy == null) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .semantics(mergeDescendants = true) {}
                     .padding(10.dp)
             )
         }
-
-    }else {
+    } else {
         currentBuy.value = valuesBuy.get(buyId)
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
-
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
@@ -115,13 +120,13 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                     .fillMaxWidth()
                     .padding(top = 20.dp),
                 horizontalArrangement = Arrangement.End
-            ){
-                var textChipStatus:String
+            ) {
+                var textChipStatus: String
                 var colorChipStatus: Color
-                if (currentBuy.value.paid){
+                if (currentBuy.value.paid) {
                     textChipStatus = "Pagado"
                     colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
-                }else{
+                } else {
                     textChipStatus = "Sin pagar"
                     colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
                 }
@@ -129,14 +134,15 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                     onClick = { /* Do something! */ },
                     label = { Text(textChipStatus) },
                     enabled = false,
-                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor=colorChipStatus),
+                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = colorChipStatus),
                     border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = colorChipStatus)
                 )
             }
-            Column(modifier = Modifier.defaultMinSize(minHeight = screenWidth - 100.dp), verticalArrangement = Arrangement.SpaceAround) {
+            Column(
+                modifier = Modifier.defaultMinSize(minHeight = screenWidth - 100.dp),
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
                 Column {
-
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -195,12 +201,15 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                             .align(Alignment.CenterVertically)
                     )
                 }
-                if (!currentBuy.value.paid){
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                if (!currentBuy.value.paid) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
                         Button(onClick = {
                             currentBuy.value = currentBuy.value.copy(paid = true)
                             buyViewModel.updateBuy(currentBuy.value, buyId)
-                        }, content={ Text("Confirmar pago") })
+                        }, content = { Text("Confirmar pago") })
                     }
                 }
             }

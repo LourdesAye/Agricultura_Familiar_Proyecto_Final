@@ -558,7 +558,7 @@ fun filterStatus(){
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun BuyScreen(buyViewModel: BuyViewModel, navController: NavController) {
+fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
     var valuesBuy = buyViewModel.farm.observeAsState().value
     valuesBuy?.let {
         listItemData.clear()
@@ -600,7 +600,7 @@ fun BuyScreen(buyViewModel: BuyViewModel, navController: NavController) {
             }
             Button(
                 onClick = {
-                    navController.navigate("buy/add")
+                    navController.navigate("stock/add")
                 }, modifier = Modifier
                     .padding(end = 20.dp, bottom = 40.dp)
                     .align(Alignment.BottomEnd)
@@ -611,7 +611,7 @@ fun BuyScreen(buyViewModel: BuyViewModel, navController: NavController) {
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Agregar")
+                Text("Stock/Producto")
             }
         }
     }
