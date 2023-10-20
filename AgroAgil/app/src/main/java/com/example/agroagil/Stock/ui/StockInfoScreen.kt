@@ -90,7 +90,7 @@ fun itemProductBuy(item: Product) {
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int) {
+fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, buyId: Int) {
     var valuesBuy = buyViewModel.farm.observeAsState().value
     if (valuesBuy == null) {
         Column(

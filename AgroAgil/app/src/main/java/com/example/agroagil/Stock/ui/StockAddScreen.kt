@@ -283,7 +283,7 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text("➕ Stock")
+                    Text("Stock")
                 }
             }
             var snackbarHost = SnackbarHost(hostState = snackbarHostState)
