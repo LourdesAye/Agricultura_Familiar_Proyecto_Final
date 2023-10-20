@@ -377,29 +377,36 @@ fun TaskCardDash(
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Próximas tareas", color = textColor, fontWeight = FontWeight.Bold)
 
-            if (topTasks != null) {
-                topTasks.forEach { task ->
-                    // Cada tarea se representa como una tarjeta individual con un borde celeste
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .border(BorderStroke(1.dp, textColor),
-                                shape = MaterialTheme.shapes.small),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
-                            Text(text = task?.isoDate ?: "Fecha no disponible") // Muestra la fecha
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+            topTasks?.forEach { task ->
+                // Formatea la fecha al estilo "yyyy-MM-dd". Lo hago así pq si no, rompe todo
+                val originalDate = task?.isoDate ?: ""
+                val formattedDate = if (originalDate.length >= 10) {
+                    "${originalDate.substring(0, 10)}"
+                } else {
+                    "Fecha no disponible"
+                }
+
+                // Cada tarea se representa como una tarjeta individual con un borde celeste
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .border(BorderStroke(1.dp, textColor),
+                            shape = MaterialTheme.shapes.small),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
+                        Text(text = formattedDate) // Muestra la fecha formateada
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -586,6 +593,36 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
         }
     }
 }
+
+/*
+// mostrar fecha con otro formato. Puede servir
+fun DisplayBuyItem(buy: Buy, textColor: Color) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) // Define el formato de fecha deseado
+    val formattedDate = dateFormat.format(Date(buy.date))
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Muestra la información de la compra con la fecha formateada
+            Text(text = "${buy.nameUser}  $formattedDate", color = Color.Black)
+            // Muestra los productos de la compra utilizando la función itemProductDash
+            buy.items.forEach { product ->
+                itemProductDash(product)
+                val totalPrice = String.format("%.2f", product.amount * buy.price)
+                Text(
+                    "$$totalPrice"
+                )
+            }
+        }
+    }
+}
+ */
 
 
 @Composable

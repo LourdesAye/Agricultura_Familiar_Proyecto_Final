@@ -23,6 +23,7 @@ import java.net.URL
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class DashboardViewModel : ViewModel() {
@@ -102,8 +103,15 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Sells::class.java) as? Sells
             value?.let {
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedSells = it.sells.map { sell ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(sell.date))
+                    sell.copy(date = formattedDate) // Crea una copia del objeto Sell con la fecha formateada
+                }
+
                 // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topSells = it.sells.sortedByDescending { it.date }
+                val topSells = formattedSells.sortedByDescending { it.date }
                     .take(5)
                 _topSells.postValue(topSells)
             }
@@ -125,8 +133,15 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Buys::class.java) as? Buys
             value?.let {
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedBuys = it.buys.map { buy ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(buy.date))
+                    buy.copy(date = formattedDate) // Crea una copia del objeto Buy con la fecha formateada
+                }
+
                 // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topBuys = it.buys.sortedByDescending { it.date }
+                val topBuys = formattedBuys.sortedByDescending { it.date }
                     .take(5)
                 _topBuys.postValue(topBuys)
             }
@@ -134,6 +149,7 @@ class DashboardViewModel : ViewModel() {
             // Maneja errores si es necesario
         }
     }
+
 
     // --------------------------
     // -- Loans
@@ -143,13 +159,23 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Loans::class.java) as? Loans
             value?.let {
-                val sortedLoans = it.loans.sortedByDescending { loan -> loan.date }
-                _loans.postValue(sortedLoans)
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedLoans = it.loans.map { loan ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(loan.date))
+                    loan.copy(date = formattedDate) // Crea una copia del objeto Loan con la fecha formateada
+                }
+
+                // Ordena los elementos por fecha descendente y selecciona los primeros 5 elementos
+                val topLoans = formattedLoans.sortedByDescending { it.date }
+                    .take(5)
+                _loans.postValue(topLoans)
             }
         }.addOnFailureListener { exception ->
             // Maneja errores si es necesario
         }
     }
+
 
     val loans: LiveData<List<Loan>> get() = _loans
 
