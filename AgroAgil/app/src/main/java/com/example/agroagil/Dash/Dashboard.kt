@@ -52,6 +52,7 @@ import java.util.Date
 import java.util.TimeZone
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.min
 
 val weatherDescriptionsMap = mapOf(
     "thunderstorm with light rain" to "Tormenta con lluvia ligera",
@@ -138,7 +139,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 defaultElevation = 12.dp
             ),
             shape = MaterialTheme.shapes.small,
-            border = BorderStroke(5.dp, borderColor),
+            border = BorderStroke(2.dp, borderColor),
             colors = CardDefaults.cardColors(
                 containerColor = backgroundColor
             ),
@@ -162,7 +163,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                         defaultElevation = 12.dp
                     ),
                     shape = MaterialTheme.shapes.small,
-                    border = BorderStroke(3.dp, textColor),
+                    border = BorderStroke(1.dp, textColor),
                     colors = CardDefaults.cardColors(
                         containerColor = Color.White
                     ),
@@ -257,7 +258,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
             defaultElevation = 12.dp,
         ),
         shape = MaterialTheme.shapes.small,
-        border = BorderStroke(1.dp, textColor),
+        border = BorderStroke(0.dp, textColor),
         colors = CardDefaults.cardColors(
             containerColor = Color.White,
         ),
@@ -294,7 +295,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
                 defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.small,
-        border = BorderStroke(1.dp, textColor),
+        border = BorderStroke(0.dp, textColor),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -368,7 +369,7 @@ fun TaskCardDash(
             defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.small,
-        border = BorderStroke(5.dp, borderColor),
+        border = BorderStroke(2.dp, borderColor),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
@@ -383,7 +384,7 @@ fun TaskCardDash(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
-                            .border(BorderStroke(3.dp, textColor),
+                            .border(BorderStroke(1.dp, textColor),
                                 shape = MaterialTheme.shapes.small),
                         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -412,7 +413,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
             defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(5.dp, borderColor), // Borde de la tarjeta verde
+        border = BorderStroke(2.dp, borderColor), // Borde de la tarjeta verde
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
@@ -426,19 +427,19 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
-                    .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+                    .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
                 elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
                 ){
                 Column(modifier = Modifier.padding(16.dp)) {
                     Spacer(modifier = Modifier.height(16.dp))
                     // Dibuja la barra de ingresos con el número al lado
-                    DrawBar(ingresos, totalwidth, Color(0xFFE57373), textColor)
+                    DrawBar(ingresos, totalwidth, Color(0xFF81C784), textColor) //verde
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Dibuja la barra de egresos con el número al lado
-                    DrawBar(egresos, totalwidth, Color(0xFF81C784), textColor)
+                    DrawBar(egresos, totalwidth, Color(0xFFE57373), textColor)
 
                     Spacer(modifier = Modifier.height(16.dp))
                     var total = ingresos - egresos
@@ -457,31 +458,37 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 
 @Composable
 fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier: Modifier = Modifier) {
-    val xOffset = 20f
+    val maxWidth = 220.dp // Establece el ancho máximo de la barra en píxeles
+    val maxHeight = 40.dp // Establece la altura máxima de la barra en píxeles
+    val xOffset = 10f // Establece un espacio entre el extremo derecho de la barra y el número
+
     Canvas(modifier = Modifier
         .fillMaxWidth()
-        .padding(start = 10.dp) // Espacio a la izquierda de la barra
-        .height(40.dp) then modifier) {
-        val width = (value.toFloat() / total.toFloat()) * size.width
+        .padding(start = 10.dp)
+        .height(maxHeight) then modifier) {
+        val width = min((value.toFloat() / total.toFloat()) * size.width, maxWidth.toPx())
+
+        val textoSize = min(40f, width / 2) // Establece el tamaño del texto, máximo 40f o la mitad del ancho de la barra
 
         val gradientShader = Brush.verticalGradient(
             colors = listOf(barcolor, Color.Black)
         )
 
-        drawRect(brush = gradientShader, size = Size(width, 50f))
+        drawRect(brush = gradientShader, size = Size(width, maxHeight.toPx()))
         drawContext.canvas.nativeCanvas.drawText(
             "$value",
             width + xOffset,
-            size.height / 2,
+            size.height / 2 + textoSize / 3, // Alinea verticalmente el texto en el centro de la barra
             android.graphics.Paint().apply {
-                color = textColor.toArgb()// Conversión a Int
-                textSize = 40f
+                color = textColor.toArgb()
+                textSize = textoSize
                 isAntiAlias = true
                 typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
             }
         )
     }
 }
+
 
 @Composable
 fun itemProductDash(item: Product) {
@@ -532,7 +539,7 @@ fun itemProductDash(item: Product) {
 @Composable
 fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     // Calcula la altura de la tarjeta verde en función de la cantidad de compras
-    val greenCardHeight = (topBuys.size * 200).dp
+    val greenCardHeight = (topBuys.size * 250).dp
 
     Card(
         modifier = Modifier
@@ -540,7 +547,7 @@ fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, text
             .heightIn(max = greenCardHeight),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(5.dp, borderColor),
+        border = BorderStroke(2.dp, borderColor),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -561,7 +568,7 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
@@ -571,7 +578,7 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
             // Muestra los productos de la compra utilizando la función itemProductDash
             buy.items.forEach { product ->
                 itemProductDash(product)
-                val totalPrice = String.format("%.2f", buy.price * product.amount)
+                val totalPrice = String.format("%.2f", product.amount * buy.price)
                 Text(
                     "$$totalPrice"
                 )
@@ -584,7 +591,7 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
 @Composable
 fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     // Calcula la altura de la tarjeta verde en función de la cantidad de ventas
-    val greenCardHeight = (topSells.size * 200).dp
+    val greenCardHeight = (topSells.size * 250).dp
 
     Card(
         modifier = Modifier
@@ -592,7 +599,7 @@ fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, t
             .heightIn(max = greenCardHeight),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(5.dp, borderColor),
+        border = BorderStroke(2.dp, borderColor),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -613,7 +620,7 @@ fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
@@ -643,7 +650,7 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
             .heightIn(max = greenCardHeight),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(5.dp, borderColor),
+        border = BorderStroke(2.dp, borderColor),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -665,7 +672,7 @@ fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .border(BorderStroke(3.dp, textColor), shape = MaterialTheme.shapes.small),
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
@@ -714,8 +721,8 @@ fun dash(viewModel: DashboardViewModel) {
         }
 
         item {
-            val ingresos = 200000
-            val egresos = 150000
+            val ingresos = viewModel.getTotalIncome().toInt() // Obtiene los ingresos del ViewModel
+            val egresos = viewModel.getTotalExpenses().toInt() // Obtiene los egresos del ViewModel
             CashCard(ingresos, egresos, backgroundColor, borderColor, textColor)
         }
 

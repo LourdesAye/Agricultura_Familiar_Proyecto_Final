@@ -10,6 +10,9 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,8 +21,73 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class DashboardViewModel : ViewModel() {
+
+    // -------------- Ingresos y egresos
+    private val _allSells = MutableLiveData<List<Sell>>()
+    val allSells: LiveData<List<Sell>> get() = _allSells
+
+    init {
+        fetchAllSells()
+    }
+
+    private val _allBuys = MutableLiveData<List<Buy>>()
+    val allBuys: LiveData<List<Buy>> get() = _allBuys
+
+    init {
+        fetchAllBuys()
+    }
+
+    private fun fetchAllSells() {
+        Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Sells::class.java) as? Sells
+            value?.let {
+                // Ordena los elementos por fecha descendente
+                val allSells = it.sells.sortedByDescending { it.date }
+                _allSells.postValue(allSells)
+
+                // Imprime la lista de ventas en los logs
+                Log.d("FetchAllSells", "Lista de ventas: $allSells")
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+            Log.e("FetchAllSells", "Error al obtener las ventas: ${exception.message}")
+        }
+    }
+
+    private fun fetchAllBuys() {
+        Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Buys::class.java) as? Buys
+            value?.let {
+                // Ordena los elementos por fecha descendente
+                val allBuys = it.buys.sortedByDescending { it.date }
+                _allBuys.postValue(allBuys)
+
+                // Imprime la lista de compras en los logs
+                Log.d("FetchAllBuys", "Lista de compras: $allBuys")
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+            Log.e("FetchAllBuys", "Error al obtener las compras: ${exception.message}")
+        }
+    }
+
+    fun getTotalIncome(): Double {
+        return _allSells.value?.flatMap { sell ->
+            sell.items.map { product -> product.amount * sell.price }
+        }?.sum() ?: 0.0
+    }
+
+    fun getTotalExpenses(): Double {
+        return _allBuys.value?.flatMap { buy ->
+            buy.items.map { product -> product.amount * buy.price }
+        }?.sum() ?: 0.0
+    }
+
     // ----------------------- Ventas
 
     private val _topSells = MutableLiveData<List<Sell>>()
@@ -44,6 +112,7 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
+
     // ----------------------- Compras
     private val _topBuys = MutableLiveData<List<Buy>>()
     val topBuys: LiveData<List<Buy>> get() = _topBuys
@@ -65,6 +134,7 @@ class DashboardViewModel : ViewModel() {
             // Maneja errores si es necesario
         }
     }
+
     // --------------------------
     // -- Loans
     private val _loans = MutableLiveData<List<Loan>>()
