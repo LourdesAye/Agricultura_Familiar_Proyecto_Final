@@ -97,7 +97,9 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 
 var expandedFilter = mutableStateOf(false)
 val titles = listOf("Caja", "Tarea", "Stock")
@@ -352,11 +354,10 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                     DropdownMenuItem(
                         text = { Text("Hoy") },
                         onClick = {
-                            val currentDateTime = LocalDateTime.now()
-                            dataDateStart.value =
-                                currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                            dataDateEnd.value =
-                                currentDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            val currentDate = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
+                            dataDateStart.value = currentDate
+                            dataDateEnd.value = currentDate
                             filtersDate.add(::filterDates)
                             filtersDateStock.add(::filterDatesStock)
                             dateFilterChip.value = true
@@ -366,14 +367,16 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
                     DropdownMenuItem(
                         text = { Text("Ultimo mes") },
                         onClick = {
-                            val currentDateTime = LocalDateTime.now()
-                            val firstDayOfLastMonth =
-                                currentDateTime.minusMonths(1).withDayOfMonth(1)
-                            val lastDayOfLastMonth = currentDateTime.withDayOfMonth(1).minusDays(1)
-                            dataDateStart.value =
-                                firstDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-                            dataDateEnd.value =
-                                lastDayOfLastMonth.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                            var currentDateTime = Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
+                            currentDateTime.set(Calendar.DAY_OF_MONTH, 1);
+                            currentDateTime.add(Calendar.MONTH, -1);
+                            dataDateStart.value = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                                .format(currentDateTime.time)
+                            currentDateTime = Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
+                            currentDateTime.add(Calendar.MONTH, -1);
+                            currentDateTime.set(Calendar.DAY_OF_MONTH, currentDateTime.getActualMaximum(Calendar.DAY_OF_MONTH))
+                            dataDateEnd.value = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                                .format(currentDateTime.time)
                             filtersDate.add(::filterDates)
                             filtersDateStock.add(::filterDatesStock)
                             dateFilterChip.value = true
