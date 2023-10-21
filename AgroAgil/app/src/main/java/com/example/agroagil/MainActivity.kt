@@ -534,6 +534,59 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
+                        composable("stock") {
+                            titleCurrentPage.value = "Mi Stock_"
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                true,
+                                navController
+                            ) {
+                                StockScreen(
+                                    buyViewModel = stockViewModel,
+                                    navController = navController
+                                )
+                            }
+                        }
+                        composable("stock/add") {
+                            Menu(scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController,
+                                {
+                                    StockAddScreen(
+                                        buyViewModel = stockViewModel,
+                                        navController = navController
+                                    )
+                                })
+                        }
+                        composable(
+                            "stock/{stockId}/info",
+                            arguments = listOf(navArgument("stockId") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val buyId: Int? = backStackEntry.arguments?.getInt("stockId")
+                            if (buyId is Int)
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        BuyInfoScreen(
+                                            navController = navController,
+                                            buyViewModel = buyViewModel,
+                                            buyId
+                                        )
+                                    })
+                        }
 
                         }
                         //Greeting("Android", model= LoanViewModel(), navController = navController)
