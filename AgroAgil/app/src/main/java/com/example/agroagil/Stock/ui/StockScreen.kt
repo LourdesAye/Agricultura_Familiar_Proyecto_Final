@@ -343,7 +343,6 @@ fun Actions(navController: NavController){
 //                                            filtersExclude.add(::filterDateEnd)
                                         }
                                     }
-
                                 }
                                 expandedFilter=false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }

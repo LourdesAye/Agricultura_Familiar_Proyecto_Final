@@ -135,8 +135,8 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                     onClick = { /* Do something! */ },
                     label = { Text("unLabel") },
                     enabled = false,
-                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()) )//,
-//                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
+                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()) ),
+                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()))
                 )
             }
             Column(

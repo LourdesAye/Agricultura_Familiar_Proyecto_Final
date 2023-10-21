@@ -58,9 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.R
-import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
@@ -69,7 +67,7 @@ import java.util.Date
 
 
 val openDialogAddItemBuy =  mutableStateOf(false)
-val productsBuy = mutableStateListOf<Product>()
+val products = mutableStateListOf<Product>()
 val totalPriceBuy = mutableStateOf(0.0)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +103,7 @@ fun AddProductBuy(){
                         }
                         if (name != "" && amount != "" && measure != ""){
                             var new_item = Product(name,amount.toInt(), units = measure)
-                            productsBuy.add(new_item)
+                            products.add(new_item)
                             openDialogAddItemBuy.value=false
                             name = ""
                             amount=""
@@ -170,7 +168,7 @@ fun AddProductBuy(){
                             onValueChange = { measure = it
                                 error_measure= false},
                             label = {
-                                Text("Unidad")
+                                Text("Tipo de Unidad")
                             }
                             ,
                             isError = error_measure,
@@ -292,8 +290,8 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
             Column(
                 modifier = Modifier
             ) {
-                if(productsBuy.size>0){
-                    for (i in 0..productsBuy.size-1) {
+                if(products.size>0){
+                    for (i in 0..products.size-1) {
                         Row() {
                             Column(modifier = Modifier.padding(start = 30.dp, end = 30.dp)) {
                                 Box(modifier = Modifier
@@ -312,22 +310,22 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                                                 drawCircle(SolidColor(Color("#00687A".toColorInt())))
                                             }
                                             Text(
-                                                text = productsBuy[i].name.substring(0, 2).capitalize(),
+                                                text = products[i].name.substring(0, 2).capitalize(),
                                                 color = Color.White
                                             )
                                         }
                                         Text(
-                                            productsBuy[i].name,
+                                            products[i].name,
                                             modifier = Modifier.align(Alignment.CenterVertically)
                                         )
                                     }
                                     Row(modifier = Modifier.align(Alignment.CenterEnd)) {
                                         Text(
-                                            productsBuy[i].amount.toString()+" "+ productsBuy[i].units.toString(), modifier = Modifier
+                                            products[i].amount.toString()+" "+ products[i].units.toString(), modifier = Modifier
                                                 .padding(end = 10.dp)
                                                 .align(Alignment.CenterVertically))
                                         IconButton(
-                                            onClick = { productsBuy.remove(productsBuy[i])}){
+                                            onClick = { products.remove(products[i])}){
                                             Icon(
                                                 Icons.Outlined.Close,
                                                 contentDescription = "Localized description",
@@ -384,7 +382,7 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                         .padding(30.dp)){
                     Button(onClick = {
-                        if(productsBuy.size == 0){
+                        if(products.size == 0){
                             scope.launch {
                                 snackbarHostState.showSnackbar(
                                     "Debe ingresar al menos un producto vendido"
@@ -397,16 +395,16 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                         if(totalPriceBuy.value.toDouble()==0.0){
                             error_price = true
                         }
-                        if (productsBuy.size !=0 && user!="" && totalPriceBuy.value.toDouble()!=0.0){
+                        if (products.size !=0 && user!="" && totalPriceBuy.value.toDouble()!=0.0){
                             val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                             val currentDate = sdf.format(Date())
                             buyViewModel.addBuy(
                                 Stock(
 //                                    nameUser =user,
-                                    items = productsBuy,
+                                    items = products,
                                     date = currentDate)
                             )
-                            productsBuy.clear()
+                            products.clear()
                             navController.popBackStack()
                         }
                     }, modifier = Modifier.align(Alignment.CenterVertically)
