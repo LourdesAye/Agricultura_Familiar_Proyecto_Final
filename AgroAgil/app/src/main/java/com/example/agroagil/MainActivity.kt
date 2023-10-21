@@ -64,6 +64,8 @@ import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Stock.ui.StockAddScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
+import com.example.agroagil.Summary.SummaryScreen
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -110,6 +112,8 @@ class MainActivity : ComponentActivity() {
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
                     val dashViewModel = DashboardViewModel()
+                    val summaryViewModel = SummaryViewModel()
+
                     val stockViewModel = StockViewModel()
                     //destino inicial principal si inicia sesion correctamente
                     val destinoPrincipal: String = "stock"
@@ -119,215 +123,198 @@ class MainActivity : ComponentActivity() {
                             // La pantalla de inicio, que es el logo,se mostrará durante 3 segundos
                             // y luego navegará a la pantalla de login, menu o resgistro según corresponda .
                             ScreenDeBienvenida() { evento ->
-                                when (evento) {
+                                    when (evento) {
 
-                                    NavigationInicio.PantallaMenu ->
-                                        navController.navigate("home")
+                                        NavigationInicio.PantallaMenu ->
+                                            navController.navigate("home")
 
-                                    NavigationInicio.PantallaLogin ->
-                                        navController.navigate("login")
+                                        NavigationInicio.PantallaLogin ->
+                                            navController.navigate("login")
 
-                                    NavigationInicio.PantallaRegistroGoogle ->
-                                        navController.navigate("registroConGoogle")
+                                        NavigationInicio.PantallaRegistroGoogle ->
+                                            navController.navigate("registroConGoogle")
 
-                                    else -> {
-                                        VariablesFuncionesGlobales.navegacionDefinida =
-                                            false // La ruta no está definida
+                                        else -> {
+                                            VariablesFuncionesGlobales.navegacionDefinida =
+                                                false // La ruta no está definida
+                                        }
+                                    }
+
+                                }
+
+                            }
+                            composable("login") {
+                                // La pantalla de inicio de sesión
+                                LoginScreen(viewModelLogin, viewModelLoginGoogle, auth) { evento ->
+                                    when (evento) {
+                                        NavigationInicio.PantallaMenu ->
+                                            navController.navigate("home")
+
+                                        NavigationInicio.PantallaRegistro ->
+                                            navController.navigate("miRegistro")
+
+                                        NavigationInicio.PantallaRegistroGoogle ->
+                                            navController.navigate("registroConGoogle")
+
+                                        else -> {
+                                            VariablesFuncionesGlobales.navegacionDefinida =
+                                                false // La ruta no está definida
+                                        }
+                                    }
+                                }
+                            }
+                            //PENDIENTE
+                            composable("miRegistro") {
+                                RegistroScreen(viewModelLogin, auth) { evento ->
+                                    when (evento) {
+                                        NavigationInicio.PantallaMenu ->
+                                            navController.navigate("home")
+
+                                        else -> {
+                                            VariablesFuncionesGlobales.navegacionDefinida =
+                                                false // La ruta no está definida
+                                        }
                                     }
                                 }
                             }
 
-                        }
-                        composable("login") {
-                            // La pantalla de inicio de sesión
-                            LoginScreen(viewModelLogin, viewModelLoginGoogle, auth) { evento ->
-                                when (evento) {
-                                    NavigationInicio.PantallaMenu ->
-                                        navController.navigate("home")
+                            composable("registroConGoogle") {
+                                RegistroConCuentaGoogle(viewModelLoginGoogle) { event ->
+                                    // Observador de eventos de navegación
+                                    when (event) {
+                                        NavigationInicio.PantallaMenu ->
+                                            navController.navigate("home")
 
-                                    NavigationInicio.PantallaRegistro ->
-                                        navController.navigate("miRegistro")
+                                        NavigationInicio.PantallaLogin ->
+                                            navController.navigate("login")
 
-                                    NavigationInicio.PantallaRegistroGoogle ->
-                                        navController.navigate("registroConGoogle")
-
-                                    else -> {
-                                        VariablesFuncionesGlobales.navegacionDefinida =
-                                            false // La ruta no está definida
+                                        else -> {
+                                            VariablesFuncionesGlobales.navegacionDefinida =
+                                                false // La ruta no está definida
+                                        }
                                     }
+
                                 }
                             }
-                        }
-                        //PENDIENTE
-                        composable("miRegistro") {
-                            RegistroScreen(viewModelLogin, auth) { evento ->
-                                when (evento) {
-                                    NavigationInicio.PantallaMenu ->
-                                        navController.navigate("home")
-
-                                    else -> {
-                                        VariablesFuncionesGlobales.navegacionDefinida =
-                                            false // La ruta no está definida
-                                    }
-                                }
-                            }
-                        }
-                        composable("registroConGoogle") {
-                            RegistroConCuentaGoogle(viewModelLoginGoogle) { event ->
-                                // Observador de eventos de navegación
-                                when (event) {
-                                    NavigationInicio.PantallaMenu ->
-                                        navController.navigate("home")
-
-                                    NavigationInicio.PantallaLogin ->
-                                        navController.navigate("login")
-
-                                    else -> {
-                                        VariablesFuncionesGlobales.navegacionDefinida =
-                                            false // La ruta no está definida
-                                    }
+                            composable("farm") {
+                                titleCurrentPage.value = "Mi campo"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
+                                ) {
+                                    Farm(farmViewModel)
                                 }
 
                             }
-                        }
-                        composable("farm") {
-                            titleCurrentPage.value = "Mi campo"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
-                                Farm(farmViewModel)
-                            }
-                        }
-                        composable("loan") {
-                            titleCurrentPage.value = "Mis prestamos"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
-                                LoanScreen(
-                                    loanViewModel = loanViewModel,
-                                    navController = navController
-                                )
-                            }
-                        }
-                        composable("loan/add") {
-                            Menu(scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController,
-                                {
-                                    LoanAddScreen(
+                            composable("loan") {
+                                titleCurrentPage.value = "Mis prestamos"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
+                                ) {
+                                    LoanScreen(
                                         loanViewModel = loanViewModel,
                                         navController = navController
                                     )
-                                })
-                        }
-                        composable(
-                            "loan/{loanId}/info",
-                            arguments = listOf(navArgument("loanId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
-                            if (loanId is Int)
-                                Menu(scope,
-                                    drawerState,
-                                    viewModelMenu,
-                                    title = titleCurrentPage,
-                                    NavigationEventFunction(navController),
-                                    false,
-                                    navController,
-                                    {
-                                        LoanInfoScreen(
-                                            navController = navController,
-                                            loanViewModel = loanViewModel,
-                                            loanId
-                                        )
-                                    })
-                        }
-                        composable(
-                            "loan/{loanId}/edit",
-                            arguments = listOf(navArgument("loanId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
-                            if (loanId is Int)
-                                Menu(scope,
-                                    drawerState,
-                                    viewModelMenu,
-                                    title = titleCurrentPage,
-                                    NavigationEventFunction(navController),
-                                    false,
-                                    navController,
-                                    {
-                                        LoanEditScreen(
-                                            navController = navController,
-                                            loanViewModel = loanViewModel,
-                                            loanId
-                                        )
-                                    })
-                        }
-                        composable("home") {
-                            titleCurrentPage.value = "Inicio"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController,
-                                { dash(dashViewModel) })
-                        }
-                        composable("sell") {
-                            titleCurrentPage.value = "Mis ventas"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
-                                SellScreen(
-                                    sellViewModel = sellViewModel,
-                                    navController = navController
-                                )
+                                }
                             }
-                        }
-                        composable("sell/add") {
-                            Menu(scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController,
-                                {
-                                    SellAddScreen(
+                            composable("loan/add") {
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        LoanAddScreen(
+                                            loanViewModel = loanViewModel,
+                                            navController = navController
+                                        )
+                                    })
+                            }
+                            composable(
+                                "loan/{loanId}/info",
+                                arguments = listOf(navArgument("loanId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
+                                if (loanId is Int)
+                                    Menu(scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController,
+                                        {
+                                            LoanInfoScreen(
+                                                navController = navController,
+                                                loanViewModel = loanViewModel,
+                                                loanId
+                                            )
+                                        })
+                            }
+                            composable(
+                                "loan/{loanId}/edit",
+                                arguments = listOf(navArgument("loanId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val loanId: Int? = backStackEntry.arguments?.getInt("loanId")
+                                if (loanId is Int)
+                                    Menu(scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController,
+                                        {
+                                            LoanEditScreen(
+                                                navController = navController,
+                                                loanViewModel = loanViewModel,
+                                                loanId
+                                            )
+                                        })
+                            }
+                            composable("home") {
+                                titleCurrentPage.value = "Inicio"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController,
+                                    { dash(dashViewModel) })
+                            }
+                            composable("sell") {
+                                titleCurrentPage.value = "Mis ventas"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
+                                ) {
+                                    SellScreen(
                                         sellViewModel = sellViewModel,
                                         navController = navController
                                     )
-                                })
-                        }
-                        composable(
-                            "sell/{sellId}/info",
-                            arguments = listOf(navArgument("sellId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
-                            if (sellId is Int)
+                                }
+                            }
+                            composable("sell/add") {
                                 Menu(scope,
                                     drawerState,
                                     viewModelMenu,
@@ -336,51 +323,51 @@ class MainActivity : ComponentActivity() {
                                     false,
                                     navController,
                                     {
-                                        SellInfoScreen(
-                                            navController = navController,
+                                        SellAddScreen(
                                             sellViewModel = sellViewModel,
-                                            sellId
+                                            navController = navController
                                         )
                                     })
-                        }
-                        composable("buy") {
-                            titleCurrentPage.value = "Mis compras"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
-                                StockScreen(
-                                    buyViewModel = stockViewModel,
-                                    navController = navController
-                                )
                             }
-                        }
-                        composable("buy/add") {
-                            Menu(scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController,
-                                {
-                                    BuyAddScreen(
+                            composable(
+                                "sell/{sellId}/info",
+                                arguments = listOf(navArgument("sellId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val sellId: Int? = backStackEntry.arguments?.getInt("sellId")
+                                if (sellId is Int)
+                                    Menu(scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController,
+                                        {
+                                            SellInfoScreen(
+                                                navController = navController,
+                                                sellViewModel = sellViewModel,
+                                                sellId
+                                            )
+                                        })
+                            }
+                            composable("buy") {
+                                titleCurrentPage.value = "Mis compras"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
+                                ) {
+                                    BuyScreen(
                                         buyViewModel = buyViewModel,
                                         navController = navController
                                     )
-                                })
-                        }
-                        composable(
-                            "buy/{buyId}/info",
-                            arguments = listOf(navArgument("buyId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val buyId: Int? = backStackEntry.arguments?.getInt("buyId")
-                            if (buyId is Int)
+                                }
+                            }
+                            composable("buy/add") {
                                 Menu(scope,
                                     drawerState,
                                     viewModelMenu,
@@ -389,73 +376,69 @@ class MainActivity : ComponentActivity() {
                                     false,
                                     navController,
                                     {
-                                        BuyInfoScreen(
-                                            navController = navController,
+                                        BuyAddScreen(
                                             buyViewModel = buyViewModel,
-                                            buyId
+                                            navController = navController
                                         )
                                     })
-                        }
+                            }
+                            composable(
+                                "buy/{buyId}/info",
+                                arguments = listOf(navArgument("buyId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val buyId: Int? = backStackEntry.arguments?.getInt("buyId")
+                                if (buyId is Int)
+                                    Menu(scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController,
+                                        {
+                                            BuyInfoScreen(
+                                                navController = navController,
+                                                buyViewModel = buyViewModel,
+                                                buyId
+                                            )
+                                        })
+                            }
 
-                        composable("cultivo") {
-                            titleCurrentPage.value = "CultivosTitulo"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
+                            composable("cultivo") {
+                                titleCurrentPage.value = "CultivosTitulo"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
+                                ) {
 //                                Farm(farmViewModel)
-                                Cultivo(cultivoViewModel)
+                                    Cultivo(cultivoViewModel)
+                                }
                             }
-                        }
-                        composable("task") {
-                            titleCurrentPage.value = "Mis Tareas"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            )
-                            {
-                                TaskScreen(
-                                    taskViewModel = taskViewModel,
-                                    navController = navController
+                            composable("task") {
+                                titleCurrentPage.value = "Mis Tareas"
+                                Menu(
+                                    scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    true,
+                                    navController
                                 )
+                                {
+                                    TaskScreen(
+                                        taskViewModel = taskViewModel,
+                                        navController = navController
+                                    )
+                                }
                             }
-                        }
 
-                        composable("task/add") {
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController
-                            )
-                            {
-                                TaskAddScreen(
-                                    taskViewModel = taskViewModel,
-                                    navController = navController
-                                )
-                            }
-                        }
-
-
-                        composable(
-                            "task/{taskId}/info",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
+                            composable("task/add") {
                                 Menu(
                                     scope,
                                     drawerState,
@@ -466,195 +449,170 @@ class MainActivity : ComponentActivity() {
                                     navController
                                 )
                                 {
-                                    TaskInfoScreen(
+                                    TaskAddScreen(
                                         taskViewModel = taskViewModel,
                                         navController = navController
                                     )
                                 }
-                        }
-                        composable(
-                            "task/{taskId}/edit",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
-                                Menu(
-                                    scope,
-                                    drawerState,
-                                    viewModelMenu,
-                                    title = titleCurrentPage,
-                                    NavigationEventFunction(navController),
-                                    false,
-                                    navController
-                                )
-                                {
-                                    TaskEditScreen(
-                                        taskViewModel = taskViewModel,
-                                        navController = navController
+                            }
+
+
+                            composable(
+                                "task/{taskId}/info",
+                                arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                                if (taskId is Int)
+                                    Menu(
+                                        scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController
                                     )
-                                }
-                        }
-
-                        composable("miPerfil") {
-                            VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
-                                when (evento) {
-                                    NavigationEventPerfil.ToEditPerfil ->
-                                        navController.navigate("editarPerfil")
-
-                                    NavigationEventPerfil.ToPantallaPrincipal ->
-                                        navController.navigate("home")
-
-                                    else -> {}
-                                }
-                            }
-                        }
-                        composable("editarPerfil") {
-                            EditarDatosPerfil() { evento ->
-                                when (evento) {
-                                    NavigationEventPerfil.ToDatosPerfil ->
-                                        navController.navigate("miPerfil")
-
-                                    NavigationEventPerfil.ToPantallaPrincipal ->
-                                        navController.navigate("home")
-                                    else -> {}
-                                }
-                            }
-                        }
-
-                        composable("stock") {
-                            titleCurrentPage.value = "Mi Stock_"
-                            Menu(
-                                scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                true,
-                                navController
-                            ) {
-                                StockScreen(
-                                    buyViewModel = stockViewModel,
-                                    navController = navController
-                                )
-                            }
-                        }
-                        composable("stock/add") {
-                            Menu(scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController,
-                                {
-                                    StockAddScreen(
-                                        buyViewModel = stockViewModel,
-                                        navController = navController
-                                    )
-                                })
-                        }
-                        composable(
-                            "stock/{stockId}/info",
-                            arguments = listOf(navArgument("stockId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val buyId: Int? = backStackEntry.arguments?.getInt("stockId")
-                            if (buyId is Int)
-                                Menu(scope,
-                                    drawerState,
-                                    viewModelMenu,
-                                    title = titleCurrentPage,
-                                    NavigationEventFunction(navController),
-                                    false,
-                                    navController,
                                     {
-                                        BuyInfoScreen(
-                                            navController = navController,
-                                            buyViewModel = buyViewModel,
-                                            buyId
+                                        TaskInfoScreen(
+                                            taskViewModel = taskViewModel,
+                                            navController = navController
                                         )
-                                    })
+                                    }
+                            }
+
+
+
+                            composable(
+                                "task/{taskId}/edit",
+                                arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
+                                if (taskId is Int)
+                                    Menu(
+                                        scope,
+                                        drawerState,
+                                        viewModelMenu,
+                                        title = titleCurrentPage,
+                                        NavigationEventFunction(navController),
+                                        false,
+                                        navController
+                                    )
+                                    {
+                                        TaskEditScreen(
+                                            taskViewModel = taskViewModel,
+                                            navController = navController
+                                        )
+                                    }
+                            }
+
+                            composable("miPerfil") {
+                                VerDatosDelPerfil(viewModelDatosPerfil) { evento ->
+                                    when (evento) {
+                                        NavigationEventPerfil.ToEditPerfil ->
+                                            navController.navigate("editarPerfil")
+
+                                        NavigationEventPerfil.ToPantallaPrincipal ->
+                                            navController.navigate("home")
+
+                                        else -> {}
+                                    }
+                                }
+                            }
+
+                            composable("editarPerfil") {
+                                EditarDatosPerfil() { evento ->
+                                    when (evento) {
+                                        NavigationEventPerfil.ToDatosPerfil ->
+                                            navController.navigate("miPerfil")
+
+                                        NavigationEventPerfil.ToPantallaPrincipal ->
+                                            navController.navigate("home")
+
+                                        else -> {}
+                                    }
+
+                                }
+                            }
+
+
                         }
-
-
+                        //Greeting("Android", model= LoanViewModel(), navController = navController)
                     }
-                    //Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
             }
         }
     }
-}
+    fun NavigationEventFunction(navController: NavController): (event: NavigationEventMenu) -> Unit {
+        return { event ->
+            // Observador de eventos de navegación
+            when (event) {
+                //navegar a perfil (PENDIENTE) (NO ME BORREN LOS COMENTARIOS POR FAVOR :))
+                NavigationEventMenu.ToConfigPerfil -> {
+                    navController.navigate("miPerfil")
+                }
+                //navegar a notificaciones
+                NavigationEventMenu.ToNotificaciones -> {
+                    navController.navigate("home")
+                }
+                //navegar a configurar granja
+                NavigationEventMenu.ToConfigGranja -> {
+                    navController.navigate("farm")
+                }
+                //navegar a cultivos
+                NavigationEventMenu.ToMisCultivos -> {
+                    navController.navigate("cultivo")
+                }
+                //navegar a misTareas
+                NavigationEventMenu.ToMisTareas -> {
+                    navController.navigate("task")
+                }
+                //navegar a mi almacen
+                NavigationEventMenu.ToMiAlmacen -> {
+                    navController.navigate("home")
+                }
+                //navegar a prestamos de articulos
+                NavigationEventMenu.ToPrestamosArticulos -> {
+                    navController.navigate("loan")
+                }
+                //navegar a mis ventas
+                NavigationEventMenu.ToMisVentas -> {
+                    navController.navigate("sell")
+                }
+                //navegar a mis compras
+                NavigationEventMenu.ToMisCompras -> {
+                    navController.navigate("buy")
+                }
+                //navegar a mi resumen
+                NavigationEventMenu.ToMiResumen -> {
+                    navController.navigate("home")
+                }
 
-fun NavigationEventFunction(navController: NavController): (event: NavigationEventMenu) -> Unit {
-    return { event ->
-        // Observador de eventos de navegación
-        when (event) {
-            //navegar a perfil (PENDIENTE) (NO ME BORREN LOS COMENTARIOS POR FAVOR :))
-            NavigationEventMenu.ToConfigPerfil -> {
-                navController.navigate("miPerfil")
-            }
-            //navegar a notificaciones
-            NavigationEventMenu.ToNotificaciones -> {
-                navController.navigate("home")
-            }
-            //navegar a configurar granja
-            NavigationEventMenu.ToConfigGranja -> {
-                navController.navigate("farm")
-            }
-            //navegar a cultivos
-            NavigationEventMenu.ToMisCultivos -> {
-                navController.navigate("cultivo")
-            }
-            //navegar a misTareas
-            NavigationEventMenu.ToMisTareas -> {
-                navController.navigate("task")
-            }
-            //navegar a mi almacen
-            NavigationEventMenu.ToMiAlmacen -> {
-                navController.navigate("home")
-            }
-            //navegar a prestamos de articulos
-            NavigationEventMenu.ToPrestamosArticulos -> {
-                navController.navigate("loan")
-            }
-            //navegar a mis ventas
-            NavigationEventMenu.ToMisVentas -> {
-                navController.navigate("sell")
-            }
-            //navegar a mis compras
-            NavigationEventMenu.ToMisCompras -> {
-                navController.navigate("buy")
-            }
-            //navegar a mi resumen
-            NavigationEventMenu.ToMiResumen -> {
-                navController.navigate("home")
-            }
+                NavigationEventMenu.ToHome -> {
+                    navController.navigate("home")
+                }
 
-            NavigationEventMenu.ToHome -> {
-                navController.navigate("home")
+                else -> {}
+
             }
-
-            else -> {}
-
         }
     }
-}
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun Greeting(
-    name: String,
-    modifier: Modifier = Modifier,
-    model: LoanViewModel = LoanViewModel(),
-    navController: NavController = rememberNavController()
-) {
-    navController.navigate("home")
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AgroAgilTheme {
-        Greeting("Android")
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Composable
+    fun Greeting(
+        name: String,
+        modifier: Modifier = Modifier,
+        model: LoanViewModel = LoanViewModel(),
+        navController: NavController = rememberNavController()
+    ) {
+        navController.navigate("home")
     }
-}
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Preview(showBackground = true)
+    @Composable
+    fun GreetingPreview() {
+        AgroAgilTheme {
+            Greeting("Android")
+        }
+    }

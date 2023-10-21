@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
+import com.example.agroagil.core.models.EventOperationBox
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +57,10 @@ class BuyViewModel : ViewModel()  {
             currentBuys.addAll(it)
             currentBuys.add(buy)
             Firebase.database.getReference("buy/0").setValue(Buys(currentBuys))
+            var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
+            val updates = HashMap<String, Any>()
+            updates["/$getKey"] = EventOperationBox( buy.date, "Registro de la compra", "Buy",   (currentBuys.size-1).toString())
+            Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
             setFarm()
         }
     }

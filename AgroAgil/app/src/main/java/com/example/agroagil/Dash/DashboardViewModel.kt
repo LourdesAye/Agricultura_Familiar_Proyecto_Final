@@ -10,6 +10,9 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,8 +21,74 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class DashboardViewModel : ViewModel() {
+
+    // -------------- Ingresos y egresos
+    private val _allSells = MutableLiveData<List<Sell>>()
+    val allSells: LiveData<List<Sell>> get() = _allSells
+
+    init {
+        fetchAllSells()
+    }
+
+    private val _allBuys = MutableLiveData<List<Buy>>()
+    val allBuys: LiveData<List<Buy>> get() = _allBuys
+
+    init {
+        fetchAllBuys()
+    }
+
+    private fun fetchAllSells() {
+        Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Sells::class.java) as? Sells
+            value?.let {
+                // Ordena los elementos por fecha descendente
+                val allSells = it.sells.sortedByDescending { it.date }
+                _allSells.postValue(allSells)
+
+                // Imprime la lista de ventas en los logs
+                Log.d("FetchAllSells", "Lista de ventas: $allSells")
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+            Log.e("FetchAllSells", "Error al obtener las ventas: ${exception.message}")
+        }
+    }
+
+    private fun fetchAllBuys() {
+        Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
+            val value = snapshot.getValue(Buys::class.java) as? Buys
+            value?.let {
+                // Ordena los elementos por fecha descendente
+                val allBuys = it.buys.sortedByDescending { it.date }
+                _allBuys.postValue(allBuys)
+
+                // Imprime la lista de compras en los logs
+                Log.d("FetchAllBuys", "Lista de compras: $allBuys")
+            }
+        }.addOnFailureListener { exception ->
+            // Maneja errores si es necesario
+            Log.e("FetchAllBuys", "Error al obtener las compras: ${exception.message}")
+        }
+    }
+
+    fun getTotalIncome(): Double {
+        return _allSells.value?.flatMap { sell ->
+            sell.items.map { product -> product.amount * sell.price }
+        }?.sum() ?: 0.0
+    }
+
+    fun getTotalExpenses(): Double {
+        return _allBuys.value?.flatMap { buy ->
+            buy.items.map { product -> product.amount * buy.price }
+        }?.sum() ?: 0.0
+    }
+
     // ----------------------- Ventas
 
     private val _topSells = MutableLiveData<List<Sell>>()
@@ -34,8 +103,15 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Sells::class.java) as? Sells
             value?.let {
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedSells = it.sells.map { sell ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(sell.date))
+                    sell.copy(date = formattedDate) // Crea una copia del objeto Sell con la fecha formateada
+                }
+
                 // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topSells = it.sells.sortedByDescending { it.date }
+                val topSells = formattedSells.sortedByDescending { it.date }
                     .take(5)
                 _topSells.postValue(topSells)
             }
@@ -43,6 +119,7 @@ class DashboardViewModel : ViewModel() {
             // Maneja errores si es necesario
         }
     }
+
 
     // ----------------------- Compras
     private val _topBuys = MutableLiveData<List<Buy>>()
@@ -56,8 +133,15 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Buys::class.java) as? Buys
             value?.let {
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedBuys = it.buys.map { buy ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(buy.date))
+                    buy.copy(date = formattedDate) // Crea una copia del objeto Buy con la fecha formateada
+                }
+
                 // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topBuys = it.buys.sortedByDescending { it.date }
+                val topBuys = formattedBuys.sortedByDescending { it.date }
                     .take(5)
                 _topBuys.postValue(topBuys)
             }
@@ -65,6 +149,8 @@ class DashboardViewModel : ViewModel() {
             // Maneja errores si es necesario
         }
     }
+
+
     // --------------------------
     // -- Loans
     private val _loans = MutableLiveData<List<Loan>>()
@@ -73,13 +159,23 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Loans::class.java) as? Loans
             value?.let {
-                val sortedLoans = it.loans.sortedByDescending { loan -> loan.date }
-                _loans.postValue(sortedLoans)
+                // Formatea las fechas al estilo "yyyy-MM-dd"
+                val formattedLoans = it.loans.map { loan ->
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(Date(loan.date))
+                    loan.copy(date = formattedDate) // Crea una copia del objeto Loan con la fecha formateada
+                }
+
+                // Ordena los elementos por fecha descendente y selecciona los primeros 5 elementos
+                val topLoans = formattedLoans.sortedByDescending { it.date }
+                    .take(5)
+                _loans.postValue(topLoans)
             }
         }.addOnFailureListener { exception ->
             // Maneja errores si es necesario
         }
     }
+
 
     val loans: LiveData<List<Loan>> get() = _loans
 
