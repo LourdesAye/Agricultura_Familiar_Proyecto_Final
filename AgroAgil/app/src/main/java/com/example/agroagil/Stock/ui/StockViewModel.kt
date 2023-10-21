@@ -7,6 +7,7 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
 import com.example.agroagil.core.models.Stock
 import com.example.agroagil.core.models.Stocks
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -20,10 +21,16 @@ class StockViewModel : ViewModel() {
 
         try {
             val realValue = suspendCancellableCoroutine<List<Stock>> { continuation ->
-                Firebase.database.getReference("stockSummary/0").get().addOnSuccessListener { snapshot ->
-                    val value = snapshot.getValue(Stocks::class.java) as Stocks
-                    continuation.resume(value.stocks)
-//                    continuation.resume(value)
+                Firebase.database.getReference("stockSummary/0/").get().addOnSuccessListener { snapshot ->
+                    val genericType = object : GenericTypeIndicator<HashMap<String, Stock>>() {}
+                    val value = snapshot.getValue(genericType)
+                    val result = value?.values?.toList() ?: emptyList()
+                    continuation.resume(result)
+                    /*
+                    val value = snapshot.getValue(HashMap<String, EventOperationBox>()::class.java) as HashMap<String, EventOperationBox>
+                    var result = mutableListOf<EventOperationBox>()
+                    result = value.values.toMutableList()
+                    continuation.resume(result)*/
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
                 }
@@ -51,6 +58,7 @@ class StockViewModel : ViewModel() {
                 // Handle exception if needed
             }
         }
+
     }
 
     fun addBuy(buy: Stock) {

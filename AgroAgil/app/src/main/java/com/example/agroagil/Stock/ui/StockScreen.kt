@@ -64,8 +64,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Buy.ui.BuyViewModel
-import com.example.agroagil.core.models.Buy
+//import com.example.agroagil.Buy.ui.BuyViewModel
+//import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Stock
 import java.text.SimpleDateFormat
 
@@ -100,7 +100,7 @@ fun filterAllBuys(buys:List<Stock>): List<Stock> {
     return buys
 }
 
-fun filterDateStart(buys:List<Buy>): List<Buy> {
+fun filterDateStart(buys:List<Stock>): List<Stock> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
     var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateStart.value)
@@ -110,7 +110,7 @@ fun filterDateStart(buys:List<Buy>): List<Buy> {
     }
 }
 
-fun filterDateEnd(buys:List<Buy>): List<Buy> {
+fun filterDateEnd(buys:List<Stock>): List<Stock> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
     var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date = date_format.parse(dataDateEnd.value)
@@ -119,7 +119,7 @@ fun filterDateEnd(buys:List<Buy>): List<Buy> {
         filter_date.after(date_buy) or filter_date.equals(date_buy) }
 }
 
-fun filterDateRange(buys:List<Buy>): List<Buy> {
+fun filterDateRange(buys:List<Stock>): List<Stock> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
     var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     var filter_date_end = date_format.parse(dataDateEnd.value)
@@ -380,6 +380,7 @@ fun SelectColorCard(paid:Boolean): String {
     return color
 }
 
+// TODO: esto esta para compras, se debe adaptar para stock, esto es lo que posiblemente est haciendo romper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OneBuy(itemData:Stock, navController: NavController){
@@ -410,7 +411,6 @@ fun OneBuy(itemData:Stock, navController: NavController){
                     .align(Alignment.CenterVertically)
                     .padding(start = 5.dp)) {
                     Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
-
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             drawCircle(SolidColor(Color("#00687A".toColorInt())))
                         }
@@ -452,7 +452,7 @@ fun filterStatus(){
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier= Modifier
             .fillMaxWidth()
-            .padding( top = 15.dp)){
+            .padding(top = 15.dp)){
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val cardWidth =  with(LocalDensity.current) {
             screenWidth * 0.45f
@@ -578,6 +578,7 @@ fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
+//        Text(listItemData.size.toString())
         resetFilter()
         resetFilterExclude()
         Box() {

@@ -62,6 +62,7 @@ import com.example.agroagil.Perfil.ui.NavigationEventPerfil
 import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Stock.ui.StockAddScreen
+import com.example.agroagil.Stock.ui.StockInfoScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Summary.SummaryScreen
@@ -580,9 +581,9 @@ class MainActivity : ComponentActivity() {
                                     false,
                                     navController,
                                     {
-                                        BuyInfoScreen(
+                                        StockInfoScreen(
                                             navController = navController,
-                                            buyViewModel = buyViewModel,
+                                            buyViewModel = stockViewModel,
                                             buyId
                                         )
                                     })
