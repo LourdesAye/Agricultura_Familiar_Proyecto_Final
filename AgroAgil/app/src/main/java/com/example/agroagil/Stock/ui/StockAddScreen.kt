@@ -62,6 +62,7 @@ import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
+import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -400,10 +401,10 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                             val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                             val currentDate = sdf.format(Date())
                             buyViewModel.addBuy(
-                                Buy(
-                                    nameUser =user, items = productsBuy,
-                                    date = currentDate, paid =paid,
-                                    price =totalPriceBuy.value)
+                                Stock(
+//                                    nameUser =user,
+                                    items = productsBuy,
+                                    date = currentDate)
                             )
                             productsBuy.clear()
                             navController.popBackStack()

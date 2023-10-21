@@ -38,9 +38,11 @@ import androidx.navigation.NavController
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
+import com.example.agroagil.core.models.Stock
 
 
-var currentBuy = mutableStateOf(Buy(price = 0))
+//var currentBuy = mutableStateOf(Stock(price = 0))
+var currentBuy = mutableStateOf(Stock())
 
 @Composable
 fun itemProductBuy(item: Product) {
@@ -113,7 +115,6 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                 .padding(start = 30.dp, end = 30.dp)
                 .defaultMinSize(minHeight = screenWidth)
                 .verticalScroll(rememberScrollState()),
-
             ) {
             Row(
                 modifier = Modifier
@@ -123,19 +124,19 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
             ) {
                 var textChipStatus: String
                 var colorChipStatus: Color
-                if (currentBuy.value.paid) {
-                    textChipStatus = "Pagado"
-                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
-                } else {
-                    textChipStatus = "Sin pagar"
-                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
-                }
+//                if (currentBuy.value.paid) {
+//                    textChipStatus = "Pagado"
+//                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
+//                } else {
+//                    textChipStatus = "Sin pagar"
+//                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
+//                }
                 SuggestionChip(
                     onClick = { /* Do something! */ },
-                    label = { Text(textChipStatus) },
+                    label = { Text("unLabel") },
                     enabled = false,
-                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = colorChipStatus),
-                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = colorChipStatus)
+                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()) )//,
+//                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
                 )
             }
             Column(
@@ -193,25 +194,25 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                     )
-                    Text(
-                        "$ " + currentBuy.value.price.toString(),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 30.sp,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                    )
+//                    Text(
+//                        "$ " + "unPrecio",
+//                        style = MaterialTheme.typography.titleLarge,
+//                        fontSize = 30.sp,
+//                        modifier = Modifier
+//                            .align(Alignment.CenterVertically)
+//                    )
                 }
-                if (!currentBuy.value.paid) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Button(onClick = {
-                            currentBuy.value = currentBuy.value.copy(paid = true)
-                            buyViewModel.updateBuy(currentBuy.value, buyId)
-                        }, content = { Text("Confirmar pago") })
-                    }
-                }
+//                if (!currentBuy.value.paid) {
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.End
+//                    ) {
+//                        Button(onClick = {
+//                            currentBuy.value = currentBuy.value.copy(paid = true)
+//                            buyViewModel.updateBuy(currentBuy.value, buyId)
+//                        }, content = { Text("Confirmar pago") })
+//                    }
+//                }
             }
         }
     }

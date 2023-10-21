@@ -66,6 +66,7 @@ import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.core.models.Buy
+import com.example.agroagil.core.models.Stock
 import java.text.SimpleDateFormat
 
 val SinPagar = "#A93226"
@@ -73,30 +74,29 @@ val SinPagarClick = "#f4e5e4"
 val Pagado = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listItemData = mutableStateListOf<Buy>()
-var listItemDataFilter = mutableStateListOf<Buy>()
+var listItemData = mutableStateListOf<Stock>()
+var listItemDataFilter = mutableStateListOf<Stock>()
 
-var filters = mutableStateListOf<Function1<List<Buy>, List<Buy>>>()
-var filtersExclude = mutableStateListOf<Function1<List<Buy>, List<Buy>>>()
-var chipsFilter = mutableStateListOf<Map<String,Function1<List<Buy>, List<Buy>>>>()
+var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
+var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
+var chipsFilter = mutableStateListOf<Map<String,Function1<List<Stock>, List<Stock>>>>()
 
 var UserFilter = mutableStateOf("")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 
 
-fun filterPagado(buys:List<Buy>): List<Buy> {
-    return buys.filter { it -> it.paid==true }
+fun filterPagado(buys:List<Stock>): List<Stock> {
+    return buys.filter { it -> it.withAlert==true }
 }
 
-fun filterSinPagar(buys:List<Buy>): List<Buy> {
-    return buys.filter { it -> it.paid==false }
+fun filterSinPagar(buys:List<Stock>): List<Stock> {
+    return buys.filter { it -> it.withAlert==false }
 }
-fun filterNombre(buys:List<Buy>): List<Buy> {
+fun filterNombre(buys:List<Stock>): List<Stock> {
     return buys.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
 }
-
-fun filterAllBuys(buys:List<Buy>): List<Buy> {
+fun filterAllBuys(buys:List<Stock>): List<Stock> {
     return buys
 }
 
@@ -137,7 +137,7 @@ fun resetFilter(){
         listItemDataFilter.addAll(listItemData)
     }
     for (i in 0 .. filters.size-1) {
-        var filtroExecute = mutableListOf<List<Buy>>()
+        var filtroExecute = mutableListOf<List<Stock>>()
         filtroExecute.addAll(listOf(filters[i](listItemData)))
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
@@ -145,7 +145,7 @@ fun resetFilter(){
 
 fun resetFilterExclude(){
     for (i in 0 .. filtersExclude.size-1) {
-        var filtroExecute = mutableListOf<List<Buy>>()
+        var filtroExecute = mutableListOf<List<Stock>>()
         filtroExecute.addAll(listOf(filtersExclude[i](listItemDataFilter)))
         listItemDataFilter.clear()
         listItemDataFilter.addAll(filtroExecute.flatten())
@@ -332,15 +332,15 @@ fun Actions(navController: NavController){
                                 var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
                                 if  (checkStartDate or checkEndDate){
                                     if  (checkStartDate and checkEndDate){
-                                        chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
-                                        filtersExclude.add(::filterDateRange)
+//                                        chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
+//                                        filtersExclude.add(::filterDateRange)
                                     }else{
                                         if(checkStartDate) {
-                                            chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
-                                            filtersExclude.add(::filterDateStart)
+//                                            chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
+//                                            filtersExclude.add(::filterDateStart)
                                         }else{
-                                            chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
-                                            filtersExclude.add(::filterDateEnd)
+//                                            chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
+//                                            filtersExclude.add(::filterDateEnd)
                                         }
                                     }
 
@@ -383,11 +383,11 @@ fun SelectColorCard(paid:Boolean): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneBuy(itemData:Buy, navController: NavController){
+fun OneBuy(itemData:Stock, navController: NavController){
     Column(){
         Card(
             onClick={
-                navController.navigate("buy/${listItemData.indexOf(itemData)}/info")
+                navController.navigate("stockSummary/${listItemData.indexOf(itemData)}/info")
             },
             modifier = Modifier
                 .height(100.dp)
@@ -401,7 +401,7 @@ fun OneBuy(itemData:Buy, navController: NavController){
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(SelectColorCard(itemData.paid).toColorInt()))
+                        .background(Color(SelectColorCard(itemData.withAlert).toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
