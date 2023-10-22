@@ -140,7 +140,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min), // La altura se ajustará automáticamente al contenido
+                .height(IntrinsicSize.Min), // La altura se ajusta automáticamente al contenido
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 12.dp
             ),
@@ -179,7 +179,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "$location   $temperature°C",
+                            text = "$location   $temperature°C\n$translatedDescription",
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth()
@@ -205,11 +205,6 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                             Column(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = translatedDescription,
-                                    color = textColor,
-                                    fontWeight = FontWeight.Bold
-                                )
                                 Text(
                                     text = currentDate,
                                     color = Color.Black
@@ -259,7 +254,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .height(IntrinsicSize.Min), // La altura se ajustará automáticamente al contenido
+            .height(IntrinsicSize.Min), // La altura se ajusta automáticamente al contenido
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp,
         ),
@@ -376,7 +371,7 @@ fun TaskCardDash(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Max), // La altura se ajustará automáticamente al contenido
+            .height(IntrinsicSize.Max), // La altura se ajusta automáticamente al contenido
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -451,7 +446,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                 colors = CardDefaults.cardColors(containerColor = Color.White)
                 ){
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Dibuja la barra de ingresos con el número al lado
+                    // Dibuja la barra de ingresos
                     Text(
                         text = "Ingresos: $$ingresos\n",
                         color = textColor,
@@ -462,7 +457,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Dibuja la barra de egresos con el número al lado
+                    // Dibuja la barra de egresos
                     Text(
                         text = "Egresos: $$egresos\n",
                         color = textColor,
