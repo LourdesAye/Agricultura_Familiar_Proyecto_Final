@@ -66,19 +66,18 @@ import androidx.navigation.NavController
 import com.example.agroagil.core.models.Stock
 import java.text.SimpleDateFormat
 
-val SinPagar = "#A93226"
+val SinStock = "#A93226"
 val SinPagarClick = "#f4e5e4"
-val Pagado = "#28B463"
+val ConStock = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listaDeStock = mutableStateListOf<Stock>()
-var listItemDataFilter = mutableStateListOf<Stock>()
+var listStockDataFilter = mutableStateListOf<Stock>()
 
 var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var chipsFilter = mutableStateListOf<Map<String,Function1<List<Stock>, List<Stock>>>>()
 
-var UserFilter = mutableStateOf("")
+var nombreElementoDeStockFilter = mutableStateOf("")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 
@@ -91,7 +90,8 @@ fun filterSinStock(buys:List<Stock>): List<Stock> {
     return buys.filter { it -> it.product.amount<=0 }
 }
 fun filterNombreProductoDelStock(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.product.name.lowercase().contains(UserFilter.value.lowercase()) }
+    //para filtrar según nombre del producto, que puede ser pera,naranja,camion,tractor
+    return buys.filter { it -> it.product.name.lowercase().contains(nombreElementoDeStockFilter.value.lowercase()) }
 }
 fun filterAllBuys(buys:List<Stock>): List<Stock> {
     return buys
@@ -129,23 +129,23 @@ fun filterDateRange(buys:List<Stock>): List<Stock> {
 }
 
 fun resetFilter(){
-    listItemDataFilter.clear()
+    listStockDataFilter.clear()
     if (filters.size ==0){
-        listItemDataFilter.addAll(listaDeStock)
+        listStockDataFilter.addAll(listStockDataFilter)
     }
     for (i in 0 .. filters.size-1) {
         var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filters[i](listaDeStock)))
-        listItemDataFilter.addAll(filtroExecute.flatten())
+        filtroExecute.addAll(listOf(filters[i](listStockDataFilter)))
+        listStockDataFilter.addAll(filtroExecute.flatten())
     }
 }
 
 fun resetFilterExclude(){
     for (i in 0 .. filtersExclude.size-1) {
         var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filtersExclude[i](listItemDataFilter)))
-        listItemDataFilter.clear()
-        listItemDataFilter.addAll(filtroExecute.flatten())
+        filtroExecute.addAll(listOf(filtersExclude[i](listStockDataFilter)))
+        listStockDataFilter.clear()
+        listStockDataFilter.addAll(filtroExecute.flatten())
     }
 }
 
@@ -310,7 +310,7 @@ fun Actions(navController: NavController){
                             OutlinedTextField(
                                 value = userName,
                                 onValueChange = { userName = it },
-                                label = { Text("Nombre de usuario")},
+                                label = { Text("Producto")},
                                 modifier=Modifier.fillMaxWidth()
                             )
                             FormattedDateInputField()
@@ -323,7 +323,7 @@ fun Actions(navController: NavController){
                                 if (userName.text!=""){
                                     chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombreProductoDelStock))
                                     filtersExclude.add(::filterNombreProductoDelStock)
-                                    UserFilter.value = userName.text
+                                    nombreElementoDeStockFilter.value = userName.text
                                 }
                                 var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
                                 var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
@@ -370,9 +370,9 @@ fun Actions(navController: NavController){
 fun SelectColorCard(paid:Boolean): String {
     var color: String
     if (paid==true){
-        color = Pagado
+        color = ConStock
     }else{
-        color = SinPagar
+        color = SinStock
     }
     return color
 }
@@ -473,7 +473,7 @@ fun filterStatus(){
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(Pagado.toColorInt()))
+                        .background(Color(ConStock.toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
@@ -519,7 +519,7 @@ fun filterStatus(){
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(SinPagar.toColorInt()))
+                        .background(Color(SinStock.toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
@@ -551,8 +551,8 @@ fun filterStatus(){
 fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
     var valuesStock = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     valuesStock?.let {
-        listaDeStock.clear()
-        listaDeStock.addAll(it)
+       listStockDataFilter.clear()
+        listStockDataFilter.addAll(it)
     }
     if (valuesStock == null) {
         Column(
@@ -569,7 +569,6 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-//        Text(listItemData.size.toString())
         resetFilter()
         resetFilterExclude()
         Box() {
@@ -585,7 +584,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                         //todo chequear actions
                         Actions(navController)
                     }
-                    this.items(listItemDataFilter) {
+                    this.items(listStockDataFilter) {
                         OneBuy(it, navController)
                     }
                 }
