@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,14 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Buy.ui.BuyViewModel
-import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 
 
-//var currentBuy = mutableStateOf(Stock(price = 0))
-var currentBuy = mutableStateOf(Stock())
+var stockEnEsteMomento = mutableStateOf(Stock())
 
 @Composable
 fun itemProductBuy(item: Product) {
@@ -92,9 +88,9 @@ fun itemProductBuy(item: Product) {
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, buyId: Int) {
-    var valuesBuy = buyViewModel.farm.observeAsState().value
-    if (valuesBuy == null) {
+fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel, buyId: Int) {
+    var stockActual = stockViewModel.stockEnBaseDeDatos.observeAsState().value
+    if (stockActual == null) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -108,7 +104,7 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
             )
         }
     } else {
-        currentBuy.value = valuesBuy.get(buyId)
+        stockEnEsteMomento.value = stockActual.get(buyId)
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
         Column(
             modifier = Modifier
@@ -124,16 +120,16 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
             ) {
                 var textChipStatus: String
                 var colorChipStatus: Color
-//                if (currentBuy.value.paid) {
-//                    textChipStatus = "Pagado"
-//                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
-//                } else {
-//                    textChipStatus = "Sin pagar"
-//                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
-//                }
+               if (stockEnEsteMomento.value.product.amount>0) {
+                    textChipStatus = "En Almacén"
+                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
+                } else {
+                    textChipStatus = "No Disponible en Almacén"
+                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
+                }
                 SuggestionChip(
                     onClick = { /* Do something! */ },
-                    label = { Text("unLabel") },
+                    label = { Text("Probando que hace esto") },
                     enabled = false,
                     colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()) ),
                     border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()))
@@ -150,7 +146,7 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                             .padding(top = 50.dp)
                     ) {
                         Text(
-                            currentBuy.value.nameUser,
+                            stockEnEsteMomento.value.product.name,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 30.sp,
                             textAlign = TextAlign.Center,
@@ -163,7 +159,7 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                             .fillMaxWidth()
                     ) {
                         Text(
-                            currentBuy.value.date,
+                            stockEnEsteMomento.value.product.amount.toString(),
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 15.sp,
                             textAlign = TextAlign.Center,
@@ -177,9 +173,11 @@ fun StockInfoScreen(navController: NavController, buyViewModel: StockViewModel, 
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
                     )
-                    for (i in 0..currentBuy.value.items.size - 1) {
-                        itemProductBuy(currentBuy.value.items[i])
+                    /*
+                    for (i in 0..stockEnEsteMomento.value.items.size - 1) {
+                        itemProductBuy(stockEnEsteMomento.value.items[i])
                     }
+                    */
                 }
                 Row(
                     modifier = Modifier

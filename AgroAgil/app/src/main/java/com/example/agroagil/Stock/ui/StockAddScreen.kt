@@ -248,13 +248,13 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                     .align(Alignment.CenterHorizontally)
                     .padding(start = 20.dp, end = 20.dp, top = 30.dp))
             {
-                var textPaid = ""
+                var textConOsinStock = ""
                 if(paid){
-                    textPaid= "Pagado"
+                    textConOsinStock= "En Almacén"
                 }else{
-                    textPaid = "No pagado"
+                    textConOsinStock = "No Disponible en Almacén"
                 }
-                Text(textPaid, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(textConOsinStock, fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterVertically))
                 Switch(
                     modifier = Modifier.semantics { contentDescription = "Demo" },
                     checked = paid,
@@ -400,8 +400,6 @@ fun StockAddScreen(buyViewModel: StockViewModel, navController: NavController) {
                             val currentDate = sdf.format(Date())
                             buyViewModel.addBuy(
                                 Stock(
-//                                    nameUser =user,
-                                    items = products,
                                     date = currentDate)
                             )
                             products.clear()

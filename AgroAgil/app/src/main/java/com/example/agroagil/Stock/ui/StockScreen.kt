@@ -3,7 +3,6 @@ package com.example.agroagil.Stock.ui
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,7 +50,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
@@ -61,7 +59,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 //import com.example.agroagil.Buy.ui.BuyViewModel
@@ -74,7 +71,7 @@ val SinPagarClick = "#f4e5e4"
 val Pagado = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listItemData = mutableStateListOf<Stock>()
+var listaDeStock = mutableStateListOf<Stock>()
 var listItemDataFilter = mutableStateListOf<Stock>()
 
 var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
@@ -86,15 +83,15 @@ var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 
 
-fun filterPagado(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.withAlert==true }
+fun filterTieneStock(buys:List<Stock>): List<Stock> {
+    return buys.filter { it -> it.product.amount>0 }
 }
 
-fun filterSinPagar(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.withAlert==false }
+fun filterSinStock(buys:List<Stock>): List<Stock> {
+    return buys.filter { it -> it.product.amount<=0 }
 }
-fun filterNombre(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.nameUser.lowercase().contains(UserFilter.value.lowercase()) }
+fun filterNombreProductoDelStock(buys:List<Stock>): List<Stock> {
+    return buys.filter { it -> it.product.name.lowercase().contains(UserFilter.value.lowercase()) }
 }
 fun filterAllBuys(buys:List<Stock>): List<Stock> {
     return buys
@@ -134,11 +131,11 @@ fun filterDateRange(buys:List<Stock>): List<Stock> {
 fun resetFilter(){
     listItemDataFilter.clear()
     if (filters.size ==0){
-        listItemDataFilter.addAll(listItemData)
+        listItemDataFilter.addAll(listaDeStock)
     }
     for (i in 0 .. filters.size-1) {
         var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filters[i](listItemData)))
+        filtroExecute.addAll(listOf(filters[i](listaDeStock)))
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
 }
@@ -319,13 +316,13 @@ fun Actions(navController: NavController){
                             FormattedDateInputField()
                             FormattedDateInputFieldEnd()
                             ExtendedFloatingActionButton(onClick = {
-                                filtersExclude.removeIf { it.equals(::filterNombre) or
+                                filtersExclude.removeIf { it.equals(::filterNombreProductoDelStock) or
                                         it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
                                 }
                                 chipsFilter.clear()
                                 if (userName.text!=""){
-                                    chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombre))
-                                    filtersExclude.add(::filterNombre)
+                                    chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombreProductoDelStock))
+                                    filtersExclude.add(::filterNombreProductoDelStock)
                                     UserFilter.value = userName.text
                                 }
                                 var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
@@ -383,11 +380,12 @@ fun SelectColorCard(paid:Boolean): String {
 // TODO: esto esta para compras, se debe adaptar para stock, esto es lo que posiblemente est haciendo romper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneBuy(itemData:Stock, navController: NavController){
+fun OneBuy(stock:Stock, navController: NavController){
     Column(){
         Card(
             onClick={
-                navController.navigate("stockSummary/${listItemData.indexOf(itemData)}/info")
+                    //TODO verificar esto
+               // navController.navigate("stockSummary/${listItemData.indexOf(itemData)}/info")
             },
             modifier = Modifier
                 .height(100.dp)
@@ -401,37 +399,32 @@ fun OneBuy(itemData:Stock, navController: NavController){
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(SelectColorCard(itemData.withAlert).toColorInt()))
+                        .background(Color(SelectColorCard(stock.withAlert).toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
 
                 }
-                Column(modifier = Modifier
+              /*  Column(modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .padding(start = 5.dp)) {
                     Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             drawCircle(SolidColor(Color("#00687A".toColorInt())))
                         }
-                        Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
+                        Text(text ="estoy probando",color= Color.Red)
+                        //Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
                     }
                 }
+                */
                 Column(modifier = Modifier
                     .padding(5.dp)
                     .fillMaxWidth()) {
 
-                    Text(itemData.date, fontSize=10.sp, modifier = Modifier.align(Alignment.End))
-                    Text(itemData.nameUser, fontWeight= FontWeight.Bold)
-                    var description = ""
-                    for (i in 0..itemData.items.size-1){
-                        description+=itemData.items[i].amount.toString() + " "+itemData.items[i].name + ", "
-                    }
-                    if (description.length>70)
-                        description = description.substring(0,69)+"..."
-                    else
-                        description = description.substring(0,description.length-2)
-                    Text(description)
+                    Text("${stock.type}")
+                    Text("${stock.product.name}")
+                    Text("cantidad: ${stock.product.amount}+${stock.product.units}", fontWeight= FontWeight.Bold)
+
                 }
             }
 
@@ -442,12 +435,10 @@ fun OneBuy(itemData:Stock, navController: NavController){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun filterStatus(){
-    var clickPagado by remember {mutableStateOf(false)}
-    var colorPagado by remember {mutableStateOf<Color>(Color(0))}
-    var clickPagadoParcialmente by remember {mutableStateOf(false)}
-    var colorPagadoParcialmente by remember {mutableStateOf<Color>(Color(0))}
-    var clickSinPagar by remember {mutableStateOf(false)}
-    var colorSinPagar by remember {mutableStateOf<Color>(Color(0))}
+    var clickConStock by remember {mutableStateOf(false)}
+    var colorConStock by remember {mutableStateOf<Color>(Color(0))}
+    var clickSinStock by remember {mutableStateOf(false)}
+    var colorSinStock by remember {mutableStateOf<Color>(Color(0))}
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier= Modifier
@@ -457,18 +448,18 @@ fun filterStatus(){
         val cardWidth =  with(LocalDensity.current) {
             screenWidth * 0.45f
         }
-        if (clickPagado){
-            colorPagado = Color(PagadoClick.toColorInt())
+        if (clickConStock){
+            colorConStock = Color(PagadoClick.toColorInt())
         }else{
-            colorPagado=Color(MaterialTheme.colorScheme.background.value)
+            colorConStock=Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
             onClick={
-                clickPagado = !clickPagado
-                if(clickPagado){
-                    filters.add(::filterPagado)
+                clickConStock = !clickConStock
+                if(clickConStock){
+                    filters.add(::filterTieneStock)
                 }else{
-                    filters.remove(::filterPagado)
+                    filters.remove(::filterTieneStock)
                 }
                 resetFilter()
             },
@@ -477,7 +468,7 @@ fun filterStatus(){
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorPagado)
+            colors = CardDefaults.cardColors(colorConStock)
         ) {
             Row() {
                 Column(
@@ -489,8 +480,8 @@ fun filterStatus(){
 
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Text("Pagado", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickPagado){
+                    Text("En Almacén", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
+                    if(clickConStock){
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
@@ -503,18 +494,18 @@ fun filterStatus(){
                 }
             }
         }
-        if (clickSinPagar){
-            colorSinPagar = Color(SinPagarClick.toColorInt())
+        if (clickSinStock){
+            colorSinStock = Color(SinPagarClick.toColorInt())
         }else{
-            colorSinPagar=Color(MaterialTheme.colorScheme.background.value)
+            colorSinStock=Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
             onClick = {
-                clickSinPagar=!clickSinPagar
-                if(clickSinPagar){
-                    filters.add(::filterSinPagar)
+                clickSinStock=!clickSinStock
+                if(clickSinStock){
+                    filters.add(::filterSinStock)
                 }else{
-                    filters.remove(::filterSinPagar)
+                    filters.remove(::filterSinStock)
                 }
                 resetFilter()
             },
@@ -523,7 +514,7 @@ fun filterStatus(){
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorSinPagar)
+            colors = CardDefaults.cardColors(colorSinStock)
         ) {
             Row() {
                 Column(
@@ -535,8 +526,8 @@ fun filterStatus(){
 
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Text("Sin pagar", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickSinPagar){
+                    Text("No Disponible En Almacén", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
+                    if(clickSinStock){
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
@@ -557,13 +548,13 @@ fun filterStatus(){
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
-    var valuesBuy = buyViewModel.farm.observeAsState().value
-    valuesBuy?.let {
-        listItemData.clear()
-        listItemData.addAll(it)
+fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
+    var valuesStock = stockViewModel.stockEnBaseDeDatos.observeAsState().value
+    valuesStock?.let {
+        listaDeStock.clear()
+        listaDeStock.addAll(it)
     }
-    if (valuesBuy == null) {
+    if (valuesStock == null) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -589,7 +580,9 @@ fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
                         .padding(start = 20.dp, end = 20.dp)
                 ) {
                     item {
+                        //todo chequera filter
                         filterStatus()
+                        //todo chequear actions
                         Actions(navController)
                     }
                     this.items(listItemDataFilter) {
@@ -600,6 +593,7 @@ fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
             }
             Button(
                 onClick = {
+                    //todo chequear esto
                     navController.navigate("stock/add")
                 }, modifier = Modifier
                     .padding(end = 20.dp, bottom = 40.dp)
@@ -611,7 +605,7 @@ fun StockScreen(buyViewModel: StockViewModel, navController: NavController) {
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Stock/Producto")
+                Text("Agregar elementos al almacén")
             }
         }
     }

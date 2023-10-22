@@ -65,7 +65,6 @@ import com.example.agroagil.Stock.ui.StockAddScreen
 import com.example.agroagil.Stock.ui.StockInfoScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
-import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
@@ -536,7 +535,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                         composable("stock") {
-                            titleCurrentPage.value = "Mi Stock_"
+                            titleCurrentPage.value = "Mi Almacén"
                             Menu(
                                 scope,
                                 drawerState,
@@ -547,7 +546,7 @@ class MainActivity : ComponentActivity() {
                                 navController
                             ) {
                                 StockScreen(
-                                    buyViewModel = stockViewModel,
+                                    stockViewModel = stockViewModel,
                                     navController = navController
                                 )
                             }
@@ -583,7 +582,7 @@ class MainActivity : ComponentActivity() {
                                     {
                                         StockInfoScreen(
                                             navController = navController,
-                                            buyViewModel = stockViewModel,
+                                            stockViewModel = stockViewModel,
                                             buyId
                                         )
                                     })
