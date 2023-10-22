@@ -2,8 +2,9 @@ package com.example.agroagil.Cultivo.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import com.example.agroagil.core.models.FarmModel
-import com.example.agroagil.core.models.Member
+import com.example.agroagil.core.models.Crop
+import com.example.agroagil.core.models.Plantation
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -12,14 +13,15 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CultivoViewModel : ViewModel() {
-    var farm = liveData(Dispatchers.IO) {
+    var crop = liveData(Dispatchers.IO) {
         emit(null)
-
         try {
-            val realValue = suspendCancellableCoroutine<FarmModel> { continuation ->
-                Firebase.database.getReference("cultivo/0").get().addOnSuccessListener { snapshot ->
-                    val value = snapshot.getValue(FarmModel::class.java) as FarmModel
-                    continuation.resume(value)
+            val realValue = suspendCancellableCoroutine<List<Crop>> { continuation ->
+                Firebase.database.getReference("crop/0/").get().addOnSuccessListener { snapshot ->
+                    val genericType = object : GenericTypeIndicator<HashMap<String, Crop>>() {}
+                    val value = snapshot.getValue(genericType)
+                    val result = value?.values?.toList() ?: emptyList()
+                    continuation.resume(result)
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
                 }
@@ -29,13 +31,36 @@ class CultivoViewModel : ViewModel() {
             // Handle exception if needed
         }
     }
-    fun updateMembers(members:List<Member>){
-        Firebase.database.getReference("cultivo/0/members").setValue(members)
+    var plantation = liveData(Dispatchers.IO) {
+        emit(null)
+
+        try {
+            val realValue = suspendCancellableCoroutine<List<Plantation>> { continuation ->
+                Firebase.database.getReference("plantation/0/").get().addOnSuccessListener { snapshot ->
+                    val genericType = object : GenericTypeIndicator<HashMap<String, Plantation>>() {}
+                    val value = snapshot.getValue(genericType)
+                    val result = value?.values?.toList() ?: emptyList()
+                    continuation.resume(result)
+                }.addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
+                }
+            }
+            emit(realValue)
+        } catch (e: Exception) {
+            // Handle exception if needed
+        }
     }
-    fun updateName(name:String){
-        Firebase.database.getReference("cultivo/0/name").setValue(name)
-    }
-    fun updateImage(image:String){
-        Firebase.database.getReference("cultivo/0/image").setValue(image)
+    fun init(){
+        var getKey = Firebase.database.getReference("crop/0/").push().key
+        var updates = HashMap<String, Any>()
+        updates["/$getKey"] = Crop()
+        Firebase.database.getReference("crop/0/").updateChildren(updates)
+
+        getKey = Firebase.database.getReference("plantation/0/").push().key
+        updates = HashMap<String, Any>()
+        updates["/$getKey"] = Plantation()
+        Firebase.database.getReference("plantation/0/").updateChildren(updates)
+
+
     }
 }

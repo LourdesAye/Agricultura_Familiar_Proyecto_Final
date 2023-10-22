@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,51 +20,42 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColorInt
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
-
-import com.example.agroagil.R
-import com.example.agroagil.core.models.Member
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.graphics.toColorInt
+import com.example.agroagil.R
+import com.example.agroagil.core.models.Crop
+import com.example.agroagil.core.models.Member
+import com.example.agroagil.core.models.Plantation
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.TimeZone
 
 val openDialogImageFarm = mutableStateOf(false)
 val openDialogConfirmDelete = mutableStateOf(false)
@@ -73,8 +65,8 @@ val openDialogHome = mutableStateOf(false)
 val currentMember = mutableStateOf(Member())
 var farmViewModelCurrent: CultivoViewModel? = null
 
-
-var members = mutableStateListOf<Member>()
+var crops = mutableStateListOf<Crop>()
+var plantations = mutableStateListOf<Plantation>()
 val nameFarm = mutableStateOf("Mi granja")
 val profileImage = mutableStateOf(R.drawable.ic_launcher_background)
 val profileImageTemp = mutableStateOf(R.drawable.ic_launcher_background)
@@ -167,7 +159,7 @@ fun GetImageFarm() {
     }
 }
 
-
+/*
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun GetDialogConfirmDelete() {
@@ -204,8 +196,8 @@ fun GetDialogConfirmDelete() {
             text = { Text("¿Desea eliminar cultivo?") }
         )
     }
-}
-
+}*/
+/*
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -349,8 +341,8 @@ fun GetDialogMemberDetails() {
             }
         )
     }
-}
-
+}*/
+/*
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -441,8 +433,8 @@ fun GetDialogEditHome() {
         )
     }
 
-}
-
+}*/
+/*
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -582,36 +574,10 @@ fun GetDialogEditMember() {
 
             })
     }
-}
+}*/
 
 @Composable
 fun GetCultivosSemillas() {
-//    Box() {
-//        Image(
-//            painter = painterResource(id = profileImage.value),
-//            contentDescription = stringResource(id = R.string.app_name),
-//            contentScale = ContentScale.Crop,
-//            modifier = Modifier
-//                .size(20.dp)
-//                .clip(CircleShape)
-//        )
-//        FilledIconButton(
-//            onClick = { openDialogHome.value=true},
-//            modifier = Modifier
-//                .size(50.dp)
-//                .align(Alignment.BottomEnd),
-//            shape = Shapes().small
-//        ) {
-//            Icon(
-//                Icons.Filled.Edit,
-//                contentDescription = "Localized description",
-//                modifier = Modifier.size(ButtonDefaults.IconSize)
-//            )
-//        }
-//    }
-//    Button(onClick = { /*..*/ }) {
-//        Text(text = "My Button")
-//    }// Button with sufficient contrast ratio
     Button(
         onClick = { },
         colors = ButtonDefaults.buttonColors(
@@ -621,8 +587,6 @@ fun GetCultivosSemillas() {
     ) {
         Text(text = "Mis Semillas / Tipos de Cultivos", fontSize = 17.sp)
     }
-//    Text(text = nameFarm.value, fontSize = 16.sp)
-//    Text(text = "Mis Semillas / Tipos de Cultivos", fontSize = 16.sp)
     Row(
 
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -630,30 +594,48 @@ fun GetCultivosSemillas() {
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .fillMaxWidth()
     ) {
-        Text(text = members.size.toString() + " Cultivos", fontSize = 28.sp)
-        Button(onClick = { openDialogMember.value = true }) {
-            Icon(
-                Icons.Filled.Add,
-                contentDescription = "Localized description",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Crear Cultivo")
-        }
+        Text(text = plantations.size.toString() + " Plantaciones", fontSize = 28.sp)
+
     }
 }
 
+fun getNameType(referenceID: String): String {
+    val crop = crops.filter{it.id == referenceID}.first()
+    return crop.name
+}
+fun getImage(referenceID: String, dateStart:String): Int {
+    val crop = crops.filter{it.id == referenceID}.first()
+    val date_format = SimpleDateFormat("dd/MM/yyyy")
+    var date_class = date_format.parse(dateStart.split(" ")[0])
+    var currentDateTime = Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time
+    val diferenciaEnMilisegundos: Long = currentDateTime.getTime() - date_class.getTime()
+    val diferenciaEnDias = diferenciaEnMilisegundos / (1000 * 60 * 60 * 24)
+    val pdiferenciaEnDias = diferenciaEnDias.toFloat()/crop.durationDay.toFloat()
+    if(pdiferenciaEnDias<0.25){
+        return R.drawable.crop1
+    }else{
+        if(pdiferenciaEnDias<0.5){
+            return R.drawable.crop2
+        }else{
+            if(pdiferenciaEnDias<0.75){
+                return R.drawable.crop3
+            }else{
+                return R.drawable.crop4
+            }
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetMembers() {
-    for (i in 0..Math.ceil((members.size / 2).toDouble()).toInt()) {
+fun GetPlantations() {
+    for (i in 0..Math.ceil((plantations.size / 2).toDouble()).toInt()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
         ) {
-            for (item in 0..Math.min(2, members.size - (i * 2)) - 1) {
+            for (item in 0..Math.min(2, plantations.size - (i * 2)) - 1) {
                 Card(
                     modifier = Modifier
                         .size(width = 200.dp, height = 240.dp)
@@ -662,8 +644,8 @@ fun GetMembers() {
                         defaultElevation = 10.dp
                     ),
                     onClick = {
-                        openDialogMemberDetails.value = true
-                        currentMember.value = members[(i * 2) + item]
+                        //openDialogMemberDetails.value = true
+                        //currentMember.value = members[(i * 2) + item]
                     }
 
                 ) {
@@ -671,21 +653,15 @@ fun GetMembers() {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        val context = LocalContext.current
-                        val drawableId = remember(members[(i * 2) + item].image) {
-                            context.resources.getIdentifier(
-                                members[(i * 2) + item].image,
-                                "drawable",
-                                context.packageName
-                            )
-                        }
                         Image(
-                            painter = painterResource(id = R.drawable.farm1),
+                            painter = painterResource(id = getImage(plantations[(i * 2) + item].referenceId, plantations[(i * 2) + item].dateStart)),
                             contentDescription = stringResource(id = R.string.app_name),
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(150.dp)
+                            contentScale = ContentScale.Inside,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color("#628665".toColorInt()))
                         )
-                        members[(i * 2) + item].name?.let {
+                        plantations[(i * 2) + item].name?.let {
                             Text(
                                 it,
                                 modifier = Modifier
@@ -697,9 +673,9 @@ fun GetMembers() {
                                 fontSize = 17.sp
                             )
                         }
-                        members[(i * 2) + item].role?.let {
+                        plantations[(i * 2) + item]?.let {
                             Text(
-                                it,
+                                getNameType(it.referenceId),
                                 modifier = Modifier
                                     .background(Color("#F8FAFB".toColorInt()))
                                     .fillMaxWidth()
@@ -720,22 +696,62 @@ fun GetMembers() {
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun Cultivo(cultivoViewModel: CultivoViewModel) {
-    val farm = cultivoViewModel.farm.observeAsState().value
-    farmViewModelCurrent = cultivoViewModel
-    if (farm == null) {
+    //cultivoViewModel.init()
+    val crop = cultivoViewModel.crop.observeAsState().value
+    val plantation = cultivoViewModel.plantation.observeAsState().value
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    //farmViewModelCurrent = cultivoViewModel
+    if (crop == null || plantation == null) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            LinearProgressIndicator(
+            CircularProgressIndicator(
                 modifier = Modifier
                     .semantics(mergeDescendants = true) {}
                     .padding(10.dp)
             )
         }
     } else {
+        plantations.clear()
+        plantations.addAll(plantation)
+        crops.clear()
+        crops.addAll(crop)
+        Box(modifier = Modifier.defaultMinSize(minHeight = screenHeight)) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+                        .padding(top = 30.dp, bottom = 30.dp)
+                        .fillMaxSize()
+                )
+
+                {
+                    GetCultivosSemillas()
+                    GetPlantations()
+                }
+            }
+            Button(onClick = { openDialogMember.value = true },
+                modifier= Modifier
+                    .padding(end = 20.dp, bottom = 40.dp)
+                    .align(Alignment.BottomEnd)) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Crear Cultivo")
+            }
+
+        }
+    }
+        /*
         members.addAll(farm.members)
         nameFarm.value = farm.name
         val context = LocalContext.current
@@ -768,6 +784,5 @@ fun Cultivo(cultivoViewModel: CultivoViewModel) {
 //                GetDialogConfirmDelete()
                 GetImageFarm()
             }
-        }
-    }
+        }*/
 }
