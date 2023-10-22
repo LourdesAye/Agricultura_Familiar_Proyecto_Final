@@ -1,3 +1,5 @@
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +23,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
@@ -39,6 +42,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
@@ -48,6 +52,7 @@ import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Product
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Date
 import java.util.TimeZone
 import java.util.Calendar
@@ -108,7 +113,8 @@ val weatherDescriptionsMap = mapOf(
     "clear sky" to "Cielo despejado",
     "few clouds" to "Pocas nubes",
     "scattered clouds" to "Nubes dispersas",
-    "broken clouds" to "Parcialmente nublado"
+    "broken clouds" to "Parcialmente nublado",
+    "overcast clouds" to "Totalmente nublado"
 )
 
 @Composable
@@ -134,7 +140,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(370.dp),
+                .height(IntrinsicSize.Min), // La altura se ajustará automáticamente al contenido
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 12.dp
             ),
@@ -157,8 +163,7 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                        .height(120.dp),
+                        .padding(4.dp),
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 12.dp
                     ),
@@ -170,36 +175,36 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                 ) {
                     // Contenido de la card celeste
                     Column(
-                        modifier = Modifier.padding(start = 32.dp , top = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "$location   $temperature°C",
                             color = textColor,
-                            fontWeight = FontWeight.Bold
-                        )}
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-
                             // Muestra el ícono del clima
                             Image(
                                 painter = iconPainter,
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .size(80.dp)  // tamaño icono
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.FillBounds  // escala sin estirar
+                                    .size(80.dp)  // Tamaño constante del icono
+                                    .clip(CircleShape)
+                                    .fillMaxSize()  // Llena el espacio disponible sin estirar
+                                    .align(Alignment.CenterVertically),  // Alinea el icono verticalmente al centro
+                                contentScale = ContentScale.FillBounds  // Escala sin estirar
                             )
 
                             // Muestra la fecha, la descripción traducida y la min y max
-                            Column {
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(
                                     text = translatedDescription,
                                     color = textColor,
@@ -207,13 +212,15 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                                 )
                                 Text(
                                     text = currentDate,
-                                    color = Color.Black,
-                                  //  fontWeight = FontWeight.Bold
+                                    color = Color.Black
                                 )
                                 Text(
-                                    text = "Min: $temperatureMin°C  -  Max: $temperatureMax°C",
-                                    color = Color.Black,
-                                    // fontWeight = FontWeight.Bold
+                                    text = "Min: $temperatureMin°C",
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "Max: $temperatureMax°C",
+                                    color = Color.Black
                                 )
                             }
                         }
@@ -233,27 +240,26 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     val calendar = Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
     calendar.time = dateFormat.parse(currentDate)
 
-// Calcula la fecha del próximo día
+    // Calcula la fecha del próximo día
     calendar.add(Calendar.DAY_OF_YEAR, 1)
     val nextDayDate = dateFormat.format(calendar.time)
 
-// Calcula la fecha de pasado mañana
+    // Calcula la fecha de pasado mañana
     calendar.add(Calendar.DAY_OF_YEAR, 1)
     val nextDayDate2 = dateFormat.format(calendar.time)
-
 
     val iconResourceId = if (description != "Sin conexión") R.drawable._01d else R.drawable._01n
     val iconResourceId2 = if (description != "Sin conexión") R.drawable._10d else R.drawable._01n
 
-    val text1 = "$nextDayDate   ${if (description != "Sin conexión") "Cielo despejado" else "Sin conexión"}\n  Min: ${if (description != "Sin conexión") minTemp + 1 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp + 1 else maxTemp}°C"
-    val text2 = "$nextDayDate2   ${if (description != "Sin conexión") "Lluvia ligera" else "Sin conexión"}\nMin: ${if (description != "Sin conexión") minTemp - 5 else minTemp}°C - Max: ${if (description != "Sin conexión") maxTemp - 4 else maxTemp}°C"
+    val text1 = "$nextDayDate\n${if (description != "Sin conexión") "Cielo despejado" else "Sin conexión"}\n${if (description != "Sin conexión") minTemp + 1 else minTemp}°C / ${if (description != "Sin conexión") maxTemp + 1 else maxTemp}°C"
+    val text2 = "$nextDayDate2\n${if (description != "Sin conexión") "Lluvia ligera" else "Sin conexión"}\n${if (description != "Sin conexión") minTemp - 5 else minTemp}°C / ${if (description != "Sin conexión") maxTemp - 4 else maxTemp}°C"
 
     val textColor = Color(android.graphics.Color.parseColor("#0CBFDF"))
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .height(80.dp),
+            .height(IntrinsicSize.Min), // La altura se ajustará automáticamente al contenido
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp,
         ),
@@ -280,8 +286,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
                     modifier = Modifier.size(40.dp) // Tamaño del icono
                 )
                 Text(
-                    text = "$text1",
-                    // fontWeight = FontWeight.Bold
+                    text = "$text1"
                 )
             }
         }
@@ -290,9 +295,9 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .height(80.dp),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 12.dp
+            .height(IntrinsicSize.Min), // La altura se ajusta automáticamente al contenido
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 12.dp
         ),
         shape = MaterialTheme.shapes.small,
         border = BorderStroke(0.dp, textColor),
@@ -324,6 +329,7 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     }
 }
 
+
 private fun getWeatherIconResourceId(iconName: String): Int {
     return when (iconName) {
         "01d" -> R.drawable._01d
@@ -348,6 +354,7 @@ private fun getWeatherIconResourceId(iconName: String): Int {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaskCardDash(
     dashviewModel: DashboardViewModel,
@@ -356,15 +363,20 @@ fun TaskCardDash(
     textColor: Color
 ) {
     val topTasksState by dashviewModel.getTopTasks().observeAsState(initial = emptyList())
-    val topTasks = topTasksState?.filter { it?.description?.isNotEmpty() == true }
 
-    // Calcula la altura de la tarjeta verde en función de la cantidad de tarjetas celestes
-    val greenCardHeight = (topTasks?.size ?: 0) * 200.dp
+    // Filtra las tareas para mostrar solo las que tienen una fecha igual o mayor a hoy
+    val currentDate = LocalDate.now()
+    val topTasks = topTasksState?.filter { task ->
+        task?.isoDate?.let {
+            val taskDate = LocalDate.parse(it.substring(0, 10))
+            taskDate.isEqual(currentDate) || taskDate.isAfter(currentDate)
+        } ?: false
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = greenCardHeight),
+            .height(IntrinsicSize.Max), // La altura se ajustará automáticamente al contenido
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -415,7 +427,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp),
+            .height(IntrinsicSize.Min),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
@@ -439,20 +451,31 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                 colors = CardDefaults.cardColors(containerColor = Color.White)
                 ){
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     // Dibuja la barra de ingresos con el número al lado
-                    DrawBar(ingresos, totalwidth, Color(0xFF81C784), textColor) //verde
+                    Text(
+                        text = "Ingresos: $$ingresos\n",
+                        color = textColor,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    DrawBar(ingresos, totalwidth, Color(0xFF81C784)) //verde
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Dibuja la barra de egresos con el número al lado
-                    DrawBar(egresos, totalwidth, Color(0xFFE57373), textColor)
+                    Text(
+                        text = "Egresos: $$egresos\n",
+                        color = textColor,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    DrawBar(egresos, totalwidth, Color(0xFFE57373))
 
                     Spacer(modifier = Modifier.height(16.dp))
                     var total = ingresos - egresos
                     // Muestra el total con el borde suave
                     Text(
-                        text = "Total: $total",
+                        text = "Total: $$total",
                         color = textColor,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodyLarge,
@@ -464,38 +487,78 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 }
 
 @Composable
-fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier: Modifier = Modifier) {
-    val maxWidth = 220.dp // Establece el ancho máximo de la barra en píxeles
-    val maxHeight = 40.dp // Establece la altura máxima de la barra en píxeles
-    val xOffset = 10f // Establece un espacio entre el extremo derecho de la barra y el número
+fun DrawBar(value: Int, total: Int, barColor: Color, modifier: Modifier = Modifier) {
+    val maxWidth = 220.dp
+    val maxHeight = 40.dp
 
-    Canvas(modifier = Modifier
+    Canvas(modifier = modifier
         .fillMaxWidth()
         .padding(start = 10.dp)
-        .height(maxHeight) then modifier) {
-        val width = min((value.toFloat() / total.toFloat()) * size.width, maxWidth.toPx())
+        .height(maxHeight)
+    ) {
+        val barWidth = ((value.toFloat() / total.toFloat()) * maxWidth.toPx()).coerceAtMost(maxWidth.toPx())
 
-        val textoSize = min(40f, width / 2) // Establece el tamaño del texto, máximo 40f o la mitad del ancho de la barra
-
+        // Crea un degradado vertical desde la barra hasta negro
         val gradientShader = Brush.verticalGradient(
-            colors = listOf(barcolor, Color.Black)
+            colors = listOf(barColor, Color.Black),
+            startY = 0f,
+            endY = barWidth
         )
 
-        drawRect(brush = gradientShader, size = Size(width, maxHeight.toPx()))
+        // Dibuja la barra de progreso con el degradado
+        drawRect(brush = gradientShader, size = Size(barWidth, maxHeight.toPx()))
+    }
+}
+
+
+/*
+@Composable
+fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier: Modifier = Modifier) {
+    val maxWidth = 220.dp
+    val maxHeight = 40.dp
+    val xOffset = 10.dp
+    val textoSize = 20.sp
+
+    Canvas(modifier = modifier
+        .fillMaxWidth()
+        .padding(start = 10.dp)
+        .height(maxHeight)
+    ) {
+        // Calcula el ancho de la barra proporcional al valor actual y el total
+        val barWidth = ((value.toFloat() / total.toFloat()) * maxWidth.toPx()).coerceAtMost(maxWidth.toPx())
+
+        // Crea un degradado vertical desde la barra hasta negro
+        val gradientShader = Brush.verticalGradient(
+            colors = listOf(barcolor, Color.Black),
+            startY = 0f,
+            endY = barWidth
+        )
+
+        // Dibuja la barra de progreso con el degradado
+        drawRect(brush = gradientShader, size = Size(barWidth, maxHeight.toPx()))
+
+        // Calcula la posición X del texto para que esté justo al final de la barra, pero dentro de la card
+        val textWidth = android.graphics.Paint().apply {
+            textSize = textoSize.toPx()
+        }.measureText("$value")
+
+        val textX = (barWidth - textWidth).coerceAtLeast(0f) + xOffset.toPx()
+
+        // Dibuja el texto en la posición adecuada
         drawContext.canvas.nativeCanvas.drawText(
             "$value",
-            width + xOffset,
-            size.height / 2 + textoSize / 3, // Alinea verticalmente el texto en el centro de la barra
+            textX,
+            size.height / 2 + textoSize.toPx() / 2, // Alineación vertical del texto en el centro de la barra
             android.graphics.Paint().apply {
-                color = textColor.toArgb()
-                textSize = textoSize
-                isAntiAlias = true
-                typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
+                color = textColor.toArgb() // Color del texto
+                textSize = (textoSize/1.5).toPx() // Tamaño del texto en píxeles
+                isAntiAlias = true // Suaviza los bordes del texto para una mejor apariencia
+                typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD) // Estilo del texto (negrita)
             }
         )
     }
 }
-
+ */
 
 @Composable
 fun itemProductDash(item: Product) {
@@ -506,15 +569,15 @@ fun itemProductDash(item: Product) {
     ) {
         Column(modifier = Modifier.padding(bottom = 5.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                Row() {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Box(
                         modifier = Modifier
                             .size(50.dp)
-                            .align(Alignment.CenterVertically)
                             .padding(end = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
-
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             drawCircle(SolidColor(Color("#00687A".toColorInt())))
                         }
@@ -523,18 +586,18 @@ fun itemProductDash(item: Product) {
                             color = Color.White
                         )
                     }
-                    Text(
-                        item.name,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                }
-                Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-                    Text(
-                        "${item.amount} ${item.units}",
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .align(Alignment.CenterVertically)
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            item.name,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            "${item.amount} ${item.units}",
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
             Divider()
@@ -543,6 +606,9 @@ fun itemProductDash(item: Product) {
 }
 
 
+
+/*
+// Esto usaba un cálcuilo para modificar la altura de la card, hay una forma mejor de hacerlo
 @Composable
 fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     // Calcula la altura de la tarjeta verde en función de la cantidad de compras
@@ -568,6 +634,31 @@ fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, text
         }
     }
 }
+ */
+
+@Composable
+fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max), // Utiliza IntrinsicSize.Max para ajustar la altura automáticamente
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(2.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Compras", color = textColor, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            for (buy in topBuys.take(5)) {
+                // Cada compra se representa como una tarjeta individual con un borde
+                DisplayBuyItem(buy, textColor)
+            }
+        }
+    }
+}
+
 
 @Composable
 fun DisplayBuyItem(buy: Buy, textColor: Color) {
@@ -624,16 +715,12 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
 }
  */
 
-
 @Composable
 fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, textColor: Color) {
-    // Calcula la altura de la tarjeta verde en función de la cantidad de ventas
-    val greenCardHeight = (topSells.size * 250).dp
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = greenCardHeight),
+            .height(IntrinsicSize.Max), // Utiliza IntrinsicSize.Max para ajustar la altura automáticamente
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(2.dp, borderColor),
@@ -650,6 +737,7 @@ fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, t
         }
     }
 }
+
 
 @Composable
 fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
@@ -678,13 +766,10 @@ fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
 
 @Composable
 fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, textColor: Color) {
-    // Calcula la altura de la tarjeta verde en función de la cantidad de préstamos
-    val greenCardHeight = (topLoans.size * 200).dp
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = greenCardHeight),
+            .height(IntrinsicSize.Max), // Utiliza IntrinsicSize.Max para ajustar la altura automáticamente
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(2.dp, borderColor),
@@ -692,7 +777,6 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Préstamos", color = textColor, fontWeight = FontWeight.Bold)
-
             Spacer(modifier = Modifier.height(16.dp))
 
             for (loan in topLoans.take(5)) {
@@ -702,6 +786,7 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
         }
     }
 }
+
 
 @Composable
 fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
@@ -724,6 +809,7 @@ fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun dash(viewModel: DashboardViewModel) {
     val backgroundColor = Color(android.graphics.Color.parseColor("#F0FFFF"))
