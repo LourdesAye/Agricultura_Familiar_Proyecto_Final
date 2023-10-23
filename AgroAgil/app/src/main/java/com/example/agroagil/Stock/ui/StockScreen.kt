@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -55,8 +54,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.graphics.toColorInt
@@ -64,39 +61,57 @@ import androidx.navigation.NavController
 //import com.example.agroagil.Buy.ui.BuyViewModel
 //import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Stock
-import java.text.SimpleDateFormat
 
 val SinStock = "#A93226"
-val SinPagarClick = "#f4e5e4"
+val SinStockClick = "#f4e5e4"
 val ConStock = "#28B463"
-val PagadoClick = "#d7f1e2"
+val ConStockClick = "#d7f1e2"
 
-var listStockDataFilter = mutableStateListOf<Stock>()
-
-var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
+var listStockInicial = mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
+var listStockDataFilter = mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
+var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>() //lista mutable de funciones que representan los filtros que se pueden aplicar a listStockDataFilter.
+/*
+es una lista mutable que almacena funciones (Function1) que aceptan una lista de elementos de tipo List<Stock>
+y devuelven una lista de elementos del mismo tipo (List<Stock>).
+Cada función en filtersExclude representa un filtro específico que excluye ciertos elementos de la lista.
+filterNombreProductoDelStock, que acepta una lista de elementos de stock  y devuelve una lista que excluye aquellos
+elementos que no coinciden con un nombre de producto específico. En resumen, filtersExclude almacena funciones de filtro que se aplican para excluir elementos específicos de la lista de stock.
+* */
 var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var chipsFilter = mutableStateListOf<Map<String,Function1<List<Stock>, List<Stock>>>>()
-
+/* chipsFilter se utiliza para almacenar etiquetas (generalmente descripciones de filtros) y las funciones de filtro asociadas a esas etiquetas.
+Esto permite que la interfaz de usuario muestre los filtros aplicados en forma de etiquetas, y cuando el usuario interactúa con estas etiquetas,
+se pueden eliminar los filtros correspondientes.
+Por ejemplo, un elemento en chipsFilter podría tener una clave (una etiqueta) como "Filtrar por Nombre de Producto"
+y un valor que es la función de filtro filterNombreProductoDelStock.
+Cuando el usuario hace clic en esta etiqueta, se puede usar la función de filtro asociada para realizar la acción correspondiente, c
+omo eliminar ese filtro particular.
+En resumen, chipsFilter es una lista que relaciona etiquetas de filtro con las funciones de filtro que se aplican a la lista de elementos de stock.
+Esto se utiliza para representar y gestionar los filtros aplicados en la interfaz de usuario.
+*/
 var nombreElementoDeStockFilter = mutableStateOf("")
-var dataDateStart = mutableStateOf("")
-var dataDateEnd = mutableStateOf("")
+
+//estos filtros no los usamos pero probablemnete nos irvan para ver alguna cosa más adelante
+//var dataDateStart = mutableStateOf("")
+//var dataDateEnd = mutableStateOf("")
 
 
-fun filterTieneStock(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.product.amount>0 }
+fun filterTieneStock(listaElementosDeStock:List<Stock>): List<Stock> {
+    return listaElementosDeStock.filter { it -> it.product.amount>0 }
 }
 
-fun filterSinStock(buys:List<Stock>): List<Stock> {
-    return buys.filter { it -> it.product.amount<=0 }
+fun filterSinStock(listaElementosStock:List<Stock>): List<Stock> {
+    return listaElementosStock.filter { it -> it.product.amount<=0 }
 }
-fun filterNombreProductoDelStock(buys:List<Stock>): List<Stock> {
+fun filterNombreProductoDelStock(listaElementosStock:List<Stock>): List<Stock> {
     //para filtrar según nombre del producto, que puede ser pera,naranja,camion,tractor
-    return buys.filter { it -> it.product.name.lowercase().contains(nombreElementoDeStockFilter.value.lowercase()) }
+    return listaElementosStock.filter { it -> it.product.name.lowercase().contains(nombreElementoDeStockFilter.value.lowercase()) }
 }
-fun filterAllBuys(buys:List<Stock>): List<Stock> {
-    return buys
+fun filterAllBuys(listaElementosStock:List<Stock>): List<Stock> {
+    return listaElementosStock
 }
 
+/*
 fun filterDateStart(buys:List<Stock>): List<Stock> {
     var date_format = SimpleDateFormat("yyyy/MM/dd")
     var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
@@ -128,28 +143,56 @@ fun filterDateRange(buys:List<Stock>): List<Stock> {
     }
 }
 
-fun resetFilter(){
-    listStockDataFilter.clear()
-    if (filters.size ==0){
+*/
+
+fun resetFilter() {
+    //borra todos los elementos de la lista listStockDataFilter
+    // listStockDataFilter.clear()
+  /* if (filters.size == 0) {
         listStockDataFilter.addAll(listStockDataFilter)
+    } else {*/
+        /*Este bucle for recorre la lista de filtros, y i toma valores desde 0 hasta filters.size - 1,
+     que son los índices válidos en la lista.
+    */
+        for (i in 0..filters.size - 1) {
+            /*Dentro del bucle, se crea una nueva lista llamada filtroExecute que es inicialmente una lista vacía y se utiliza para almacenar
+        los resultados de aplicar un filtro.
+        se aplica el filtro en la posición i a listStockDataFilter y se almacena el resultado en filtroExecute.
+        se agrega el resultado de filtroExecute a la lista listStockDataFilter.
+        Esto actualiza listStockDataFilter con los resultados de aplicar todos los filtros en la lista de filtros.
+        */
+            var filtroExecute = mutableListOf<List<Stock>>()
+            filtroExecute.addAll(listOf(filters[i](listStockInicial)))
+            listStockDataFilter.clear()
+            listStockDataFilter.addAll(filtroExecute.flatten())
+            /*Luego, el resultado de filtroExecute se aplana (convierte en una lista plana)
+         y se agrega a la lista listStockDataFilter.
+         Esto significa que se están aplicando filtros sucesivamente a listStockDataFilter
+         y actualizando la lista con los resultados de los filtros.*/
+        }
     }
-    for (i in 0 .. filters.size-1) {
-        var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filters[i](listStockDataFilter)))
-        listStockDataFilter.addAll(filtroExecute.flatten())
-    }
-}
+//}
 
 fun resetFilterExclude(){
+    /*
+    Se itera sobre la lista de filtros , se crea una nueva lista llamada filtroExecute que está inicialmente vacía
+    y se utiliza para almacenar los resultados de aplicar un filtro.
+Se agrega a filtroExecute el resultado de aplicar el filtro de exclusión en la posición i de la lista de filtros de exclusión a listStockDataFilter.
+Esto se hace utilizando listOf(filtersExclude[i](listStockDataFilter)).
+Se borran todos los elementos de la lista listStockDataFilter con listStockDataFilter.clear().
+Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. Esto actualiza listStockDataFilter con los resultados de aplicar los filtros de exclusión en la lista de filtros de exclusión.
+    * */
     for (i in 0 .. filtersExclude.size-1) {
         var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filtersExclude[i](listStockDataFilter)))
+        filtroExecute.addAll(listOf(filtersExclude[i](listStockInicial)))
         listStockDataFilter.clear()
         listStockDataFilter.addAll(filtroExecute.flatten())
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+//FILTRA POR FECHA DE INICIO HAY QUE FILTRAR POR TIPO DE HERRAMIENTA
+/*@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun FormattedDateInputField(
 ) {
@@ -208,6 +251,8 @@ fun FormattedDateInputField(
         )
     }
 }
+
+//FILTRA POR FECHA DE FIN , en la funcion anterior filtraba por  fceha de INICIO, pero HAY QUE FILTRAR POR TIPO DE HERRAMIENTA
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormattedDateInputFieldEnd(
@@ -268,14 +313,14 @@ fun FormattedDateInputFieldEnd(
     }
 }
 
+*/
 
-
-
+// boton de flitrado
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Actions(navController: NavController){
     var expandedFilter by remember { mutableStateOf(false) }
-    var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+    var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     }
     var selectedLent by remember { mutableStateOf(false) }
@@ -308,26 +353,33 @@ fun Actions(navController: NavController){
                             .align(Alignment.CenterHorizontally)
                             .padding(30.dp)){
                             OutlinedTextField(
-                                value = userName,
-                                onValueChange = { userName = it },
+                                value = nombreProductoDelStock,
+                                onValueChange = { nombreProductoDelStock = it },
                                 label = { Text("Producto")},
                                 modifier=Modifier.fillMaxWidth()
                             )
-                            FormattedDateInputField()
-                            FormattedDateInputFieldEnd()
+                            //nosotros no filtramos por fecha
+                            //FormattedDateInputField()
+                            //FormattedDateInputFieldEnd()
                             ExtendedFloatingActionButton(onClick = {
-                                filtersExclude.removeIf { it.equals(::filterNombreProductoDelStock) or
-                                        it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
+
+                                filtersExclude.removeIf {
+                                    it.equals(::filterNombreProductoDelStock)
+                                    /* ver si sirve depues, probablemnete sirva para agregar otro filtro or it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
+                                } */
                                 }
                                 chipsFilter.clear()
-                                if (userName.text!=""){
-                                    chipsFilter.add(mapOf(("Usuario: "+userName.text) to ::filterNombreProductoDelStock))
+                                if (nombreProductoDelStock.text!=""){
+                                    chipsFilter.add(mapOf(("Producto: "+nombreProductoDelStock.text) to ::filterNombreProductoDelStock))
                                     filtersExclude.add(::filterNombreProductoDelStock)
-                                    nombreElementoDeStockFilter.value = userName.text
+                                    nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
-                                var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
+                              /*  var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
                                 var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
-                                if  (checkStartDate or checkEndDate){
+                                */
+
+
+                                /*if  (checkStartDate or checkEndDate){
                                     if  (checkStartDate and checkEndDate){
 //                                        chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
 //                                        filtersExclude.add(::filterDateRange)
@@ -340,7 +392,7 @@ fun Actions(navController: NavController){
 //                                            filtersExclude.add(::filterDateEnd)
                                         }
                                     }
-                                }
+                                }*/
                                 expandedFilter=false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
@@ -421,9 +473,9 @@ fun OneBuy(stock:Stock, navController: NavController){
                     .padding(5.dp)
                     .fillMaxWidth()) {
 
-                    Text("${stock.type}")
-                    Text("${stock.product.name}")
-                    Text("cantidad: ${stock.product.amount}+${stock.product.units}", fontWeight= FontWeight.Bold)
+                    Text(stock.type)
+                    Text(stock.product.name)
+                    Text("cantidad: ${stock.product.amount} ${stock.product.units}", fontWeight= FontWeight.Bold)
 
                 }
             }
@@ -439,8 +491,8 @@ fun filterStatus(){
     var colorConStock by remember {mutableStateOf<Color>(Color(0))}
     var clickSinStock by remember {mutableStateOf(false)}
     var colorSinStock by remember {mutableStateOf<Color>(Color(0))}
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+    Column(
+       // horizontalArrangement = Arrangement.Start,
         modifier= Modifier
             .fillMaxWidth()
             .padding(top = 15.dp)){
@@ -449,7 +501,7 @@ fun filterStatus(){
             screenWidth * 0.45f
         }
         if (clickConStock){
-            colorConStock = Color(PagadoClick.toColorInt())
+            colorConStock = Color(ConStockClick.toColorInt())
         }else{
             colorConStock=Color(MaterialTheme.colorScheme.background.value)
         }
@@ -464,18 +516,20 @@ fun filterStatus(){
                 resetFilter()
             },
             modifier = Modifier
-                .width(cardWidth)
+                //.width(cardWidth)
+                .fillMaxWidth()
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
             colors = CardDefaults.cardColors(colorConStock)
         ) {
-            Row() {
+            Row(Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .background(Color(ConStock.toColorInt()))
                         .width(10.dp)
-                        .fillMaxHeight()
+                        .fillMaxHeight().
+                    fillMaxWidth()
                 ) {
 
                 }
@@ -495,7 +549,7 @@ fun filterStatus(){
             }
         }
         if (clickSinStock){
-            colorSinStock = Color(SinPagarClick.toColorInt())
+            colorSinStock = Color(SinStockClick.toColorInt())
         }else{
             colorSinStock=Color(MaterialTheme.colorScheme.background.value)
         }
@@ -510,7 +564,8 @@ fun filterStatus(){
                 resetFilter()
             },
             modifier = Modifier
-                .width(cardWidth)
+                //.width(cardWidth)
+                .fillMaxWidth()
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
@@ -549,18 +604,22 @@ fun filterStatus(){
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
+    //se cargarían los distintos elementos con su stock en el view model y se traen a la variable valueStock
     var valuesStock = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     valuesStock?.let {
-       listStockDataFilter.clear()
-        listStockDataFilter.addAll(it)
+        //si es nulo valueStock no se ejecutan
+       listStockInicial.clear()
+        listStockInicial.addAll(it)
     }
     if (valuesStock == null) {
+        //aca pregunta si es nulo valueStock
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            //simbolo de espera hasta que cargue
             CircularProgressIndicator(
                 modifier = Modifier
                     .semantics(mergeDescendants = true) {}
@@ -569,6 +628,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
+        //supuestamente limpia los filtros
         resetFilter()
         resetFilterExclude()
         Box() {
@@ -580,15 +640,29 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                 ) {
                     item {
                         //todo chequera filter
+                        //problemas al filtrar ( cuando inicia aparecen los 9, filtro los que tienen amount 0 y se vacia , lo despinto y pongo en almacen y nada
+                        //sigue completamente vacio
+                        // cierro la app la vuelvo a abrir , estan los 9, pongo en almacen y queda vacio tambien
                         filterStatus()
                         //todo chequear actions
                         Actions(navController)
                     }
-                    this.items(listStockDataFilter) {
-                        OneBuy(it, navController)
+                    /*this.items(listStockDataFilter) { ... }:
+                    Aquí, se utiliza items para mostrar una lista de elementos de listStockDataFilter.
+                    Cada elemento de esta lista se representa utilizando el composable OneBuy(it, navController).
+                    Esto implica que se está mostrando una lista de elementos de listStockDataFilter en la vista,
+                    donde navController se utiliza para la navegación o interacción relacionada con cada elemento.*/
+                    if (listStockDataFilter.size == 0) {
+                        this.items(listStockInicial) {
+                            OneBuy(it, navController)
+                        }
+                    } else {
+                        this.items(listStockDataFilter) {
+                            OneBuy(it, navController)
+                        }
                     }
-                }
 
+                }
             }
             Button(
                 onClick = {
