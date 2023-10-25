@@ -5,7 +5,7 @@ data class Conversion(
     val amount: Float = 10f //10 unidades son 1 Kg
 )
 data class Crop (
-    val id: String = "0",
+    var id: String = "0",
     val name: String = "Papa",
     val units: String = "Unidad",
     val durationDay: Int = 60,
@@ -17,5 +17,5 @@ data class Plantation(
     val name: String = "Plantacion 1 de papa",
     val dateStart: String = "01/01/2023 00:00",
     val referenceId: String = "0",
-    val status:String = "" //Sembrado, Cosechado
+    val status:String = "" //Sembrado, Cosechado, Creado
 )

@@ -2,6 +2,7 @@ package com.example.agroagil
 
 import BuyAddScreen
 import BuyInfoScreen
+import CultivoAddScreen
 import DashboardViewModel
 import SellAddScreen
 import SellInfoScreen
@@ -401,7 +402,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("cultivo") {
-                            titleCurrentPage.value = "CultivosTitulo"
+                            titleCurrentPage.value = "Mis cultivos"
                             Menu(
                                 scope,
                                 drawerState,
@@ -411,8 +412,20 @@ class MainActivity : ComponentActivity() {
                                 true,
                                 navController
                             ) {
-//                                Farm(farmViewModel)
-                                Cultivo(cultivoViewModel)
+                                Cultivo(cultivoViewModel, navController)
+                            }
+                        }
+                        composable("cultivo/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoAddScreen(cultivoViewModel,navController)
                             }
                         }
                         composable("task") {
