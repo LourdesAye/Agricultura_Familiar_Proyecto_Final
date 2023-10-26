@@ -1,11 +1,13 @@
 package com.example.agroagil.Stock.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -88,7 +90,7 @@ fun itemProductBuy(item: Product) {
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel, buyId: Int) {
+fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel, stockId: String?) {
     var stockActual = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     if (stockActual == null) {
         Column(
@@ -104,14 +106,15 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
             )
         }
     } else {
-        stockEnEsteMomento.value = stockActual.get(buyId)
+
+        stockEnEsteMomento.value = stockActual.find { it.id == stockId } ?: Stock()
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
         Column(
             modifier = Modifier
                 .padding(start = 30.dp, end = 30.dp)
                 .defaultMinSize(minHeight = screenWidth)
                 .verticalScroll(rememberScrollState()),
-            ) {
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,19 +123,24 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
             ) {
                 var textChipStatus: String
                 var colorChipStatus: Color
-               if (stockEnEsteMomento.value.product.amount>0) {
+                if (stockEnEsteMomento.value.product.amount > 0) {
                     textChipStatus = "En Almacén"
-                    colorChipStatus = Color(com.example.agroagil.Buy.ui.Pagado.toColorInt())
+                    colorChipStatus = Color(ConStock.toColorInt())
                 } else {
                     textChipStatus = "No Disponible en Almacén"
-                    colorChipStatus = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt())
+                    colorChipStatus = Color(SinStock.toColorInt())
                 }
                 SuggestionChip(
                     onClick = { /* Do something! */ },
-                    label = { Text("Probando que hace esto") },
+                    label = { Text(textChipStatus) },
                     enabled = false,
-                    colors = SuggestionChipDefaults.suggestionChipColors(disabledLabelColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()) ),
-                    border = SuggestionChipDefaults.suggestionChipBorder(disabledBorderColor = Color(com.example.agroagil.Buy.ui.SinPagar.toColorInt()))
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        disabledLabelColor =
+                        colorChipStatus
+                    ),
+                    border = SuggestionChipDefaults.suggestionChipBorder(
+                        disabledBorderColor = colorChipStatus
+                    )
                 )
             }
             Column(
@@ -146,7 +154,8 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                             .padding(top = 50.dp)
                     ) {
                         Text(
-                            stockEnEsteMomento.value.product.name,
+                            "Producto: " +
+                                    stockEnEsteMomento.value.product.name,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 30.sp,
                             textAlign = TextAlign.Center,
@@ -154,12 +163,15 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                                 .align(Alignment.CenterVertically)
                         )
                     }
+                    Spacer(Modifier.padding(16.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(top = 50.dp)
                     ) {
                         Text(
-                            stockEnEsteMomento.value.product.amount.toString(),
+                            "Tipo de Producto: " +
+                                    stockEnEsteMomento.value.type,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 15.sp,
                             textAlign = TextAlign.Center,
@@ -167,50 +179,39 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                                 .align(Alignment.CenterVertically)
                         )
                     }
-                    Text(
-                        "Productos vendidos",
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 60.dp, bottom = 10.dp)
-                    )
-                    /*
-                    for (i in 0..stockEnEsteMomento.value.items.size - 1) {
-                        itemProductBuy(stockEnEsteMomento.value.items[i])
-                    }
-                    */
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .size(width = 0.dp, height = 150.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        "Precio total: ",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 30.sp,
+                    Spacer(Modifier.padding(16.dp))
+                    Row(
                         modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                    )
-//                    Text(
-//                        "$ " + "unPrecio",
-//                        style = MaterialTheme.typography.titleLarge,
-//                        fontSize = 30.sp,
-//                        modifier = Modifier
-//                            .align(Alignment.CenterVertically)
-//                    )
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            "Cantidad: " +
+                                    stockEnEsteMomento.value.product.amount.toString() + " " + stockEnEsteMomento.value.product.units,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                    Spacer(Modifier.padding(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .size(width = 0.dp, height = 150.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Precio por unidad: $ " + stockEnEsteMomento.value.product.price,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                        )
+
+                    }
                 }
-//                if (!currentBuy.value.paid) {
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        horizontalArrangement = Arrangement.End
-//                    ) {
-//                        Button(onClick = {
-//                            currentBuy.value = currentBuy.value.copy(paid = true)
-//                            buyViewModel.updateBuy(currentBuy.value, buyId)
-//                        }, content = { Text("Confirmar pago") })
-//                    }
-//                }
             }
         }
     }

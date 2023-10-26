@@ -9,6 +9,7 @@ import SellScreen
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -567,11 +568,13 @@ class MainActivity : ComponentActivity() {
                                 })
                         }
                         composable(
-                            "stock/{stockId}/info",
-                            arguments = listOf(navArgument("stockId") { type = NavType.IntType })
+                            "stockSummary/{stockId}/info",
+                            arguments = listOf(navArgument("stockId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val buyId: Int? = backStackEntry.arguments?.getInt("stockId")
-                            if (buyId is Int)
+                            Log.i("Navegación","llegaste al incio de la navegación")
+                            val stockId: String? = backStackEntry.arguments?.getString("stockId")
+                            Log.i("Navegación","el argumento es: $stockId")
+                            if (stockId is String)
                                 Menu(scope,
                                     drawerState,
                                     viewModelMenu,
@@ -583,7 +586,7 @@ class MainActivity : ComponentActivity() {
                                         StockInfoScreen(
                                             navController = navController,
                                             stockViewModel = stockViewModel,
-                                            buyId
+                                            stockId
                                         )
                                     })
                         }

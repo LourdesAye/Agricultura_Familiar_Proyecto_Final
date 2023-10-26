@@ -1,6 +1,7 @@
 package com.example.agroagil.Stock.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -148,12 +149,13 @@ fun filterDateRange(buys:List<Stock>): List<Stock> {
 fun resetFilter() {
     //borra todos los elementos de la lista listStockDataFilter
     // listStockDataFilter.clear()
-  /* if (filters.size == 0) {
+    /* if (filters.size == 0) {
         listStockDataFilter.addAll(listStockDataFilter)
     } else {*/
-        /*Este bucle for recorre la lista de filtros, y i toma valores desde 0 hasta filters.size - 1,
+    /*Este bucle for recorre la lista de filtros, y i toma valores desde 0 hasta filters.size - 1,
      que son los índices válidos en la lista.
     */
+    if (filters.size != 0) {
         for (i in 0..filters.size - 1) {
             /*Dentro del bucle, se crea una nueva lista llamada filtroExecute que es inicialmente una lista vacía y se utiliza para almacenar
         los resultados de aplicar un filtro.
@@ -171,9 +173,10 @@ fun resetFilter() {
          y actualizando la lista con los resultados de los filtros.*/
         }
     }
+}
 //}
 
-fun resetFilterExclude(){
+fun resetFilterExclude() {
     /*
     Se itera sobre la lista de filtros , se crea una nueva lista llamada filtroExecute que está inicialmente vacía
     y se utiliza para almacenar los resultados de aplicar un filtro.
@@ -182,138 +185,17 @@ Esto se hace utilizando listOf(filtersExclude[i](listStockDataFilter)).
 Se borran todos los elementos de la lista listStockDataFilter con listStockDataFilter.clear().
 Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. Esto actualiza listStockDataFilter con los resultados de aplicar los filtros de exclusión en la lista de filtros de exclusión.
     * */
-    for (i in 0 .. filtersExclude.size-1) {
-        var filtroExecute = mutableListOf<List<Stock>>()
-        filtroExecute.addAll(listOf(filtersExclude[i](listStockInicial)))
-        listStockDataFilter.clear()
-        listStockDataFilter.addAll(filtroExecute.flatten())
-    }
-}
-
-//FILTRA POR FECHA DE INICIO HAY QUE FILTRAR POR TIPO DE HERRAMIENTA
-/*@OptIn(ExperimentalMaterial3Api::class)
-
-@Composable
-fun FormattedDateInputField(
-) {
-    val cursor = remember { mutableStateOf(0) }
-    val formatter: (String) -> String = { value ->
-        val digits = value.filter { it.isDigit() }
-        var text =""
-        buildString {
-            if (digits.length >= 4) {
-                text +="${digits.substring(0..3)}"
-            } else{
-                text +=digits
-
-            }
-            if (digits.length >= 6) {
-                text +="/${digits.substring(4..5)}"
-            }else{
-                if (digits.length > 4) {
-                    text +="/${digits.substring(4..(digits.length-1))}"
-                }
-            }
-            if (digits.length >= 8) {
-                text +="/${digits.substring(6..7)}"
-            }else{
-                if (digits.length > 6) {
-                    text +="/${digits.substring(6..(digits.length-1))}"
-                }
-            }
-            append(text)
-            cursor.value = text.length
-            append("YYYY/MM/DD".substring(text.length,"YYYY/MM/DD".length ))
+    if (filtersExclude.size != 0) {
+        for (i in 0..filtersExclude.size - 1) {
+            var filtroExecute = mutableListOf<List<Stock>>()
+            filtroExecute.addAll(listOf(filtersExclude[i](listStockInicial)))
+            listStockDataFilter.clear()
+            listStockDataFilter.addAll(filtroExecute.flatten())
         }
-
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            label={Text("Filtrar por fecha de inicio")},
-            value = TextFieldValue(dataDateStart.value, TextRange(cursor.value)),
-            onValueChange = {
-                // Remove any non-digit characters
-                val formatted = formatter(it.text)
-                dataDateStart.value = formatted
-
-            },
-            textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Number
-            ),
-            singleLine = true,
-            placeholder = { Text(text = "YYYY/MM/DD") },
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 
-//FILTRA POR FECHA DE FIN , en la funcion anterior filtraba por  fceha de INICIO, pero HAY QUE FILTRAR POR TIPO DE HERRAMIENTA
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FormattedDateInputFieldEnd(
-) {
-    val cursor = remember { mutableStateOf(0) }
-    val formatter: (String) -> String = { value ->
-        val digits = value.filter { it.isDigit() }
-        var text =""
-        buildString {
-            if (digits.length >= 4) {
-                text +="${digits.substring(0..3)}"
-            } else{
-                text +=digits
-
-            }
-            if (digits.length >= 6) {
-                text +="/${digits.substring(4..5)}"
-            }else{
-                if (digits.length > 4) {
-                    text +="/${digits.substring(4..(digits.length-1))}"
-                }
-            }
-            if (digits.length >= 8) {
-                text +="/${digits.substring(6..7)}"
-            }else{
-                if (digits.length > 6) {
-                    text +="/${digits.substring(6..(digits.length-1))}"
-                }
-            }
-            append(text)
-            cursor.value = text.length
-            append("YYYY/MM/DD".substring(text.length,"YYYY/MM/DD".length ))
-        }
-
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            label={Text("Filtrar por fecha de fin")},
-            value = TextFieldValue(dataDateEnd.value, TextRange(cursor.value)),
-            onValueChange = {
-                // Remove any non-digit characters
-                val formatted = formatter(it.text)
-                dataDateEnd.value = formatted
-
-            },
-            textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Number
-            ),
-            singleLine = true,
-            placeholder = { Text(text = "YYYY/MM/DD") },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-*/
+//FILTRAR POR TIPO DE HERRAMIENTA
 
 // boton de flitrado
 @OptIn(ExperimentalMaterial3Api::class)
@@ -335,7 +217,9 @@ fun Actions(navController: NavController){
                 .padding(top = 5.dp, start = 0.dp, end = 0.dp)
                 .fillMaxWidth()
         ) {
-            Button(onClick = { expandedFilter = !expandedFilter},colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(), modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { expandedFilter = !expandedFilter},
+                colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
+                modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     ImageVector.vectorResource(R.drawable.filter),
                     contentDescription = "Localized description",
@@ -358,11 +242,9 @@ fun Actions(navController: NavController){
                                 label = { Text("Producto")},
                                 modifier=Modifier.fillMaxWidth()
                             )
-                            //nosotros no filtramos por fecha
-                            //FormattedDateInputField()
-                            //FormattedDateInputFieldEnd()
-                            ExtendedFloatingActionButton(onClick = {
 
+                            //botón circular
+                            ExtendedFloatingActionButton(onClick = {
                                 filtersExclude.removeIf {
                                     it.equals(::filterNombreProductoDelStock)
                                     /* ver si sirve depues, probablemnete sirva para agregar otro filtro or it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
@@ -400,6 +282,7 @@ fun Actions(navController: NavController){
                 }
             }
             for (i in 0..chipsFilter.size-1) {
+                //componente de Jetpack Compose que se utilizan para mostrar opciones seleccionables en una interfaz de usuario.
                 InputChip(
                     selected = false,
                     onClick = {
@@ -419,9 +302,9 @@ fun Actions(navController: NavController){
     }
 }
 
-fun SelectColorCard(paid:Boolean): String {
+fun SelectColorCard(conStock:Boolean): String {
     var color: String
-    if (paid==true){
+    if (conStock==true){
         color = ConStock
     }else{
         color = SinStock
@@ -432,12 +315,11 @@ fun SelectColorCard(paid:Boolean): String {
 // TODO: esto esta para compras, se debe adaptar para stock, esto es lo que posiblemente est haciendo romper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneBuy(stock:Stock, navController: NavController){
+fun unProductoDelStock(stock:Stock, navController: NavController){
     Column(){
         Card(
             onClick={
-                    //TODO verificar esto
-               // navController.navigate("stockSummary/${listItemData.indexOf(itemData)}/info")
+               navController.navigate("stockSummary/${stock.id}/info")
             },
             modifier = Modifier
                 .height(100.dp)
@@ -451,31 +333,17 @@ fun OneBuy(stock:Stock, navController: NavController){
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(SelectColorCard(stock.withAlert).toColorInt()))
+                        .background(Color(SelectColorCard(stock.product.amount>0).toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
 
                 }
-              /*  Column(modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(start = 5.dp)) {
-                    Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            drawCircle(SolidColor(Color("#00687A".toColorInt())))
-                        }
-                        Text(text ="estoy probando",color= Color.Red)
-                        //Text(text =itemData.nameUser.substring(0,2).capitalize(),color= Color.White)
-                    }
-                }
-                */
                 Column(modifier = Modifier
                     .padding(5.dp)
                     .fillMaxWidth()) {
 
-                    Text(stock.type)
-                    Text(stock.product.name)
-                    Text("cantidad: ${stock.product.amount} ${stock.product.units}", fontWeight= FontWeight.Bold)
+                    Text("Producto: ${stock.product.name}", Modifier.fillMaxWidth())
 
                 }
             }
@@ -492,7 +360,6 @@ fun filterStatus(){
     var clickSinStock by remember {mutableStateOf(false)}
     var colorSinStock by remember {mutableStateOf<Color>(Color(0))}
     Column(
-       // horizontalArrangement = Arrangement.Start,
         modifier= Modifier
             .fillMaxWidth()
             .padding(top = 15.dp)){
@@ -628,7 +495,6 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-        //supuestamente limpia los filtros
         resetFilter()
         resetFilterExclude()
         Box() {
@@ -654,11 +520,11 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                     donde navController se utiliza para la navegación o interacción relacionada con cada elemento.*/
                     if (listStockDataFilter.size == 0) {
                         this.items(listStockInicial) {
-                            OneBuy(it, navController)
+                            unProductoDelStock(it, navController)
                         }
                     } else {
                         this.items(listStockDataFilter) {
-                            OneBuy(it, navController)
+                            unProductoDelStock(it, navController)
                         }
                     }
 
