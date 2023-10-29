@@ -117,43 +117,10 @@ fun filterNombreProductoDelStock(listaElementosStock: List<Stock>): List<Stock> 
     }
 }
 
-fun filterAllBuys(listaElementosStock: List<Stock>): List<Stock> {
+fun filterAllStocks(listaElementosStock: List<Stock>): List<Stock> {
     return listaElementosStock
 }
 
-/*
-fun filterDateStart(buys:List<Stock>): List<Stock> {
-    var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
-    var filter_date = date_format.parse(dataDateStart.value)
-    return buys.filter { buy ->
-        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
-        filter_date.before(date_buy) or filter_date.equals(date_buy)
-    }
-}
-
-fun filterDateEnd(buys:List<Stock>): List<Stock> {
-    var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
-    var filter_date = date_format.parse(dataDateEnd.value)
-    return buys.filter { buy ->
-        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
-        filter_date.after(date_buy) or filter_date.equals(date_buy) }
-}
-
-fun filterDateRange(buys:List<Stock>): List<Stock> {
-    var date_format = SimpleDateFormat("yyyy/MM/dd")
-    var date_format_buy = SimpleDateFormat("dd/MM/yyyy")
-    var filter_date_end = date_format.parse(dataDateEnd.value)
-    var filter_date_start = date_format.parse(dataDateStart.value)
-    return buys.filter { buy ->
-        var date_buy = date_format_buy.parse(buy.date.split(" ")[0])
-        (filter_date_start.before(date_buy) or filter_date_start.equals(date_buy)) and
-                ( filter_date_end.after(date_buy) or filter_date_end.equals(date_buy))
-    }
-}
-
-*/
 
 fun resetFilterFix2() {
     // Asegurarse de que tempFilteredList esté inicializada con los datos originales
@@ -199,11 +166,9 @@ fun resetFilter() {
          y actualizando la lista con los resultados de los filtros.*/
         }
             else{
-                var filtroAuxInicial= listStockDataFilter
+                listStockDataFilter.clear()
                 var filtroExecute = mutableListOf<List<Stock>>()
                 filtroExecute.addAll(listOf(filters[i](listStockInicial)))
-                listStockDataFilter.clear()
-                listStockDataFilter.addAll(filtroAuxInicial)
                 listStockDataFilter.addAll(filtroExecute.flatten())
 
             }
@@ -252,9 +217,6 @@ fun Actions(navController: NavController) {
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     }
-    var selectedLent by remember { mutableStateOf(false) }
-    var selectedWasLent by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(false) }
 
     Column {
         Row(
@@ -423,9 +385,9 @@ fun unProductoDelStock(stock: Stock, navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun filterStatus() {
-    var clickConStock by remember { mutableStateOf(false) }
+    var clickConStock by rememberSaveable { mutableStateOf(false) }
     var colorConStock by remember { mutableStateOf<Color>(Color(0)) }
-    var clickSinStock by remember { mutableStateOf(false) }
+    var clickSinStock by rememberSaveable { mutableStateOf(false) }
     var colorSinStock by remember { mutableStateOf<Color>(Color(0)) }
     Column(
         modifier = Modifier
@@ -444,13 +406,23 @@ fun filterStatus() {
         Card(
             onClick = {
                 clickConStock = !clickConStock
-                if (clickConStock) {
+
+                if (clickSinStock && clickConStock) {
+                    filters.clear()
                     filters.add(::filterTieneStock)
-                } else {
-                    filters.remove(::filterTieneStock)
+                    filters.add(::filterTieneStock)
                 }
-                resetFilterFix2()
-                //resetFilter()
+                else{
+                    if (clickConStock) {
+                        filters.add(::filterTieneStock)
+                    } else {
+                        filters.remove(::filterTieneStock)
+                    }
+
+                }
+
+               // resetFilterFix2()
+                resetFilter()
                 //resetFilterFix()
             },
             modifier = Modifier
@@ -503,9 +475,13 @@ fun filterStatus() {
                 } else {
                     filters.remove(::filterSinStock)
                 }
-                //resetFilter()
-                //resetFilterFix()
-                resetFilterFix2()
+
+                // Si ambos filtros están seleccionados, quita el filtro de "Con Stock"
+                if (clickConStock) {
+                    filters.add(::filterTieneStock)
+                }
+
+                resetFilter()
             },
             modifier = Modifier
                 //.width(cardWidth)
@@ -575,9 +551,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-        //resetFilterFix()
-        //resetFilter()
-        //resetFilterExclude()
+       resetFilter()
         Box() {
             Column() {
                 LazyColumn(
@@ -586,12 +560,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                         .padding(start = 20.dp, end = 20.dp)
                 ) {
                     item {
-                        //todo chequera filter
-                        //problemas al filtrar ( cuando inicia aparecen los 9, filtro los que tienen amount 0 y se vacia , lo despinto y pongo en almacen y nada
-                        //sigue completamente vacio
-                        // cierro la app la vuelvo a abrir , estan los 9, pongo en almacen y queda vacio tambien
                         filterStatus()
-                        //todo chequear actions
                         Actions(navController)
                     }
                     /*this.items(listStockDataFilter) { ... }:
