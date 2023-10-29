@@ -112,7 +112,7 @@ fun getImage(referenceID: String, dateStart:String): Int {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetPlantations() {
+fun GetPlantations(navController: NavController) {
     for (i in 0..Math.ceil((plantations.size / 2).toDouble()).toInt()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,6 +129,7 @@ fun GetPlantations() {
                         defaultElevation = 10.dp
                     ),
                     onClick = {
+                        navController.navigate("cultivo/"+plantations[(i * 2) + item].id+"/info")
                     }
 
                 ) {
@@ -214,7 +215,7 @@ fun Cultivo(cultivoViewModel: CultivoViewModel,  navController: NavController) {
 
                 {
                     GetCultivosSemillas()
-                    GetPlantations()
+                    GetPlantations(navController)
                 }
             }
             Button(onClick = { navController.navigate("cultivo/add")},

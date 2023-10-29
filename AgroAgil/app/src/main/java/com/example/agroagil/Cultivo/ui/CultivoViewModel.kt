@@ -1,5 +1,6 @@
 package com.example.agroagil.Cultivo.ui
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.agroagil.core.models.Buy
@@ -15,6 +16,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CultivoViewModel : ViewModel() {
+    var currentPlantation: LiveData<Plantation?>? = null
+    var currentCrop: LiveData<Crop?>? = null
     var crop = liveData(Dispatchers.IO) {
         emit(null)
         try {
@@ -52,6 +55,24 @@ class CultivoViewModel : ViewModel() {
             // Handle exception if needed
         }
     }
+    fun getCrop(cropId: String) {
+        currentCrop = liveData(Dispatchers.IO) {
+            try {
+                val realValue = suspendCancellableCoroutine<Crop> { continuation ->
+                    Firebase.database.getReference("crop/0/"+cropId).get().addOnSuccessListener { snapshot ->
+                        val value = snapshot.getValue(Crop::class.java) as Crop
+                        continuation.resume(value)
+                    }.addOnFailureListener { exception ->
+                        continuation.resumeWithException(exception)
+                    }
+                }
+                emit(realValue)
+            } catch (e: Exception) {
+                // Handle exception if needed
+            }
+        }
+
+    }
     fun setCrop(){
         crop = liveData(Dispatchers.IO) {
             emit(null)
@@ -65,6 +86,24 @@ class CultivoViewModel : ViewModel() {
                     }.addOnFailureListener { exception ->
                         continuation.resumeWithException(exception)
                     }
+                }
+                emit(realValue)
+            } catch (e: Exception) {
+                // Handle exception if needed
+            }
+        }
+    }
+    fun getPlantation(plantationId: String){
+        currentPlantation = liveData(Dispatchers.IO) {
+            try {
+                val realValue = suspendCancellableCoroutine<Plantation> { continuation ->
+                    Firebase.database.getReference("plantation/0/"+plantationId).get()
+                        .addOnSuccessListener { snapshot ->
+                            val value = snapshot.getValue(Plantation::class.java) as Plantation
+                            continuation.resume(value)
+                        }.addOnFailureListener { exception ->
+                            continuation.resumeWithException(exception)
+                        }
                 }
                 emit(realValue)
             } catch (e: Exception) {
@@ -86,8 +125,8 @@ class CultivoViewModel : ViewModel() {
                             val result = value?.values?.toList() ?: emptyList()
                             continuation.resume(result)
                         }.addOnFailureListener { exception ->
-                        continuation.resumeWithException(exception)
-                    }
+                            continuation.resumeWithException(exception)
+                        }
                 }
                 emit(realValue)
             } catch (e: Exception) {
@@ -109,6 +148,9 @@ class CultivoViewModel : ViewModel() {
     }
     fun createPlantation(plantation: Plantation){
         var getKey = Firebase.database.getReference("plantation/0/").push().key
+        if (getKey != null) {
+            plantation.id = getKey
+        }
         var updates = HashMap<String, Any>()
         updates["/$getKey"] = plantation
         Firebase.database.getReference("plantation/0/").updateChildren(updates)

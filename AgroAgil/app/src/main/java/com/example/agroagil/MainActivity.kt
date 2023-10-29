@@ -35,6 +35,7 @@ import androidx.navigation.navArgument
 import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Cultivo.ui.Cultivo
+import com.example.agroagil.Cultivo.ui.CultivoInfoScreen
 import com.example.agroagil.Cultivo.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
@@ -427,6 +428,27 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 CultivoAddScreen(cultivoViewModel,navController)
                             }
+                        }
+                        composable(
+                            "cultivo/{cultivoId}/info",
+                            arguments = listOf(navArgument("cultivoId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val cultivoId: String? = backStackEntry.arguments?.getString("cultivoId")
+                            if (cultivoId is String)
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        CultivoInfoScreen(
+                                            navController = navController,
+                                            cultivoViewModel = cultivoViewModel,
+                                            cultivoId
+                                        )
+                                    })
                         }
                         composable("task") {
                             titleCurrentPage.value = "Mis Tareas"
