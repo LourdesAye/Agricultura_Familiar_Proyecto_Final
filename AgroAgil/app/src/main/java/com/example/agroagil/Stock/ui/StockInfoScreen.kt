@@ -90,7 +90,11 @@ fun itemProductBuy(item: Product) {
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel, stockId: String?) {
+fun StockInfoScreen(
+    navController: NavController,
+    stockViewModel: StockViewModel,
+    stockId: String?
+) {
     var stockActual = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     if (stockActual == null) {
         Column(
@@ -108,6 +112,7 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
     } else {
 
         stockEnEsteMomento.value = stockActual.find { it.id == stockId } ?: Stock()
+        Log.d("probando id", "el id es ${ stockEnEsteMomento.value.id}")
         val screenWidth = LocalConfiguration.current.screenHeightDp.dp
         Column(
             modifier = Modifier
@@ -132,7 +137,7 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                 }
                 SuggestionChip(
                     onClick = { /* Do something! */ },
-                    label = { Text(textChipStatus) },
+                    label = { Text(textChipStatus, ) },
                     enabled = false,
                     colors = SuggestionChipDefaults.suggestionChipColors(
                         disabledLabelColor =
@@ -153,17 +158,30 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                             .fillMaxWidth()
                             .padding(top = 50.dp)
                     ) {
-                        Text(
-                            "Producto: " +
-                                    stockEnEsteMomento.value.product.name,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontSize = 30.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                        )
+                        if (stockEnEsteMomento.value.product.name.isNullOrEmpty()) {
+                            Text(
+                                stockEnEsteMomento.value.type,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontSize = 30.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                            )
+                        }
+                        else {
+
+                            Text(
+                                stockEnEsteMomento.value.product.name,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontSize = 30.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                            )
+
+                        }
                     }
-                    Spacer(Modifier.padding(16.dp))
+                    Spacer(Modifier.padding(5.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -173,29 +191,46 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                             "Tipo de Producto: " +
                                     stockEnEsteMomento.value.type,
                             style = MaterialTheme.typography.titleLarge,
-                            fontSize = 15.sp,
+                            fontSize = 20.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                         )
                     }
-                    Spacer(Modifier.padding(16.dp))
+                    Spacer(Modifier.padding(5.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
-                        Text(
-                            "Cantidad: " +
-                                    stockEnEsteMomento.value.product.amount.toString() + " " + stockEnEsteMomento.value.product.units,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                        )
+                        if(stockEnEsteMomento.value.product.units.isNullOrEmpty()){
+
+                            Text(
+                                "Cantidad: " +
+                                        stockEnEsteMomento.value.product.amount.toString() + " unidades",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                            )
+
+                        }
+                        else {
+                            Text(
+                                "Cantidad: " +
+                                        stockEnEsteMomento.value.product.amount.toString() + " " + stockEnEsteMomento.value.product.units,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                            )
+
+                        }
+
                     }
 
-                    Spacer(Modifier.padding(16.dp))
+                    Spacer(Modifier.padding(5.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -203,12 +238,13 @@ fun StockInfoScreen(navController: NavController, stockViewModel: StockViewModel
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            "Precio por unidad: $ " + stockEnEsteMomento.value.product.price,
+                            "Precio por unidad: $ " +String.format("%.0f", stockEnEsteMomento.value.product.price),
                             style = MaterialTheme.typography.titleLarge,
-                            fontSize = 15.sp,
+                            fontSize = 20.sp,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                         )
+
 
                     }
                 }

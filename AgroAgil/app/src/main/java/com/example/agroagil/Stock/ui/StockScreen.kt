@@ -68,9 +68,13 @@ val SinStockClick = "#f4e5e4"
 val ConStock = "#28B463"
 val ConStockClick = "#d7f1e2"
 
-var listStockInicial = mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
-var listStockDataFilter = mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
-var filters = mutableStateListOf<Function1<List<Stock>, List<Stock>>>() //lista mutable de funciones que representan los filtros que se pueden aplicar a listStockDataFilter.
+var listStockInicial =
+    mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
+var listStockDataFilter =
+    mutableStateListOf<Stock>() //lista mutable que contendrá los elementos de stock que se mostrarán en la interfaz de usuario.
+var filters =
+    mutableStateListOf<Function1<List<Stock>, List<Stock>>>() //lista mutable de funciones que representan los filtros que se pueden aplicar a listStockDataFilter.
+
 /*
 es una lista mutable que almacena funciones (Function1) que aceptan una lista de elementos de tipo List<Stock>
 y devuelven una lista de elementos del mismo tipo (List<Stock>).
@@ -79,7 +83,8 @@ filterNombreProductoDelStock, que acepta una lista de elementos de stock  y devu
 elementos que no coinciden con un nombre de producto específico. En resumen, filtersExclude almacena funciones de filtro que se aplican para excluir elementos específicos de la lista de stock.
 * */
 var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
-var chipsFilter = mutableStateListOf<Map<String,Function1<List<Stock>, List<Stock>>>>()
+var chipsFilter = mutableStateListOf<Map<String, Function1<List<Stock>, List<Stock>>>>()
+
 /* chipsFilter se utiliza para almacenar etiquetas (generalmente descripciones de filtros) y las funciones de filtro asociadas a esas etiquetas.
 Esto permite que la interfaz de usuario muestre los filtros aplicados en forma de etiquetas, y cuando el usuario interactúa con estas etiquetas,
 se pueden eliminar los filtros correspondientes.
@@ -97,18 +102,22 @@ var nombreElementoDeStockFilter = mutableStateOf("")
 //var dataDateEnd = mutableStateOf("")
 
 
-fun filterTieneStock(listaElementosDeStock:List<Stock>): List<Stock> {
-    return listaElementosDeStock.filter { it -> it.product.amount>0 }
+fun filterTieneStock(listaElementosDeStock: List<Stock>): List<Stock> {
+    return listaElementosDeStock.filter { it -> it.product.amount > 0 }
 }
 
-fun filterSinStock(listaElementosStock:List<Stock>): List<Stock> {
-    return listaElementosStock.filter { it -> it.product.amount<=0 }
+fun filterSinStock(listaElementosStock: List<Stock>): List<Stock> {
+    return listaElementosStock.filter { it -> it.product.amount <= 0 }
 }
-fun filterNombreProductoDelStock(listaElementosStock:List<Stock>): List<Stock> {
+
+fun filterNombreProductoDelStock(listaElementosStock: List<Stock>): List<Stock> {
     //para filtrar según nombre del producto, que puede ser pera,naranja,camion,tractor
-    return listaElementosStock.filter { it -> it.product.name.lowercase().contains(nombreElementoDeStockFilter.value.lowercase()) }
+    return listaElementosStock.filter { it ->
+        it.product.name.lowercase().contains(nombreElementoDeStockFilter.value.lowercase())
+    }
 }
-fun filterAllBuys(listaElementosStock:List<Stock>): List<Stock> {
+
+fun filterAllBuys(listaElementosStock: List<Stock>): List<Stock> {
     return listaElementosStock
 }
 
@@ -146,6 +155,23 @@ fun filterDateRange(buys:List<Stock>): List<Stock> {
 
 */
 
+fun resetFilterFix2() {
+    // Asegurarse de que tempFilteredList esté inicializada con los datos originales
+    val tempFilteredList = ArrayList(listStockInicial)
+
+    if (filters.isNotEmpty()) {
+        for (i in 0 until filters.size) {
+            val filtroExecute = filters[i](tempFilteredList)
+            tempFilteredList.clear()
+            tempFilteredList.addAll(filtroExecute)
+        }
+    }
+
+    // Copiar los resultados de los filtros a listStockDataFilter
+    listStockDataFilter.clear()
+    listStockDataFilter.addAll(tempFilteredList)
+}
+
 fun resetFilter() {
     //borra todos los elementos de la lista listStockDataFilter
     // listStockDataFilter.clear()
@@ -163,18 +189,39 @@ fun resetFilter() {
         se agrega el resultado de filtroExecute a la lista listStockDataFilter.
         Esto actualiza listStockDataFilter con los resultados de aplicar todos los filtros en la lista de filtros.
         */
+            if(listStockDataFilter.size==0){
             var filtroExecute = mutableListOf<List<Stock>>()
             filtroExecute.addAll(listOf(filters[i](listStockInicial)))
-            listStockDataFilter.clear()
             listStockDataFilter.addAll(filtroExecute.flatten())
             /*Luego, el resultado de filtroExecute se aplana (convierte en una lista plana)
          y se agrega a la lista listStockDataFilter.
          Esto significa que se están aplicando filtros sucesivamente a listStockDataFilter
          y actualizando la lista con los resultados de los filtros.*/
         }
+            else{
+                var filtroAuxInicial= listStockDataFilter
+                var filtroExecute = mutableListOf<List<Stock>>()
+                filtroExecute.addAll(listOf(filters[i](listStockInicial)))
+                listStockDataFilter.clear()
+                listStockDataFilter.addAll(filtroAuxInicial)
+                listStockDataFilter.addAll(filtroExecute.flatten())
+
+            }
     }
 }
+}
 //}
+
+fun resetFilterFix() {
+    // Crea una copia de la lista original para aplicar los filtros
+    listStockDataFilter.clear()
+    listStockDataFilter.addAll(listStockInicial)
+
+    // Aplica cada filtro seleccionado
+    for (filter in filters) {
+        listStockDataFilter.retainAll(filter(listStockInicial))
+    }
+}
 
 fun resetFilterExclude() {
     /*
@@ -200,7 +247,7 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
 // boton de flitrado
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Actions(navController: NavController){
+fun Actions(navController: NavController) {
     var expandedFilter by remember { mutableStateOf(false) }
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
@@ -217,9 +264,11 @@ fun Actions(navController: NavController){
                 .padding(top = 5.dp, start = 0.dp, end = 0.dp)
                 .fillMaxWidth()
         ) {
-            Button(onClick = { expandedFilter = !expandedFilter},
-                colors= if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
-                modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = { expandedFilter = !expandedFilter },
+                colors = if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Icon(
                     ImageVector.vectorResource(R.drawable.filter),
                     contentDescription = "Localized description",
@@ -229,18 +278,20 @@ fun Actions(navController: NavController){
                 Text("Filtrar")
             }
         }
-        Column(modifier=Modifier.padding(end = 10.dp, start = 10.dp, bottom = 5.dp)){
+        Column(modifier = Modifier.padding(end = 10.dp, start = 10.dp, bottom = 5.dp)) {
             AnimatedVisibility(visible = expandedFilter) {
-                Column(modifier = Modifier.fillMaxWidth()){
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Card(modifier = Modifier.fillMaxWidth()) {
-                        Column (modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(30.dp)){
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(30.dp)
+                        ) {
                             OutlinedTextField(
                                 value = nombreProductoDelStock,
                                 onValueChange = { nombreProductoDelStock = it },
-                                label = { Text("Producto")},
-                                modifier=Modifier.fillMaxWidth()
+                                label = { Text("Producto") },
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                             //botón circular
@@ -251,14 +302,14 @@ fun Actions(navController: NavController){
                                 } */
                                 }
                                 chipsFilter.clear()
-                                if (nombreProductoDelStock.text!=""){
-                                    chipsFilter.add(mapOf(("Producto: "+nombreProductoDelStock.text) to ::filterNombreProductoDelStock))
+                                if (nombreProductoDelStock.text != "") {
+                                    chipsFilter.add(mapOf(("Producto: " + nombreProductoDelStock.text) to ::filterNombreProductoDelStock))
                                     filtersExclude.add(::filterNombreProductoDelStock)
                                     nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
-                              /*  var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
-                                var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
-                                */
+                                /*  var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
+                                  var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
+                                  */
 
 
                                 /*if  (checkStartDate or checkEndDate){
@@ -275,18 +326,18 @@ fun Actions(navController: NavController){
                                         }
                                     }
                                 }*/
-                                expandedFilter=false
+                                expandedFilter = false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
                     }
                 }
             }
-            for (i in 0..chipsFilter.size-1) {
+            for (i in 0..chipsFilter.size - 1) {
                 //componente de Jetpack Compose que se utilizan para mostrar opciones seleccionables en una interfaz de usuario.
                 InputChip(
                     selected = false,
                     onClick = {
-                        filtersExclude.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()])}
+                        filtersExclude.removeIf { it.equals(chipsFilter[i][chipsFilter[i].keys.first()]) }
                         chipsFilter.remove(chipsFilter[i])
                     },
                     label = { Text(chipsFilter[i].keys.first()) },
@@ -302,11 +353,11 @@ fun Actions(navController: NavController){
     }
 }
 
-fun SelectColorCard(conStock:Boolean): String {
+fun SelectColorCard(conStock: Boolean): String {
     var color: String
-    if (conStock==true){
+    if (conStock == true) {
         color = ConStock
-    }else{
+    } else {
         color = SinStock
     }
     return color
@@ -315,11 +366,18 @@ fun SelectColorCard(conStock:Boolean): String {
 // TODO: esto esta para compras, se debe adaptar para stock, esto es lo que posiblemente est haciendo romper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun unProductoDelStock(stock:Stock, navController: NavController){
-    Column(){
+fun unProductoDelStock(stock: Stock, navController: NavController) {
+    Column() {
+        var hayErrorIdStock by rememberSaveable { mutableStateOf("") }
         Card(
-            onClick={
-               navController.navigate("stockSummary/${stock.id}/info")
+            onClick = {
+
+                if (stock.id.isNullOrEmpty()) {
+                    hayErrorIdStock = "hubo un error de Id Stock"
+                } else {
+                    hayErrorIdStock = ""
+                    navController.navigate("stockSummary/${stock.id}/info")
+                }
             },
             modifier = Modifier
                 .height(100.dp)
@@ -329,58 +387,71 @@ fun unProductoDelStock(stock:Stock, navController: NavController){
                 defaultElevation = 10.dp
             )
 
-        ){
+        ) {
+            if(hayErrorIdStock!=""){
+               Text(text = hayErrorIdStock)
+            }
+
             Row() {
                 Column(
                     modifier = Modifier
-                        .background(Color(SelectColorCard(stock.product.amount>0).toColorInt()))
+                        .background(Color(SelectColorCard(stock.product.amount > 0).toColorInt()))
                         .width(10.dp)
                         .fillMaxHeight()
                 ) {
 
                 }
-                Column(modifier = Modifier
-                    .padding(5.dp)
-                    .fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .fillMaxWidth()
+                ) {
+                    if (stock.product.name.isNullOrEmpty()) {
+                        Text(text = stock.type)
+                    } else {
+                        Text(stock.product.name, Modifier.fillMaxWidth())
 
-                    Text("Producto: ${stock.product.name}", Modifier.fillMaxWidth())
-
+                    }
                 }
-            }
 
+            }
         }
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun filterStatus(){
-    var clickConStock by remember {mutableStateOf(false)}
-    var colorConStock by remember {mutableStateOf<Color>(Color(0))}
-    var clickSinStock by remember {mutableStateOf(false)}
-    var colorSinStock by remember {mutableStateOf<Color>(Color(0))}
+fun filterStatus() {
+    var clickConStock by remember { mutableStateOf(false) }
+    var colorConStock by remember { mutableStateOf<Color>(Color(0)) }
+    var clickSinStock by remember { mutableStateOf(false) }
+    var colorSinStock by remember { mutableStateOf<Color>(Color(0)) }
     Column(
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 15.dp)){
+            .padding(top = 15.dp)
+    ) {
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-        val cardWidth =  with(LocalDensity.current) {
+        val cardWidth = with(LocalDensity.current) {
             screenWidth * 0.45f
         }
-        if (clickConStock){
+        if (clickConStock) {
             colorConStock = Color(ConStockClick.toColorInt())
-        }else{
-            colorConStock=Color(MaterialTheme.colorScheme.background.value)
+        } else {
+            colorConStock = Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
-            onClick={
+            onClick = {
                 clickConStock = !clickConStock
-                if(clickConStock){
+                if (clickConStock) {
                     filters.add(::filterTieneStock)
-                }else{
+                } else {
                     filters.remove(::filterTieneStock)
                 }
-                resetFilter()
+                resetFilterFix2()
+                //resetFilter()
+                //resetFilterFix()
             },
             modifier = Modifier
                 //.width(cardWidth)
@@ -395,14 +466,18 @@ fun filterStatus(){
                     modifier = Modifier
                         .background(Color(ConStock.toColorInt()))
                         .width(10.dp)
-                        .fillMaxHeight().
-                    fillMaxWidth()
+                        .fillMaxHeight()
+                        .fillMaxWidth()
                 ) {
 
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Text("En Almacén", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickConStock){
+                    Text(
+                        "En Almacén",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    if (clickConStock) {
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
@@ -415,20 +490,22 @@ fun filterStatus(){
                 }
             }
         }
-        if (clickSinStock){
+        if (clickSinStock) {
             colorSinStock = Color(SinStockClick.toColorInt())
-        }else{
-            colorSinStock=Color(MaterialTheme.colorScheme.background.value)
+        } else {
+            colorSinStock = Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
             onClick = {
-                clickSinStock=!clickSinStock
-                if(clickSinStock){
+                clickSinStock = !clickSinStock
+                if (clickSinStock) {
                     filters.add(::filterSinStock)
-                }else{
+                } else {
                     filters.remove(::filterSinStock)
                 }
-                resetFilter()
+                //resetFilter()
+                //resetFilterFix()
+                resetFilterFix2()
             },
             modifier = Modifier
                 //.width(cardWidth)
@@ -448,8 +525,12 @@ fun filterStatus(){
 
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Text("No Disponible En Almacén", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickSinStock){
+                    Text(
+                        "No Disponible En Almacén",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    if (clickSinStock) {
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
@@ -463,7 +544,6 @@ fun filterStatus(){
         }
 
 
-
     }
 }
 
@@ -475,7 +555,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
     var valuesStock = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     valuesStock?.let {
         //si es nulo valueStock no se ejecutan
-       listStockInicial.clear()
+        listStockInicial.clear()
         listStockInicial.addAll(it)
     }
     if (valuesStock == null) {
@@ -495,8 +575,9 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-        resetFilter()
-        resetFilterExclude()
+        //resetFilterFix()
+        //resetFilter()
+        //resetFilterExclude()
         Box() {
             Column() {
                 LazyColumn(

@@ -66,6 +66,7 @@ import com.example.agroagil.Stock.ui.StockAddScreen
 import com.example.agroagil.Stock.ui.StockInfoScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
+import com.example.agroagil.Stock.ui.stockEnEsteMomento
 import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
@@ -571,9 +572,8 @@ class MainActivity : ComponentActivity() {
                             "stockSummary/{stockId}/info",
                             arguments = listOf(navArgument("stockId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            Log.i("Navegación","llegaste al incio de la navegación")
                             val stockId: String? = backStackEntry.arguments?.getString("stockId")
-                            Log.i("Navegación","el argumento es: $stockId")
+                            Log.d("probando id", "el id es $stockId")
                             if (stockId is String)
                                 Menu(scope,
                                     drawerState,
@@ -624,7 +624,7 @@ class MainActivity : ComponentActivity() {
                 }
                 //navegar a mi almacen
                 NavigationEventMenu.ToMiAlmacen -> {
-                    navController.navigate("home")
+                    navController.navigate("stock")
                 }
                 //navegar a prestamos de articulos
                 NavigationEventMenu.ToPrestamosArticulos -> {
