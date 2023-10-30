@@ -269,25 +269,6 @@ fun Actions(navController: NavController) {
                                     filtersExclude.add(::filterNombreProductoDelStock)
                                     nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
-                                /*  var checkStartDate = !dataDateStart.value.equals("") and !dataDateStart.value.contains("D")
-                                  var checkEndDate = !dataDateEnd.value.equals("")  and !dataDateEnd.value.contains("D")
-                                  */
-
-
-                                /*if  (checkStartDate or checkEndDate){
-                                    if  (checkStartDate and checkEndDate){
-//                                        chipsFilter.add(mapOf(("Fecha: "+ dataDateStart.value + " - "+ dataDateEnd.value) to ::filterDateRange))
-//                                        filtersExclude.add(::filterDateRange)
-                                    }else{
-                                        if(checkStartDate) {
-//                                            chipsFilter.add(mapOf(("Fecha inicio: " + dataDateStart.value ) to ::filterDateStart))
-//                                            filtersExclude.add(::filterDateStart)
-                                        }else{
-//                                            chipsFilter.add(mapOf(("Fecha fin: " + dataDateEnd.value ) to ::filterDateEnd))
-//                                            filtersExclude.add(::filterDateEnd)
-                                        }
-                                    }
-                                }*/
                                 expandedFilter = false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
@@ -369,9 +350,13 @@ fun unProductoDelStock(stock: Stock, navController: NavController) {
                         .fillMaxWidth()
                 ) {
                     if (stock.product.name.isNullOrEmpty()) {
-                        Text(text = stock.type)
+                        Text(text = stock.type,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.CenterHorizontally))
                     } else {
-                        Text(stock.product.name, Modifier.fillMaxWidth())
+                        Text(text=stock.product.name,
+                            textAlign = TextAlign.Center,
+                            modifier= Modifier.fillMaxWidth().align(Alignment.CenterHorizontally))
 
                     }
                 }
@@ -389,6 +374,7 @@ fun filterStatus() {
     var colorConStock by remember { mutableStateOf<Color>(Color(0)) }
     var clickSinStock by rememberSaveable { mutableStateOf(false) }
     var colorSinStock by remember { mutableStateOf<Color>(Color(0)) }
+    var todosLosElementosStock by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -398,32 +384,31 @@ fun filterStatus() {
         val cardWidth = with(LocalDensity.current) {
             screenWidth * 0.45f
         }
+
+        //se marca con stock
         if (clickConStock) {
             colorConStock = Color(ConStockClick.toColorInt())
         } else {
             colorConStock = Color(MaterialTheme.colorScheme.background.value)
         }
+
         Card(
             onClick = {
                 clickConStock = !clickConStock
-
-                if (clickSinStock && clickConStock) {
-                    filters.clear()
-                    filters.add(::filterTieneStock)
-                    filters.add(::filterTieneStock)
-                }
-                else{
                     if (clickConStock) {
                         filters.add(::filterTieneStock)
                     } else {
                         filters.remove(::filterTieneStock)
                     }
 
+                if( clickConStock && todosLosElementosStock){
+                    todosLosElementosStock = false
                 }
-
-               // resetFilterFix2()
+                if( clickConStock && clickSinStock){
+                    clickSinStock = false
+                    filters.remove(::filterSinStock)
+                }
                 resetFilter()
-                //resetFilterFix()
             },
             modifier = Modifier
                 //.width(cardWidth)
@@ -462,6 +447,8 @@ fun filterStatus() {
                 }
             }
         }
+
+        //se marca sin stock
         if (clickSinStock) {
             colorSinStock = Color(SinStockClick.toColorInt())
         } else {
@@ -470,15 +457,19 @@ fun filterStatus() {
         Card(
             onClick = {
                 clickSinStock = !clickSinStock
-                if (clickSinStock) {
-                    filters.add(::filterSinStock)
-                } else {
-                    filters.remove(::filterSinStock)
-                }
 
-                // Si ambos filtros están seleccionados, quita el filtro de "Con Stock"
-                if (clickConStock) {
-                    filters.add(::filterTieneStock)
+                    if (clickSinStock) {
+                        filters.add(::filterSinStock)
+                    } else {
+                        filters.remove(::filterSinStock)
+                    }
+
+                if( clickSinStock && todosLosElementosStock){
+                    todosLosElementosStock = false
+                }
+                if( clickConStock && clickSinStock){
+                    clickConStock = false
+                    filters.remove(::filterTieneStock)
                 }
 
                 resetFilter()
@@ -515,6 +506,68 @@ fun filterStatus() {
                                 .align(Alignment.CenterEnd)
                         )
                     }
+                }
+            }
+        }
+        // todos los elementos del stock
+
+        Card(
+            onClick = {
+                todosLosElementosStock = !todosLosElementosStock
+
+                if(todosLosElementosStock){
+                    //filterAllStocks
+                        filters.add(::filterAllStocks)
+                    } else {
+                        filters.remove(::filterAllStocks)
+                    }
+
+                    if( clickSinStock && todosLosElementosStock){
+                        clickSinStock = false
+                        filters.remove(::filterSinStock)
+                    }
+                    if( clickConStock && todosLosElementosStock){
+                        clickConStock = false
+                        filters.remove(::filterTieneStock)
+                    }
+
+                    resetFilter()
+
+            },
+            modifier = Modifier
+                //.width(cardWidth)
+                .fillMaxWidth()
+                .padding(2.dp)
+                .height(50.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+            colors = CardDefaults.cardColors(Color.White)
+        ) {
+            Row(Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .background(Color.White)
+                        .width(10.dp)
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                ) {
+
+                }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        "Todos",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    if (todosLosElementosStock) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .align(Alignment.CenterEnd)
+                        )
+                    }
+
                 }
             }
         }
