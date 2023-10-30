@@ -1,10 +1,10 @@
 package com.example.agroagil.Stock.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import com.example.agroagil.R
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
@@ -54,7 +57,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.graphics.toColorInt
@@ -121,24 +123,6 @@ fun filterAllStocks(listaElementosStock: List<Stock>): List<Stock> {
     return listaElementosStock
 }
 
-
-fun resetFilterFix2() {
-    // Asegurarse de que tempFilteredList esté inicializada con los datos originales
-    val tempFilteredList = ArrayList(listStockInicial)
-
-    if (filters.isNotEmpty()) {
-        for (i in 0 until filters.size) {
-            val filtroExecute = filters[i](tempFilteredList)
-            tempFilteredList.clear()
-            tempFilteredList.addAll(filtroExecute)
-        }
-    }
-
-    // Copiar los resultados de los filtros a listStockDataFilter
-    listStockDataFilter.clear()
-    listStockDataFilter.addAll(tempFilteredList)
-}
-
 fun resetFilter() {
     //borra todos los elementos de la lista listStockDataFilter
     // listStockDataFilter.clear()
@@ -177,17 +161,6 @@ fun resetFilter() {
 }
 //}
 
-fun resetFilterFix() {
-    // Crea una copia de la lista original para aplicar los filtros
-    listStockDataFilter.clear()
-    listStockDataFilter.addAll(listStockInicial)
-
-    // Aplica cada filtro seleccionado
-    for (filter in filters) {
-        listStockDataFilter.retainAll(filter(listStockInicial))
-    }
-}
-
 fun resetFilterExclude() {
     /*
     Se itera sobre la lista de filtros , se crea una nueva lista llamada filtroExecute que está inicialmente vacía
@@ -213,10 +186,10 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Actions(navController: NavController) {
-    var expandedFilter by remember { mutableStateOf(false) }
+    var expandedFilter by rememberSaveable { mutableStateOf(false) }
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
-    }
+    } //valor inicial una cadena vacía, y los valores que se coloquen se mantienen a pesar de rotar la pantalla
 
     Column {
         Row(
@@ -228,7 +201,8 @@ fun Actions(navController: NavController) {
         ) {
             Button(
                 onClick = { expandedFilter = !expandedFilter },
-                colors = if (expandedFilter) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
+                colors = if (expandedFilter) ButtonDefaults.buttonColors()
+                else ButtonDefaults.filledTonalButtonColors(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
@@ -249,12 +223,77 @@ fun Actions(navController: NavController) {
                                 .align(Alignment.CenterHorizontally)
                                 .padding(30.dp)
                         ) {
+                            Text("Producto")
                             OutlinedTextField(
                                 value = nombreProductoDelStock,
                                 onValueChange = { nombreProductoDelStock = it },
-                                label = { Text("Producto") },
+                                label = { },
                                 modifier = Modifier.fillMaxWidth()
                             )
+
+                            Text(text="Tipo de Producto")
+                            var tipoDeElementoDeStockSeleccionado by rememberSaveable { mutableStateOf("") }
+                            var estaOpcionPorDefecto by rememberSaveable { mutableStateOf(true) }
+                            var expandirSelector by rememberSaveable { mutableStateOf(false) }
+                            val tiposDeElementosDeStock = listOf(" Herramienta", "Fertilizante","Cultivo","Semillas","Otros")
+                            var sinTipoStockSeleccionado by rememberSaveable { mutableStateOf(true) }
+
+                                // en este componente se a ver la opción que se elige
+                                OutlinedTextField(
+                                    trailingIcon = {
+                                        //flechita para arriba o para abajo según corresponda en el selector
+                                        ExposedDropdownMenuDefaults.TrailingIcon(
+                                            expanded = expandirSelector) },
+                                    value = tipoDeElementoDeStockSeleccionado,
+                                    //la opcion seleccionada
+                                    onValueChange = { nuevoTipoStockSeleccionado ->
+                                        tipoDeElementoDeStockSeleccionado = nuevoTipoStockSeleccionado
+                                    },
+                                    enabled = false, // con esto no podes escribir un rol
+                                    readOnly = true, // solo permite su lectura
+                                    label = {
+                                        if (estaOpcionPorDefecto) {
+                                            //valida que se seleccione un rol y que no sea el por defecto
+                                            Text("Elegir tipo de producto")
+                                            sinTipoStockSeleccionado = true
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .clickable {
+                                            estaOpcionPorDefecto = false
+                                            //se expande el selector
+                                            expandirSelector = true
+                                        }
+                                        .fillMaxWidth()
+                                )
+
+                                if (!estaOpcionPorDefecto) {
+                                    DropdownMenu(
+                                        expanded = expandirSelector,
+                                        onDismissRequest = {
+                                            expandirSelector = false
+                                            if (tipoDeElementoDeStockSeleccionado.isEmpty()) {
+                                                //si no selecciono un rol esta la opcion por defecto
+                                                estaOpcionPorDefecto = true
+                                            } else {
+                                                sinTipoStockSeleccionado = false
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        tiposDeElementosDeStock.forEach { rolSeleccionado ->
+                                            DropdownMenuItem(
+                                                text = {  Text( text = rolSeleccionado )},
+                                                onClick = { expandirSelector = false
+                                                    tipoDeElementoDeStockSeleccionado = rolSeleccionado
+                                                    sinTipoStockSeleccionado = tipoDeElementoDeStockSeleccionado == "" || tipoDeElementoDeStockSeleccionado.isEmpty()
+                                                })
+                                        }
+                                    }
+
+                                }
+                            }
+
 
                             //botón circular
                             ExtendedFloatingActionButton(onClick = {
@@ -294,7 +333,6 @@ fun Actions(navController: NavController) {
             }
         }
     }
-}
 
 fun SelectColorCard(conStock: Boolean): String {
     var color: String
@@ -356,7 +394,9 @@ fun unProductoDelStock(stock: Stock, navController: NavController) {
                     } else {
                         Text(text=stock.product.name,
                             textAlign = TextAlign.Center,
-                            modifier= Modifier.fillMaxWidth().align(Alignment.CenterHorizontally))
+                            modifier= Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.CenterHorizontally))
 
                     }
                 }
@@ -395,6 +435,7 @@ fun filterStatus() {
         Card(
             onClick = {
                 clickConStock = !clickConStock
+
                     if (clickConStock) {
                         filters.add(::filterTieneStock)
                     } else {
