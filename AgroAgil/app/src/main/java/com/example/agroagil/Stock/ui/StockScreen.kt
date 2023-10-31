@@ -126,11 +126,11 @@ fun filterAllStocks(listaElementosStock: List<Stock>): List<Stock> {
 }
 
 fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
-    Log.d("probando Filter tipo","$tipoStockSeleccionado")
+    Log.d("probando Filter tipo","${tipoStockSeleccionado.value}")
     for (i in 0..listaElementosStock.size - 1){
         Log.d("probando Filter tipo"," el valor seleccionado es : $tipoStockSeleccionado")
         Log.d("probando Filter tipo"," el tipo de este producto es  : ${listaElementosStock[i].type}")
-        Log.d("probando Filter tipo","${tipoStockSeleccionado.equals( listaElementosStock[i].type)}")
+        Log.d("probando Filter tipo","${tipoStockSeleccionado.value.equals( listaElementosStock[i].type)}")
 
     }
 
@@ -196,13 +196,14 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
     if (filtersExclude.size != 0) {
         for (i in 0..filtersExclude.size - 1) {
             var filtroExecute = mutableListOf<List<Stock>>()
-            filtroExecute.addAll(listOf(filtersExclude[i](listStockInicial)))
+            filtroExecute.addAll(listOf(filtersExclude[i](listStockDataFilter)))
             listStockDataFilter.clear()
             listStockDataFilter.addAll(filtroExecute.flatten())
         }
     }
 }
 
+/*
 fun applyFilters() {
     // Lista temporal para almacenar los resultados de los filtros acumulativos
     val filteredList = listStockInicial.toMutableList()
@@ -215,8 +216,10 @@ fun applyFilters() {
     listStockDataFilter.clear()
     listStockDataFilter.addAll(filteredList)
 }
+*/
 
 //FILTRAR POR TIPO DE HERRAMIENTA
+
 
 // boton de flitrado
 @OptIn(ExperimentalMaterial3Api::class)
@@ -226,7 +229,9 @@ fun Actions(navController: NavController) {
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     } //valor inicial una cadena vacía, y los valores que se coloquen se mantienen a pesar de rotar la pantalla
-    var tipoDeStock by rememberSaveable{ mutableStateOf("") }
+    var tipoProducto by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue("", TextRange(0, 7)))
+    }
 
     Column {
         Row(
@@ -272,7 +277,7 @@ fun Actions(navController: NavController) {
                             var tipoDeElementoDeStockSeleccionado by rememberSaveable { mutableStateOf("") }
                             var estaOpcionPorDefecto by rememberSaveable { mutableStateOf(true) }
                             var expandirSelector by rememberSaveable { mutableStateOf(false) }
-                            val tiposDeElementosDeStock = listOf(" Herramienta", "Fertilizante","Cultivo","Semillas","Otros")
+                            val tiposDeElementosDeStock = listOf(" Herramienta", "Fertilizante","Cultivo","Semillas","Otros","Elegir tipo de producto")
                             var sinTipoStockSeleccionado by rememberSaveable { mutableStateOf(true) }
 
                                 // en este componente se a ver la opción que se elige
@@ -281,10 +286,10 @@ fun Actions(navController: NavController) {
                                         //flechita para arriba o para abajo según corresponda en el selector
                                         ExposedDropdownMenuDefaults.TrailingIcon(
                                             expanded = expandirSelector) },
-                                    value = tipoDeStock,
+                                    value = tipoProducto,
                                     //la opcion seleccionada
                                     onValueChange = { nuevoTipoStockSeleccionado ->
-                                        tipoDeStock = nuevoTipoStockSeleccionado
+                                       tipoProducto = nuevoTipoStockSeleccionado
                                     },
                                     enabled = false, // con esto no podes escribir un rol
                                     readOnly = true, // solo permite su lectura
@@ -309,7 +314,7 @@ fun Actions(navController: NavController) {
                                         expanded = expandirSelector,
                                         onDismissRequest = {
                                             expandirSelector = false
-                                            if (tipoDeStock.isEmpty()) {//si no selecciono un tipo esta la opcion por defecto
+                                            if (tipoProducto.text.equals("Elegir tipo de producto")) {//si no selecciono un tipo esta la opcion por defecto
                                                 estaOpcionPorDefecto = true
                                             } else {
                                                 sinTipoStockSeleccionado = false
@@ -318,14 +323,17 @@ fun Actions(navController: NavController) {
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         tiposDeElementosDeStock.forEach { tipoStk ->
-                                            DropdownMenuItem(
-                                                text = {  Text( text = tipoStk )},
-                                                onClick = {
-                                                    tipoDeStock = tipoStk
-                                                    expandirSelector = false
-                                                   tipoDeElementoDeStockSeleccionado = tipoStk
-                                                    sinTipoStockSeleccionado = tipoStk == "" || tipoStk.isEmpty()
-                                                })
+                                            if (!tipoStk.equals("Elegir tipo de producto")) {
+                                                DropdownMenuItem(
+                                                    text = { Text(text = tipoStk) },
+                                                    onClick = {
+                                                        tipoProducto = TextFieldValue(tipoStk, TextRange(0, 200))
+                                                        expandirSelector = false
+                                                        tipoDeElementoDeStockSeleccionado = tipoStk
+                                                        sinTipoStockSeleccionado =
+                                                            tipoStk == "" || tipoStk.isEmpty()
+                                                    })
+                                            }
                                         }
                                     }
 
@@ -349,13 +357,11 @@ fun Actions(navController: NavController) {
                                     filtersExclude.add(::filterNombreProductoDelStock)
                                     nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
-                                if (tipoDeStock != "") {
-                                    chipsFilter.add(mapOf(("Tipo de Producto: " + tipoDeStock) to ::filterNombreProductoDelStock))
+                                if (tipoProducto.text != "" && tipoProducto.text != "Elegir tipo de producto") {
+                                    chipsFilter.add(mapOf(("Tipo de Producto: ${tipoProducto.text}") to ::filterTipoElementoStock))
                                     filtersExclude.add(::filterTipoElementoStock)
-                                    nombreElementoDeStockFilter.value = tipoDeStock
+                                    tipoStockSeleccionado.value = tipoProducto.text
                                 }
-                               //resetFilterExclude()
-                                applyFilters()
                                 expandedFilter = false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
@@ -692,8 +698,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
 
     } else {
        resetFilter()
-        //resetFilterExclude()
-        applyFilters()
+        resetFilterExclude()
         Box() {
             Column() {
                 LazyColumn(
