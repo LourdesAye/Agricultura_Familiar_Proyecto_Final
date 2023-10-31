@@ -1,6 +1,7 @@
 package com.example.agroagil.Stock.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -103,6 +104,7 @@ var nombreElementoDeStockFilter = mutableStateOf("")
 //var dataDateStart = mutableStateOf("")
 //var dataDateEnd = mutableStateOf("")
 
+var tipoStockSeleccionado = mutableStateOf("")
 
 fun filterTieneStock(listaElementosDeStock: List<Stock>): List<Stock> {
     return listaElementosDeStock.filter { it -> it.product.amount > 0 }
@@ -121,6 +123,27 @@ fun filterNombreProductoDelStock(listaElementosStock: List<Stock>): List<Stock> 
 
 fun filterAllStocks(listaElementosStock: List<Stock>): List<Stock> {
     return listaElementosStock
+}
+
+fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
+    Log.d("probando Filter tipo","$tipoStockSeleccionado")
+    for (i in 0..listaElementosStock.size - 1){
+        Log.d("probando Filter tipo"," el valor seleccionado es : $tipoStockSeleccionado")
+        Log.d("probando Filter tipo"," el tipo de este producto es  : ${listaElementosStock[i].type}")
+        Log.d("probando Filter tipo","${tipoStockSeleccionado.equals( listaElementosStock[i].type)}")
+
+    }
+
+    return listaElementosStock.filter { it ->
+        if(tipoStockSeleccionado.value.isNullOrEmpty()){
+            Log.d("probando filtro", "el filtro fue nulo o vacio " +
+                    if (tipoStockSeleccionado.value.isEmpty()) {"vacio"} else {"nulo"}
+            )
+            Log.d("probando filtro", "le voy asignar por defecto Semilla")
+            tipoStockSeleccionado.value= "Semillas"
+        }
+        it.type.equals(tipoStockSeleccionado.value)
+    }
 }
 
 fun resetFilter() {
@@ -180,6 +203,19 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
     }
 }
 
+fun applyFilters() {
+    // Lista temporal para almacenar los resultados de los filtros acumulativos
+    val filteredList = listStockInicial.toMutableList()
+
+    for (filterFunction in filtersExclude) {
+        filteredList.retainAll(filterFunction(filteredList))
+    }
+
+    // Actualiza la lista de datos filtrados
+    listStockDataFilter.clear()
+    listStockDataFilter.addAll(filteredList)
+}
+
 //FILTRAR POR TIPO DE HERRAMIENTA
 
 // boton de flitrado
@@ -190,6 +226,7 @@ fun Actions(navController: NavController) {
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     } //valor inicial una cadena vacía, y los valores que se coloquen se mantienen a pesar de rotar la pantalla
+    var tipoDeStock by rememberSaveable{ mutableStateOf("") }
 
     Column {
         Row(
@@ -244,10 +281,10 @@ fun Actions(navController: NavController) {
                                         //flechita para arriba o para abajo según corresponda en el selector
                                         ExposedDropdownMenuDefaults.TrailingIcon(
                                             expanded = expandirSelector) },
-                                    value = tipoDeElementoDeStockSeleccionado,
+                                    value = tipoDeStock,
                                     //la opcion seleccionada
                                     onValueChange = { nuevoTipoStockSeleccionado ->
-                                        tipoDeElementoDeStockSeleccionado = nuevoTipoStockSeleccionado
+                                        tipoDeStock = nuevoTipoStockSeleccionado
                                     },
                                     enabled = false, // con esto no podes escribir un rol
                                     readOnly = true, // solo permite su lectura
@@ -272,8 +309,7 @@ fun Actions(navController: NavController) {
                                         expanded = expandirSelector,
                                         onDismissRequest = {
                                             expandirSelector = false
-                                            if (tipoDeElementoDeStockSeleccionado.isEmpty()) {
-                                                //si no selecciono un rol esta la opcion por defecto
+                                            if (tipoDeStock.isEmpty()) {//si no selecciono un tipo esta la opcion por defecto
                                                 estaOpcionPorDefecto = true
                                             } else {
                                                 sinTipoStockSeleccionado = false
@@ -281,12 +317,14 @@ fun Actions(navController: NavController) {
                                         },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        tiposDeElementosDeStock.forEach { rolSeleccionado ->
+                                        tiposDeElementosDeStock.forEach { tipoStk ->
                                             DropdownMenuItem(
-                                                text = {  Text( text = rolSeleccionado )},
-                                                onClick = { expandirSelector = false
-                                                    tipoDeElementoDeStockSeleccionado = rolSeleccionado
-                                                    sinTipoStockSeleccionado = tipoDeElementoDeStockSeleccionado == "" || tipoDeElementoDeStockSeleccionado.isEmpty()
+                                                text = {  Text( text = tipoStk )},
+                                                onClick = {
+                                                    tipoDeStock = tipoStk
+                                                    expandirSelector = false
+                                                   tipoDeElementoDeStockSeleccionado = tipoStk
+                                                    sinTipoStockSeleccionado = tipoStk == "" || tipoStk.isEmpty()
                                                 })
                                         }
                                     }
@@ -297,17 +335,27 @@ fun Actions(navController: NavController) {
 
                             //botón circular
                             ExtendedFloatingActionButton(onClick = {
+                                //borro todos los filtros que ya existian previamente
                                 filtersExclude.removeIf {
-                                    it.equals(::filterNombreProductoDelStock)
+                                    it.equals(::filterNombreProductoDelStock) or
+                                            it.equals(::filterTipoElementoStock)
                                     /* ver si sirve depues, probablemnete sirva para agregar otro filtro or it.equals(::filterDateRange) or it.equals(::filterDateStart) or it.equals(::filterDateEnd)
                                 } */
                                 }
+                                //limpio los chips, o sea donde coloco el filtro
                                 chipsFilter.clear()
                                 if (nombreProductoDelStock.text != "") {
                                     chipsFilter.add(mapOf(("Producto: " + nombreProductoDelStock.text) to ::filterNombreProductoDelStock))
                                     filtersExclude.add(::filterNombreProductoDelStock)
                                     nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
+                                if (tipoDeStock != "") {
+                                    chipsFilter.add(mapOf(("Tipo de Producto: " + tipoDeStock) to ::filterNombreProductoDelStock))
+                                    filtersExclude.add(::filterTipoElementoStock)
+                                    nombreElementoDeStockFilter.value = tipoDeStock
+                                }
+                               //resetFilterExclude()
+                                applyFilters()
                                 expandedFilter = false
                             }, modifier = Modifier.align(Alignment.End)) { Text("Buscar") }
                         }
@@ -435,7 +483,6 @@ fun filterStatus() {
         Card(
             onClick = {
                 clickConStock = !clickConStock
-
                     if (clickConStock) {
                         filters.add(::filterTieneStock)
                     } else {
@@ -498,7 +545,6 @@ fun filterStatus() {
         Card(
             onClick = {
                 clickSinStock = !clickSinStock
-
                     if (clickSinStock) {
                         filters.add(::filterSinStock)
                     } else {
@@ -646,6 +692,8 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
 
     } else {
        resetFilter()
+        //resetFilterExclude()
+        applyFilters()
         Box() {
             Column() {
                 LazyColumn(
