@@ -196,9 +196,16 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
     if (filtersExclude.size != 0) {
         for (i in 0..filtersExclude.size - 1) {
             var filtroExecute = mutableListOf<List<Stock>>()
-            filtroExecute.addAll(listOf(filtersExclude[i](listStockDataFilter)))
-            listStockDataFilter.clear()
-            listStockDataFilter.addAll(filtroExecute.flatten())
+            if (listStockDataFilter.size != 0) {
+                filtroExecute.addAll(listOf(filtersExclude[i](listStockDataFilter)))
+                listStockDataFilter.clear()
+                listStockDataFilter.addAll(filtroExecute.flatten())
+            }
+            else{
+                filtroExecute.addAll(listOf(filtersExclude[i](listStockInicial)))
+                listStockDataFilter.clear()
+                listStockDataFilter.addAll(filtroExecute.flatten())
+            }
         }
     }
 }
@@ -468,7 +475,7 @@ fun filterStatus() {
     var colorConStock by remember { mutableStateOf<Color>(Color(0)) }
     var clickSinStock by rememberSaveable { mutableStateOf(false) }
     var colorSinStock by remember { mutableStateOf<Color>(Color(0)) }
-    var todosLosElementosStock by rememberSaveable { mutableStateOf(false) }
+    var todosLosElementosStock by rememberSaveable { mutableStateOf(true) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -709,6 +716,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                     item {
                         filterStatus()
                         Actions(navController)
+                        resetFilterExclude()
                     }
                     /*this.items(listStockDataFilter) { ... }:
                     Aquí, se utiliza items para mostrar una lista de elementos de listStockDataFilter.
