@@ -62,9 +62,9 @@ var crops = mutableStateListOf<Crop>()
 var plantations = mutableStateListOf<Plantation>()
 
 @Composable
-fun GetCultivosSemillas() {
+fun GetCultivosSemillas(navController: NavController) {
     Button(
-        onClick = { },
+        onClick = { navController.navigate("cultivo/type/info")},
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -214,7 +214,7 @@ fun Cultivo(cultivoViewModel: CultivoViewModel,  navController: NavController) {
                 )
 
                 {
-                    GetCultivosSemillas()
+                    GetCultivosSemillas(navController)
                     GetPlantations(navController)
                 }
             }

@@ -36,6 +36,7 @@ import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Cultivo.ui.Cultivo
 import com.example.agroagil.Cultivo.ui.CultivoInfoScreen
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoScreen
 import com.example.agroagil.Cultivo.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
@@ -429,6 +430,19 @@ class MainActivity : ComponentActivity() {
                                 CultivoAddScreen(cultivoViewModel,navController)
                             }
                         }
+                        composable("cultivo/type/info") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoTypeInfoScreen(cultivoViewModel, navController)
+                            }
+                        }
                         composable(
                             "cultivo/{cultivoId}/info",
                             arguments = listOf(navArgument("cultivoId") { type = NavType.StringType })
@@ -570,9 +584,7 @@ class MainActivity : ComponentActivity() {
                             { SummaryScreen(summaryViewModel = summaryViewModel, navController = navController) }
                         }
 
-
                     }
-                    //Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
             }
         }
