@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -113,6 +114,7 @@ fun getImage(referenceID: String, dateStart:String): Int {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GetPlantations(navController: NavController) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     for (i in 0..Math.ceil((plantations.size / 2).toDouble()).toInt()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -123,7 +125,7 @@ fun GetPlantations(navController: NavController) {
             for (item in 0..Math.min(2, plantations.size - (i * 2)) - 1) {
                 Card(
                     modifier = Modifier
-                        .size(width = 200.dp, height = 240.dp)
+                        .width(screenWidth*0.45f).height(240.dp)
                         .padding(start = 5.dp, end = 5.dp, top = 10.dp),
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 10.dp
@@ -142,7 +144,7 @@ fun GetPlantations(navController: NavController) {
                             contentDescription = stringResource(id = R.string.app_name),
                             contentScale = ContentScale.Inside,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth().height(240.dp*0.60f)
                                 .background(Color("#628665".toColorInt()))
                         )
                         plantations[(i * 2) + item].name?.let {
