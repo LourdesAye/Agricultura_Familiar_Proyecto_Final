@@ -135,6 +135,15 @@ class CultivoViewModel : ViewModel() {
         }
     }
 
+    fun updateCrop(crops: List<Crop>){
+        for (crop in crops){
+            var updates = HashMap<String, Any>()
+            updates["/${crop.id}"] = crop
+            Firebase.database.getReference("crop/0/").updateChildren(updates)
+            setCrop()
+        }
+    }
+
     fun createCrop(crop: Crop): String? {
         var getKey = Firebase.database.getReference("crop/0/").push().key
         if (getKey != null) {
