@@ -1,4 +1,5 @@
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -19,15 +20,18 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.ui.Alignment
@@ -47,9 +51,11 @@ import androidx.compose.ui.unit.times
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.agroagil.Loan.ui.SelectColorCard
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Loan
+import com.example.agroagil.core.models.Plantation
 import com.example.agroagil.core.models.Product
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -228,7 +234,6 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
     }
 }
 
-
 @Composable
 fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, description: String) {
     val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -324,7 +329,6 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     }
 }
 
-
 private fun getWeatherIconResourceId(iconName: String): Int {
     return when (iconName) {
         "01d" -> R.drawable._01d
@@ -413,7 +417,6 @@ fun TaskCardDash(
         }
     }
 }
-
 
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -504,7 +507,6 @@ fun DrawBar(value: Int, total: Int, barColor: Color, modifier: Modifier = Modifi
         drawRect(brush = gradientShader, size = Size(barWidth, maxHeight.toPx()))
     }
 }
-
 
 /*
 @Composable
@@ -600,8 +602,6 @@ fun itemProductDash(item: Product) {
     }
 }
 
-
-
 /*
 // Esto usaba un cálcuilo para modificar la altura de la card, hay una forma mejor de hacerlo
 @Composable
@@ -654,17 +654,26 @@ fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, text
     }
 }
 
-
 @Composable
 fun DisplayBuyItem(buy: Buy, textColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .height(IntrinsicSize.Max)
             .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
+        Row {
+            Column(
+                modifier = Modifier
+                    .background(Color(SelectColorCard(buy.paid).toColorInt()))
+                    .width(10.dp)
+                    .fillMaxHeight()
+            ) {
+                // Barra de color a la izquierda de la tarjeta
+            }
         Column(modifier = Modifier.padding(16.dp)) {
             // Muestra la información de la compra
             Text(text = "${buy.nameUser}  ${buy.date}", color = Color.Black)
@@ -675,6 +684,7 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
                 Text(
                     "$$totalPrice"
                 )
+                }
             }
         }
     }
@@ -733,17 +743,26 @@ fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, t
     }
 }
 
-
 @Composable
 fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .height(IntrinsicSize.Max)
             .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
+        Row {
+            Column(
+                modifier = Modifier
+                    .background(Color(SelectColorCard(sell.paid).toColorInt()))
+                    .width(10.dp)
+                    .fillMaxHeight()
+            ) {
+                // Barra de color a la izquierda de la tarjeta
+            }
         Column(modifier = Modifier.padding(16.dp)) {
             // Muestra la información de la venta
             Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
@@ -754,6 +773,7 @@ fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
                 Text(
                     "$$totalPrice"
                 )
+                }
             }
         }
     }
@@ -770,6 +790,7 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
         border = BorderStroke(2.dp, borderColor),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
+
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Préstamos", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
@@ -782,23 +803,99 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
     }
 }
 
-
 @Composable
 fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small)
+            .height(IntrinsicSize.Max), // Establece la altura máxima de la tarjeta
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
+        Row {
+            Column(
+                modifier = Modifier
+                    .background(Color(SelectColorCard(loan.percentagePaid).toColorInt()))
+                    .width(10.dp)
+                    .fillMaxHeight()
+            ) {
+                // Barra de color a la izquierda de la tarjeta
+            }
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+            ) {
+                Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
+                loan.items.forEach { product ->
+                    itemProductDash(product)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DisplayCropItem(crop: Plantation, textColor: Color, backgroundColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small)
+            .height(IntrinsicSize.Max),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+    ) {
+        Row {
+            Column(
+                modifier = Modifier
+                    .background(Color.White)
+                    .width(10.dp)
+                    .fillMaxHeight()
+            ) {
+
+            }
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+            ) {
+                Text(text = "Name: ${crop.name}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Start Date: ${crop.dateStart}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Id: ${crop.id}", color = Color.Black)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun CropCard(topCrops: List<Plantation>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(2.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+    ) {
+
         Column(modifier = Modifier.padding(16.dp)) {
-            // Muestra la información del préstamo
-            Text(text = "${loan.nameUser}  ${loan.date}", color = Color.Black)
-            // Muestra los productos del préstamo utilizando la función itemProductDash
-            loan.items.forEach { product ->
-                itemProductDash(product)
+            Text(text = "Cultivos", color = textColor, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            for (crop in topCrops) {
+                // Each crop is represented as a card with the specified format
+                DisplayCropItem(crop, textColor, backgroundColor)
             }
         }
     }
@@ -822,6 +919,16 @@ fun dash(viewModel: DashboardViewModel) {
                 initial = "{\"coord\":{\"lon\":0,\"lat\":0},\"weather\":[{\"id\":800,\"main\":\"???\",\"description\":\"Sin conexión\",\"icon\":\"01n\"}],\"base\":\"stations\",\"main\":{\"temp\":273,\"feels_like\":0,\"temp_min\":273,\"temp_max\":273,\"pressure\":0,\"humidity\":0},\"visibility\":0,\"wind\":{\"speed\":0,\"deg\":0,\"gust\":2.24},\"clouds\":{\"all\":7},\"dt\":1697144825,\"sys\":{\"type\":2,\"id\":2031595,\"country\":\"AR\",\"sunrise\":1697102124,\"sunset\":1697148263},\"timezone\":-10800,\"id\":3435910,\"name\":\"Buenos Aires\",\"cod\":200}\n")
 
             WeatherCard(jsonResponse, borderColor, backgroundColor, textColor)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            val topPlantations by viewModel.topPlantations.observeAsState(listOf())
+            Log.d("TopPlantations", topPlantations.toString())
+            CropCard(topPlantations, backgroundColor, borderColor, textColor)
         }
 
         item {

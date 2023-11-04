@@ -8,8 +8,10 @@ import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Buys
+import com.example.agroagil.core.models.Crop
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Loans
+import com.example.agroagil.core.models.Plantation
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -27,6 +29,42 @@ import java.util.Date
 import java.util.Locale
 
 class DashboardViewModel : ViewModel() {
+
+    // cultivos
+    private val _topPlantations = MutableLiveData<List<Plantation>>()
+    val topPlantations: LiveData<List<Plantation>> get() = _topPlantations
+
+    private fun fetchTopPlantations() {
+        Firebase.database.getReference("crop/0").get().addOnSuccessListener { snapshot ->
+            val plantationsList = mutableListOf<Plantation>()
+
+            snapshot.children.forEach { childSnapshot ->
+                val plantation = childSnapshot.getValue(Plantation::class.java)
+                plantation?.let {
+                    plantationsList.add(it)
+                }
+            }
+
+            // Formatear dates como "yyyy-MM-dd"
+            val formattedPlantations = plantationsList.map { plantation ->
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val formattedDate = dateFormat.format(Date(plantation.dateStart))
+                plantation.copy(dateStart = formattedDate) // crea copia de plantación
+            }
+
+            // Top 5, date descendiente
+            val topPlantations = formattedPlantations.sortedByDescending { it.dateStart }
+                .take(5)
+            _topPlantations.postValue(topPlantations)
+        }.addOnFailureListener { exception ->
+            // Manejo error
+        }
+    }
+
+    init {
+        fetchTopPlantations()
+    }
+
 
     // -------------- Ingresos y egresos
     private val _allSells = MutableLiveData<List<Sell>>()
@@ -156,6 +194,7 @@ class DashboardViewModel : ViewModel() {
     private val _loans = MutableLiveData<List<Loan>>()
 
     private fun fetchTopLoans() {
+        // esto ordena por fecha ascendente ahora. Y solo trae prestamos no devueltos
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Loans::class.java) as? Loans
             value?.let {
@@ -166,15 +205,20 @@ class DashboardViewModel : ViewModel() {
                     loan.copy(date = formattedDate) // Crea una copia del objeto Loan con la fecha formateada
                 }
 
-                // Ordena los elementos por fecha descendente y selecciona los primeros 5 elementos
-                val topLoans = formattedLoans.sortedByDescending { it.date }
+                // Filtra los préstamos que no estén al 100%
+                val nonCompletedLoans = formattedLoans.filter { it.percentagePaid < 100 }
+
+                // Ordena los elementos por fecha ascendente y selecciona los primeros 5 elementos
+                val topLoans = nonCompletedLoans.sortedBy { it.date }
                     .take(5)
+
                 _loans.postValue(topLoans)
             }
         }.addOnFailureListener { exception ->
             // Maneja errores si es necesario
         }
     }
+
 
 
     val loans: LiveData<List<Loan>> get() = _loans
