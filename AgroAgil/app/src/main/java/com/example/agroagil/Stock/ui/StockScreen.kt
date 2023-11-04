@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -39,9 +40,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -54,12 +57,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 //import com.example.agroagil.Buy.ui.BuyViewModel
@@ -78,31 +85,10 @@ var listStockDataFilter =
 var filters =
     mutableStateListOf<Function1<List<Stock>, List<Stock>>>() //lista mutable de funciones que representan los filtros que se pueden aplicar a listStockDataFilter.
 
-/*
-es una lista mutable que almacena funciones (Function1) que aceptan una lista de elementos de tipo List<Stock>
-y devuelven una lista de elementos del mismo tipo (List<Stock>).
-Cada función en filtersExclude representa un filtro específico que excluye ciertos elementos de la lista.
-filterNombreProductoDelStock, que acepta una lista de elementos de stock  y devuelve una lista que excluye aquellos
-elementos que no coinciden con un nombre de producto específico. En resumen, filtersExclude almacena funciones de filtro que se aplican para excluir elementos específicos de la lista de stock.
-* */
 var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var chipsFilter = mutableStateListOf<Map<String, Function1<List<Stock>, List<Stock>>>>()
-
-/* chipsFilter se utiliza para almacenar etiquetas (generalmente descripciones de filtros) y las funciones de filtro asociadas a esas etiquetas.
-Esto permite que la interfaz de usuario muestre los filtros aplicados en forma de etiquetas, y cuando el usuario interactúa con estas etiquetas,
-se pueden eliminar los filtros correspondientes.
-Por ejemplo, un elemento en chipsFilter podría tener una clave (una etiqueta) como "Filtrar por Nombre de Producto"
-y un valor que es la función de filtro filterNombreProductoDelStock.
-Cuando el usuario hace clic en esta etiqueta, se puede usar la función de filtro asociada para realizar la acción correspondiente, c
-omo eliminar ese filtro particular.
-En resumen, chipsFilter es una lista que relaciona etiquetas de filtro con las funciones de filtro que se aplican a la lista de elementos de stock.
-Esto se utiliza para representar y gestionar los filtros aplicados en la interfaz de usuario.
-*/
 var nombreElementoDeStockFilter = mutableStateOf("")
 
-//estos filtros no los usamos pero probablemnete nos irvan para ver alguna cosa más adelante
-//var dataDateStart = mutableStateOf("")
-//var dataDateEnd = mutableStateOf("")
 
 var tipoStockSeleccionado = mutableStateOf("")
 
@@ -147,30 +133,12 @@ fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
 }
 
 fun resetFilter() {
-    //borra todos los elementos de la lista listStockDataFilter
-    // listStockDataFilter.clear()
-    /* if (filters.size == 0) {
-        listStockDataFilter.addAll(listStockDataFilter)
-    } else {*/
-    /*Este bucle for recorre la lista de filtros, y i toma valores desde 0 hasta filters.size - 1,
-     que son los índices válidos en la lista.
-    */
     if (filters.size != 0) {
         for (i in 0..filters.size - 1) {
-            /*Dentro del bucle, se crea una nueva lista llamada filtroExecute que es inicialmente una lista vacía y se utiliza para almacenar
-        los resultados de aplicar un filtro.
-        se aplica el filtro en la posición i a listStockDataFilter y se almacena el resultado en filtroExecute.
-        se agrega el resultado de filtroExecute a la lista listStockDataFilter.
-        Esto actualiza listStockDataFilter con los resultados de aplicar todos los filtros en la lista de filtros.
-        */
             if(listStockDataFilter.size==0){
             var filtroExecute = mutableListOf<List<Stock>>()
             filtroExecute.addAll(listOf(filters[i](listStockInicial)))
             listStockDataFilter.addAll(filtroExecute.flatten())
-            /*Luego, el resultado de filtroExecute se aplana (convierte en una lista plana)
-         y se agrega a la lista listStockDataFilter.
-         Esto significa que se están aplicando filtros sucesivamente a listStockDataFilter
-         y actualizando la lista con los resultados de los filtros.*/
         }
             else{
                 listStockDataFilter.clear()
@@ -185,14 +153,6 @@ fun resetFilter() {
 //}
 
 fun resetFilterExclude() {
-    /*
-    Se itera sobre la lista de filtros , se crea una nueva lista llamada filtroExecute que está inicialmente vacía
-    y se utiliza para almacenar los resultados de aplicar un filtro.
-Se agrega a filtroExecute el resultado de aplicar el filtro de exclusión en la posición i de la lista de filtros de exclusión a listStockDataFilter.
-Esto se hace utilizando listOf(filtersExclude[i](listStockDataFilter)).
-Se borran todos los elementos de la lista listStockDataFilter con listStockDataFilter.clear().
-Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. Esto actualiza listStockDataFilter con los resultados de aplicar los filtros de exclusión en la lista de filtros de exclusión.
-    * */
     if (filtersExclude.size != 0) {
         for (i in 0..filtersExclude.size - 1) {
             var filtroExecute = mutableListOf<List<Stock>>()
@@ -210,25 +170,6 @@ Luego, se agrega el resultado de filtroExecute a la lista listStockDataFilter. E
     }
 }
 
-/*
-fun applyFilters() {
-    // Lista temporal para almacenar los resultados de los filtros acumulativos
-    val filteredList = listStockInicial.toMutableList()
-
-    for (filterFunction in filtersExclude) {
-        filteredList.retainAll(filterFunction(filteredList))
-    }
-
-    // Actualiza la lista de datos filtrados
-    listStockDataFilter.clear()
-    listStockDataFilter.addAll(filteredList)
-}
-*/
-
-//FILTRAR POR TIPO DE HERRAMIENTA
-
-
-// boton de flitrado
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Actions(navController: NavController) {
@@ -395,79 +336,108 @@ fun Actions(navController: NavController) {
         }
     }
 
-fun SelectColorCard(conStock: Boolean): String {
+fun SelectColorCard(amount: Int, alertAmount: Int): String {
     var color: String
-    if (conStock == true) {
-        color = ConStock
+    if (amount > alertAmount) {
+        color = ConStockClick
     } else {
-        color = SinStock
+        color = SinStockClick
     }
     return color
 }
+fun getImage(typeStock: String): Int {
+    if (typeStock == "Herramienta"){
+        return R.drawable.herramientas
+    }
+    if(typeStock=="Cultivo"){
+        return R.drawable.crop4
+    }
+    if (typeStock=="Fertilizante"){
+        return R.drawable.fertilizante
+    }
+    if (typeStock=="Semillas"){
+        return R.drawable.semillas
+    }
+    return R.drawable.logo_aa
+}
 
-// TODO: esto esta para compras, se debe adaptar para stock, esto es lo que posiblemente est haciendo romper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun unProductoDelStock(stock: Stock, navController: NavController) {
-    Column() {
-        var hayErrorIdStock by rememberSaveable { mutableStateOf("") }
-        Card(
-            onClick = {
-
-                if (stock.id.isNullOrEmpty()) {
-                    hayErrorIdStock = "hubo un error de Id Stock"
-                } else {
-                    hayErrorIdStock = ""
-                    navController.navigate("stockSummary/${stock.id}/info")
-                }
-            },
+fun unProductoDelStock(navController: NavController){
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    for (i in 0..Math.ceil((listStockDataFilter.size / 2).toDouble()).toInt()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
-                .height(100.dp)
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
-                .padding(bottom = 5.dp),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 10.dp
-            )
-
         ) {
-            if(hayErrorIdStock!=""){
-               Text(text = hayErrorIdStock)
-            }
-
-            Row() {
-                Column(
+            for (item in 0..Math.min(2, listStockDataFilter.size - (i * 2)) - 1) {
+                Card(
                     modifier = Modifier
-                        .background(Color(SelectColorCard(stock.product.amount > 0).toColorInt()))
-                        .width(10.dp)
-                        .fillMaxHeight()
+                        .width(screenWidth * 0.42f)
+                        .height(240.dp)
+                        .padding(start = 5.dp, end = 5.dp, top = 10.dp),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 10.dp
+                    ),
+                    onClick = {
+                        //navController.navigate("cultivo/"+ plantations[(i * 2) + item].id+"/info")
+                    },
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color("#F8FAFB".toColorInt()),
+                    )
                 ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
 
-                }
-                Column(
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .fillMaxWidth()
-                ) {
-                    if (stock.product.name.isNullOrEmpty()) {
-                        Text(text = stock.type,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.CenterHorizontally))
-                    } else {
-                        Text(text=stock.product.name,
-                            textAlign = TextAlign.Center,
-                            modifier= Modifier
+                    ) {
+                        Box() {
+
+
+                            Image(
+                                painter = painterResource(id = getImage(listStockDataFilter[(i * 2) + item].type)),
+                                contentDescription = stringResource(id = R.string.app_name),
+                                contentScale = ContentScale.Inside,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(240.dp * 0.7f)
+                                    .background(Color("#628665".toColorInt()))
+                            )
+                                ElevatedFilterChip(
+                                    selected = true,
+                                    enabled = false,
+                                    colors= FilterChipDefaults.filterChipColors(disabledSelectedContainerColor =Color(SelectColorCard(listStockDataFilter[(i * 2) + item].product.amount,listStockDataFilter[(i * 2) + item].amountMinAlert).toColorInt()),
+                                        disabledLabelColor = Color.Black
+                                    ),
+                                    onClick = {},
+                                    label = { Text(listStockDataFilter[(i * 2) + item].product.amount.toString() + " "+listStockDataFilter[(i * 2) + item].product.units)},
+                                    modifier = Modifier.align(Alignment.TopEnd).padding(end=5.dp)
+                                )
+                        }
+                        Text(
+                            listStockDataFilter[(i * 2) + item].product.name,
+                            modifier = Modifier
+                                .background(Color("#F8FAFB".toColorInt()))
                                 .fillMaxWidth()
-                                .align(Alignment.CenterHorizontally))
+                                .height(45.dp)
+                                .padding(top = 20.dp, start = 10.dp, end = 10.dp),
+                            color = Color.Black,
+                            fontSize = 17.sp
+                        )
+
 
                     }
-                }
 
+                }
             }
         }
     }
 }
 
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun filterStatus() {
@@ -704,36 +674,19 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-       resetFilter()
-        resetFilterExclude()
+        listStockDataFilter.clear()
+        listStockDataFilter.addAll(listStockInicial)
+       //resetFilter()
+        //resetFilterExclude()
         Box() {
-            Column() {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 20.dp, end = 20.dp)
-                ) {
-                    item {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 20.dp, end = 20.dp).verticalScroll(rememberScrollState()))
+            {
                         filterStatus()
                         Actions(navController)
                         resetFilterExclude()
-                    }
-                    /*this.items(listStockDataFilter) { ... }:
-                    Aquí, se utiliza items para mostrar una lista de elementos de listStockDataFilter.
-                    Cada elemento de esta lista se representa utilizando el composable OneBuy(it, navController).
-                    Esto implica que se está mostrando una lista de elementos de listStockDataFilter en la vista,
-                    donde navController se utiliza para la navegación o interacción relacionada con cada elemento.*/
-                    if (listStockDataFilter.size == 0) {
-                        this.items(listStockInicial) {
-                            unProductoDelStock(it, navController)
-                        }
-                    } else {
-                        this.items(listStockDataFilter) {
-                            unProductoDelStock(it, navController)
-                        }
-                    }
-
-                }
+                        unProductoDelStock(navController)
             }
             Button(
                 onClick = {

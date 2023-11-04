@@ -10,6 +10,6 @@ class Stocks (
      val type: String = "Herramienta",
      val date: String = "01/01/2023 00:00",
      val product: Product = Product(),
+     val amountMinAlert: Int = 0,
      val withAlert:Boolean = false,
-     val recolectedQuantity: Number = 0,
  )
