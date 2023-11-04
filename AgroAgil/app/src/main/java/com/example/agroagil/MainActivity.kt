@@ -413,7 +413,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("cultivo") {
-                            titleCurrentPage.value = "CultivosTitulo"
+                            titleCurrentPage.value = "Mis cultivos"
                             Menu(
                                 scope,
                                 drawerState,
@@ -425,6 +425,87 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Cultivo(cultivoViewModel, navController)
                             }
+                        }
+                        composable("cultivo/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoAddScreen(cultivoViewModel,navController)
+                            }
+                        }
+                        composable("cultivo/type/info") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoTypeInfoScreen(cultivoViewModel, navController)
+                            }
+                        }
+                        composable("cultivo/type/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoAdd(
+                                    cultivoViewModel,
+                                    navController
+                                )
+                            }
+                        }
+                        composable("cultivo/type/edit") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoEdit(
+                                    cultivoViewModel,
+                                    navController
+                                )
+                            }
+                        }
+                        composable(
+                            "cultivo/{cultivoId}/info",
+                            arguments = listOf(navArgument("cultivoId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val cultivoId: String? = backStackEntry.arguments?.getString("cultivoId")
+                            if (cultivoId is String)
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        CultivoInfoScreen(
+                                            navController = navController,
+                                            cultivoViewModel = cultivoViewModel,
+                                            cultivoId
+                                        )
+                                    })
                         }
                         composable("task") {
                             titleCurrentPage.value = "Mis Tareas"
@@ -595,7 +676,6 @@ class MainActivity : ComponentActivity() {
                                         )
                                     })
                         }
-
                         composable("cultivo") {
                             titleCurrentPage.value = "Mis cultivos"
                             Menu(
