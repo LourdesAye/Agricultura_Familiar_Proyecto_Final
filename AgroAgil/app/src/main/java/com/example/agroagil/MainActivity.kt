@@ -36,6 +36,8 @@ import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Cultivo.ui.Cultivo
 import com.example.agroagil.Cultivo.ui.CultivoInfoScreen
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoAdd
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoEdit
 import com.example.agroagil.Cultivo.ui.CultivoTypeInfoScreen
 import com.example.agroagil.Cultivo.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
@@ -441,6 +443,40 @@ class MainActivity : ComponentActivity() {
                                 navController
                             ) {
                                 CultivoTypeInfoScreen(cultivoViewModel, navController)
+                            }
+                        }
+                        composable("cultivo/type/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoAdd(
+                                    cultivoViewModel,
+                                    navController
+                                )
+                            }
+                        }
+                        composable("cultivo/type/edit") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoEdit(
+                                    cultivoViewModel,
+                                    navController
+                                )
                             }
                         }
                         composable(

@@ -265,7 +265,7 @@ fun CultivoAddScreen(cultivoViewModel: CultivoViewModel, navController: NavContr
         crops.addAll(crop)
         Column(
             modifier = Modifier
-                .defaultMinSize(minHeight = screenHeight),
+                .defaultMinSize(minHeight = screenHeight).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier
