@@ -44,7 +44,8 @@ class CultivoViewModel : ViewModel() {
                 Firebase.database.getReference("plantation/0/").get().addOnSuccessListener { snapshot ->
                     val genericType = object : GenericTypeIndicator<HashMap<String, Plantation>>() {}
                     val value = snapshot.getValue(genericType)
-                    val result = value?.values?.toList() ?: emptyList()
+                    var result = value?.values?.toList() ?: emptyList()
+                    result = result.filter{it.status == "CREADO"}
                     continuation.resume(result)
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
@@ -122,7 +123,8 @@ class CultivoViewModel : ViewModel() {
                             val genericType =
                                 object : GenericTypeIndicator<HashMap<String, Plantation>>() {}
                             val value = snapshot.getValue(genericType)
-                            val result = value?.values?.toList() ?: emptyList()
+                            var result = value?.values?.toList() ?: emptyList()
+                            result = result.filter{it.status == "CREADO"}
                             continuation.resume(result)
                         }.addOnFailureListener { exception ->
                             continuation.resumeWithException(exception)
@@ -154,6 +156,13 @@ class CultivoViewModel : ViewModel() {
         Firebase.database.getReference("crop/0/").updateChildren(updates)
         setCrop()
         return getKey
+    }
+    fun updatePlantation(plantation: Plantation){
+            var updates = HashMap<String, Any>()
+            updates["/${plantation.id}"] = plantation
+            Firebase.database.getReference("plantation/0/").updateChildren(updates)
+            setPlantation()
+
     }
     fun createPlantation(plantation: Plantation){
         var getKey = Firebase.database.getReference("plantation/0/").push().key

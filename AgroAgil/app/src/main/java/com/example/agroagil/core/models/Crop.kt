@@ -21,5 +21,5 @@ data class Plantation(
     val name: String = "Plantacion 1 de papa",
     val dateStart: String = "01/01/2023 00:00",
     val referenceId: String = "0",
-    val status:String = "" //Sembrado, Cosechado, Creado
+    var status:String = "CREADO" //Sembrado, Cosechado, Creado
 )

@@ -7,7 +7,7 @@ class Stocks (
 )
  data class Stock (
      var id: String = "",
-     val type: String = "Herramienta",
+     val type: String = "Herramienta", //Cultivo
      val date: String = "01/01/2023 00:00",
      val product: Product = Product(),
      val amountMinAlert: Int = 0,
