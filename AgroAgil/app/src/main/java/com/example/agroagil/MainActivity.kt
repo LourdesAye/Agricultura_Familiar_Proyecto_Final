@@ -709,7 +709,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {
-                navController.navigate("home")
+                navController.navigate("stock")
             }
             //navegar a prestamos de articulos
             NavigationEventMenu.ToPrestamosArticulos -> {
