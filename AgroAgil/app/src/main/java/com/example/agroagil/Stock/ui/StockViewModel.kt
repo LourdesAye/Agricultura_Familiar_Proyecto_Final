@@ -23,7 +23,9 @@ class StockViewModel : ViewModel() {
                 Firebase.database.getReference("stockSummary/0/").get().addOnSuccessListener { snapshot ->
                     val genericType = object : GenericTypeIndicator<HashMap<String, Stock>>() {}
                     val value = snapshot.getValue(genericType)
+                    value?.forEach{(key,value) -> value.id = key}
                     val result = value?.values?.toList() ?: emptyList()
+
                     continuation.resume(result)
 
                 }.addOnFailureListener { exception ->
@@ -46,6 +48,7 @@ class StockViewModel : ViewModel() {
                     Firebase.database.getReference("stockSummary/0/").get().addOnSuccessListener { snapshot ->
                         val genericType = object : GenericTypeIndicator<HashMap<String, Stock>>() {}
                         val value = snapshot.getValue(genericType)
+                        value?.forEach{(key,value) -> value.id = key}
                         val result = value?.values?.toList() ?: emptyList()
                         continuation.resume(result)
 
@@ -60,10 +63,15 @@ class StockViewModel : ViewModel() {
         }
 
     }
-    fun addProduct(stock: Stock) {
-        var getKey = Firebase.database.getReference("stockSummary/0/").push().key
+    fun addUpdateProduct(stock: Stock) {
+        var getKey: String?
+        if(stock.id ==""){
+        getKey = Firebase.database.getReference("stockSummary/0/").push().key
         if (getKey != null) {
             stock.id = getKey
+        }
+        }else{
+            getKey = stock.id
         }
         var updates = HashMap<String, Any>()
         updates["/$getKey"] = stock

@@ -52,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -110,6 +111,9 @@ val tiposDeElementosDeStock = listOf(
 
 var tipoStockSeleccionado = mutableStateOf("")
 var dialogAddOpen = mutableStateOf(false)
+var dialogEditOpen = mutableStateOf(false)
+var dialogResetOpen = mutableStateOf(false)
+var productEditOpen = mutableStateOf<Stock>(Stock())
 
 fun filterTieneStock(listaElementosDeStock: List<Stock>): List<Stock> {
     return listaElementosDeStock.filter { it -> it.product.amount > it.amountMinAlert }
@@ -141,20 +145,174 @@ fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun dialogAdd(stockViewModel: StockViewModel){
-    var alertAmount by rememberSaveable { mutableStateOf("") }
-    var alertAmountError by rememberSaveable { mutableStateOf(false) }
-    var type by rememberSaveable { mutableStateOf("") }
-    var typeError by rememberSaveable { mutableStateOf(false) }
-    var name by rememberSaveable { mutableStateOf("") }
-    var nameError by rememberSaveable { mutableStateOf(false) }
-    var units by rememberSaveable { mutableStateOf("") }
-    var unitsError by rememberSaveable { mutableStateOf(false) }
-    var amount by rememberSaveable { mutableStateOf("") }
-    var amountError by rememberSaveable { mutableStateOf(false) }
-    var price by rememberSaveable { mutableStateOf("") }
-    var priceError by rememberSaveable { mutableStateOf(false) }
-    var expandedType by rememberSaveable { mutableStateOf(false) }
+fun dialogEdit(stockViewModel: StockViewModel
+){
+    var alertAmount by remember{ mutableStateOf(productEditOpen.value.amountMinAlert.toString()) }
+    var alertAmountError by remember { mutableStateOf(false) }
+    var type by remember { mutableStateOf(productEditOpen.value.type) }
+    var typeError by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf(productEditOpen.value.product.name) }
+    var nameError by remember { mutableStateOf(false) }
+    var units by remember { mutableStateOf(productEditOpen.value.product.units) }
+    var unitsError by remember { mutableStateOf(false) }
+    var amount by remember { mutableStateOf(productEditOpen.value.product.amount.toString()) }
+    var amountError by remember { mutableStateOf(false) }
+    var price by remember { mutableStateOf(productEditOpen.value.product.price.toString()) }
+    var priceError by remember { mutableStateOf(false) }
+    var expandedType by remember { mutableStateOf(false) }
+    if (dialogResetOpen.value){
+        alertAmount = productEditOpen.value.amountMinAlert.toString()
+        type= productEditOpen.value.type
+        name = productEditOpen.value.product.name
+        units = productEditOpen.value.product.units
+        amount = productEditOpen.value.product.amount.toString()
+        price = productEditOpen.value.product.price.toString()
+        dialogResetOpen.value= false
+    }
+    if (dialogEditOpen.value){
+        AlertDialog(
+            onDismissRequest = {
+                dialogEditOpen.value = false
+            },
+            title = {
+                Text(text = "Editar un producto")
+            },
+            text = {
+                Column(){
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Nombre") },
+                        isError = nameError
+                    )
+                    ExposedDropdownMenuBox(
+                        expanded = expandedType,
+                        onExpandedChange = { expandedType = !expandedType },
+                        modifier = Modifier.fillMaxWidth().padding(top=5.dp)
+                    ) {
+                        TextField(
+                            // The `menuAnchor` modifier must be passed to the text field for correctness.
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            readOnly = true,
+                            value = type,
+                            onValueChange = {},
+                            label = { Text("Tipo de Producto") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                            isError = typeError
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedType,
+                            onDismissRequest = { expandedType = false },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            tiposDeElementosDeStock.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        type = selectionOption
+                                        expandedType = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                    OutlinedTextField(
+                        value = units,
+                        onValueChange = { units = it },
+                        label = { Text("Unidad") },
+                        isError = unitsError
+                    )
+                    OutlinedTextField(
+                        value = amount,
+                        onValueChange = { amount = it },
+                        label = { Text("Cantidad") },
+                        isError = amountError
+                    )
+                    OutlinedTextField(
+                        value = price,
+                        onValueChange = { price = it },
+                        label = { Text("Precio estimado por unidad") },
+                        isError = priceError
+                    )
+                    OutlinedTextField(
+                        value = alertAmount,
+                        onValueChange = { alertAmount = it },
+                        label = { Text("Cantidad minima para alertar (OPCIONAL)") },
+                        isError = alertAmountError
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if(name!="" && units != "" && type !="" && amount != ""){
+                            if(alertAmount == ""){
+                                alertAmount= "0"
+                            }
+                            stockViewModel.addUpdateProduct(Stock(id=productEditOpen.value.id,type=type, amountMinAlert=alertAmount.toInt(), product = Product(
+                                name=name,
+                                amount=amount.toInt(),
+                                units = units,
+                                price = price.toDouble()
+                            ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
+                            resetFilter()
+                            resetFilterExclude()
+                            dialogEditOpen.value = false
+
+                        }else{
+                            if(name==""){
+                                nameError = true
+                            }
+                            if(units==""){
+                                unitsError = true
+                            }
+                            if(type==""){
+                                typeError = true
+                            }
+                            if(amount==""){
+                                amountError = true
+                            }
+                        }
+
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        dialogEditOpen.value = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun dialogAdd(stockViewModel: StockViewModel
+){
+    var alertAmount by remember{ mutableStateOf("") }
+    var alertAmountError by remember { mutableStateOf(false) }
+    var type by remember { mutableStateOf("") }
+    var typeError by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    var nameError by remember { mutableStateOf(false) }
+    var units by remember { mutableStateOf("") }
+    var unitsError by remember { mutableStateOf(false) }
+    var amount by remember { mutableStateOf("") }
+    var amountError by remember { mutableStateOf(false) }
+    var price by remember { mutableStateOf("") }
+    var priceError by remember { mutableStateOf(false) }
+    var expandedType by remember { mutableStateOf(false) }
+
     if (dialogAddOpen.value){
         AlertDialog(
             onDismissRequest = {
@@ -238,7 +396,7 @@ fun dialogAdd(stockViewModel: StockViewModel){
                             if(alertAmount == ""){
                                 alertAmount= "0"
                             }
-                            stockViewModel.addProduct(Stock(type=type, amountMinAlert=alertAmount.toInt(), product = Product(
+                            stockViewModel.addUpdateProduct(Stock(type=type, amountMinAlert=alertAmount.toInt(), product = Product(
                                 name=name,
                                 amount=amount.toInt(),
                                 units = units,
@@ -498,7 +656,10 @@ fun unProductoDelStock(navController: NavController){
                         defaultElevation = 10.dp
                     ),
                     onClick = {
-                        navController.navigate("stockSummary/${listStockDataFilter[(i * 2) + item].id}/info")
+                        //navController.navigate("stockSummary/${listStockDataFilter[(i * 2) + item].id}/info")
+                                productEditOpen.value=listStockDataFilter[(i * 2) + item]
+                              dialogEditOpen.value=true
+                                dialogResetOpen.value = true
                     },
                     colors = CardDefaults.cardColors(
                         containerColor = Color("#F8FAFB".toColorInt()),
@@ -739,5 +900,6 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
             }
         }
         dialogAdd(stockViewModel)
+        dialogEdit(stockViewModel)
     }
 }
