@@ -22,12 +22,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -39,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -46,10 +54,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -57,6 +67,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -65,110 +76,105 @@ import androidx.navigation.NavController
 import com.example.agroagil.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.util.Calendar
 
 
 @Composable
-fun TaskAddScreen (taskViewModel: TaskViewModel, navController: NavController) {
+fun TaskAddScreen (taskViewModel: AddTaskViewModel, navController: NavController) {
     val showDatePickerDialog = remember { mutableStateOf(false) }
     var showTimePicker = remember { mutableStateOf(false) }
     val dateSelectedString = taskViewModel.dateSelectedString.observeAsState().value
     val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
     var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
+    var responsibleTextField = taskViewModel.responsibleFieldText.observeAsState().value
+
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val showSnackbarForTaskSaved: Boolean = taskViewModel.showSnackbarFortaskSaved.observeAsState().value!!
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
-
-        Column(
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ){
+        Text(
+            "Agrega una tarea",
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
             modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ){
-            Text(
-                "Agrega una tarea",
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 30.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+        )
+
+        OutlinedTextFieldWithIcon(taskToCreate!!.description,
+            { taskViewModel.onDescriptionChange(it) }, "Descripción")
+
+        //Fecha
+        TextButtonWithIcon(
+            onClick = { showDatePickerDialog.value = true },
+            icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
+            text = dateSelectedString!!
+        )
+        DatePickerScreen(showDatePickerDialog, taskViewModel)
+
+        //Hora
+        TextButtonWithIcon(
+            onClick = { showTimePicker.value = true },
+            icon = { Icon(
+                painter = painterResource(id = R.drawable.clock_24),
+                contentDescription = "Time Picker Icon"
             )
+            },
+            text = timeSelectedString!!
+        )
+        TimePickerDialogScreen(showTimePicker, taskViewModel)
 
-            OutlinedTextFieldWithIcon(taskToCreate!!.description,
-                { taskViewModel.onDescriptionChange(it) }, "Descripción")
+        //Estimación de tiempo
+        OutlinedNumericField(taskToCreate!!.durationHours.toString(),
+            { taskViewModel.onEstimationChange(it) },"Estimación de tiempo necesário (Hs)")
 
-            //Fecha
-            TextButtonWithIcon(
-                onClick = { showDatePickerDialog.value = true },
-                icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
-                text = dateSelectedString!!
-            )
-            DatePickerScreen(showDatePickerDialog, taskViewModel)
-
-            //Hora
-            TextButtonWithIcon(
-                onClick = { showTimePicker.value = true },
-                icon = { Icon(
-                    painter = painterResource(id = R.drawable.clock_24),
-                    contentDescription = "Time Picker Icon"
-                )
-                },
-                text = timeSelectedString!!
-            )
-            TimePickerDialogScreen(showTimePicker, taskViewModel)
-
-            //Estimación de tiempo
-            OutlinedNumericField(taskToCreate!!.durationHours.toString(),
-                { taskViewModel.onEstimationChange(it) },"Estimación de tiempo necesário (Hs)")
-
-            //Ubicación en el campo
-            OutlinedTextFieldWithIcon(taskToCreate!!.locationInFarm,
-                { taskViewModel.onLocationInFarmChange(it) }, "Ubicación en el campo")
+        //Ubicación en el campo
+        OutlinedTextFieldWithIcon(taskToCreate!!.locationInFarm,
+            { taskViewModel.onLocationInFarmChange(it) }, "Ubicación en el campo")
 
 
-            //Responsables de la tarea
-            OutlinedTextFieldWithIcon(taskToCreate!!.getTaskFormatTime(),
-                { taskViewModel.onResponsiblesChange() }, "Responsables de la tarea")
-            //Prioridad alta
-            SwitchWithText("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
-            //Instrucciones detalladas
+        //Responsables de la tarea
+        OutlinedTextFieldWithIcon(responsibleTextField!!,
+            { taskViewModel.onResponsibleChange(it) }, "Responsables de la tarea")
 
-            OutlinedTextFieldWithIcon(taskToCreate!!.detailedInstructions,
-                { taskViewModel.onDetailedInstructionsChange(it) }, "Instrucciones detalladas")
 
-            //TODO: recursos necesários. Validar si es útil este campo
+        //Prioridad alta
+        SwitchWithText("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
+        //Instrucciones detalladas
 
-            //Repetición
-            SwitchWithText("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
-            //Frecuencia de repetición
-            if(taskToCreate!!.repeatable) {
+        OutlinedTextFieldWithIcon(taskToCreate!!.detailedInstructions,
+            { taskViewModel.onDetailedInstructionsChange(it) }, "Instrucciones detalladas")
 
-                OutlinedNumericField(taskToCreate!!.repetitionIntervalInDays.toString(),
-                    { taskViewModel.onFrequencyOfRepetitionChange(it) },"Días entre repetición")
+        //Repetición
+        SwitchWithText("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
+        //Frecuencia de repetición
+        if(taskToCreate!!.repeatable) {
 
-            }
-
-            //Recordatorio
-            //Botones de guardado y cancelar
-            SaveOrCancelbuttonsRow({
-                coroutineScope.launch {
-                    taskViewModel.onSave()
-                }}, navController = navController)
-
-            //Mensajito cuando guarda exitosamente
-            LaunchedEffect(showSnackbarForTaskSaved) {
-                if (showSnackbarForTaskSaved) {
-                    snackbarHostState.showSnackbar("Guardado correctamente")
-                    navController.popBackStack()
-                }
-            }
+            OutlinedNumericField(taskToCreate!!.repetitionIntervalInDays.toString(),
+                { taskViewModel.onFrequencyOfRepetitionChange(it) },"Días entre repetición")
 
         }
+
+        //Recordatorio
+        //Botones de guardado y cancelar
+        SaveOrCancelbuttonsRow({
+            coroutineScope.launch {
+                taskViewModel.onSave()
+            }}, navController = navController)
+
+        //Mensajito cuando guarda exitosamente
+        if(showSnackbarForTaskSaved) {
+            navController.popBackStack()
+        }
     }
+}
 
 
 
@@ -192,7 +198,10 @@ private fun OutlinedTextFieldWithIcon(
             .padding(start = 20.dp, end = 20.dp),
         value = value,
         onValueChange = onValueChange,
-        label = { Text(descriptionText) }
+        label = { Text(descriptionText) },
+        keyboardActions = KeyboardActions(
+            onDone = null
+        ),
     )
 }
 
@@ -213,39 +222,22 @@ fun OutlinedNumericField(
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(
-            onDone = { /* Handle done event, if necessary */ }
+            onDone = null
         ),
         visualTransformation = VisualTransformation.None,
         label = { Text(descriptionText, style = MaterialTheme.typography.bodyLarge) }
     )
 }
 
-//**
-//             OutlinedTextField(
-//                value = taskToCreate!!.repetitionIntervalInDays.toString(),
-//                onValueChange = { taskViewModel.onFrequencyOfRepetitionChange(it) },
-//                keyboardOptions = KeyboardOptions(
-//                    keyboardType = KeyboardType.Number,
-//                    imeAction = ImeAction.Done
-//                ),
-//                keyboardActions = KeyboardActions(
-//                    onDone = { /* Handle done event, if necessary */ }
-//                ),
-//                visualTransformation = VisualTransformation.None,
-//                label = { Text("Días entre repetición", style = MaterialTheme.typography.bodyLarge) }
-//            )
-//
-//
-// *//
-
-
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerScreen(showDatePickerDialog: MutableState<Boolean>, taskViewModel: TaskViewModel) {
+fun DatePickerScreen(showDatePickerDialog: MutableState<Boolean>, taskViewModel: AddTaskViewModel) {
     if (showDatePickerDialog.value) {
         val datePickerState = rememberDatePickerState()
         val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
+        val calendar = Calendar.getInstance()
+
         DatePickerDialog(
             onDismissRequest = {
                 // Dismiss the dialog when the user clicks outside the dialog or on the back
@@ -274,7 +266,12 @@ fun DatePickerScreen(showDatePickerDialog: MutableState<Boolean>, taskViewModel:
                 }
             }
         ){
-            DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState,
+                dateValidator = { candidate ->
+                    // Allow only dates greater than today
+                    candidate >= calendar.timeInMillis
+                }
+                )
         }
     }
 }
@@ -282,7 +279,7 @@ fun DatePickerScreen(showDatePickerDialog: MutableState<Boolean>, taskViewModel:
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimePickerDialogScreen( showTimePicker: MutableState<Boolean>, taskViewModel: TaskViewModel) {
+fun TimePickerDialogScreen( showTimePicker: MutableState<Boolean>, taskViewModel: AddTaskViewModel) {
     val state = rememberTimePickerState(is24Hour = true)
 
     if (showTimePicker.value) {
@@ -416,3 +413,150 @@ fun SaveOrCancelbuttonsRow(onSave: () -> Unit, navController: NavController) {
     }
 }
 
+
+// ---------------------------------------------------------- EJEMPLOS
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun InputChipExample(
+    text: String = "Hola"
+) {
+    var enabled = remember { mutableStateOf(true) }
+    if (!enabled.value) return
+
+    InputChip(
+        onClick = {
+            enabled.value = !enabled.value
+        },
+        label = { Text(text) },
+        selected = enabled.value,
+        avatar = {
+            Icon(
+                Icons.Rounded.ShoppingCart,
+                contentDescription = "Localized description",
+                Modifier.size(InputChipDefaults.AvatarSize)
+            )
+        },
+        trailingIcon = {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = "Localized description",
+                Modifier.size(InputChipDefaults.AvatarSize)
+            )
+        },
+    )
+}
+
+@Preview
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenderDropdownMenu() {
+    var isExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var gender by remember {
+        mutableStateOf("")
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = isExpanded,
+        onExpandedChange = { newValue ->
+            isExpanded = newValue
+        }
+    ) {
+        TextField(
+            value = gender,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+            },
+            placeholder = {
+                Text(text = "Please select your gender")
+            },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier.menuAnchor()
+        )
+        ExposedDropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = {
+                isExpanded = false
+            }
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(text = "Male")
+                },
+                onClick = {
+                    gender = "Male"
+                    isExpanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(text = "Female")
+                },
+                onClick = {
+                    gender = "Female"
+                    isExpanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(text = "Other")
+                },
+                onClick = {
+                    gender = "Other"
+                    isExpanded = false
+                }
+            )
+        }
+    }
+}
+
+@Preview
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditableDropdownMenu() {
+
+    val options = listOf("Option 1", "Option 2", "Option 3", "Option 4", "Option 5")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOptionText by remember { mutableStateOf("") }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+    ) {
+        TextField(
+            // The `menuAnchor` modifier must be passed to the text field for correctness.
+            modifier = Modifier.menuAnchor(),
+            value = selectedOptionText,
+            onValueChange = {
+                selectedOptionText = it
+                expanded = true
+                            },
+            label = { Text("Label") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+        )
+        // filter options based on text field value
+        val filteringOptions = options.filter { it.contains(selectedOptionText, ignoreCase = true) }
+        if (filteringOptions.isNotEmpty()) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                filteringOptions.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            selectedOptionText = selectionOption
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+    }
+}

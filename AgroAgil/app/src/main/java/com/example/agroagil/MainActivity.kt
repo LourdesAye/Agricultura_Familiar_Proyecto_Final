@@ -63,6 +63,7 @@ import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
 import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
+import com.example.agroagil.Task.ui.AddTaskViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -105,6 +106,7 @@ class MainActivity : ComponentActivity() {
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
                     val taskViewModel = TaskViewModel()
+                    val addTaskViewModel = AddTaskViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
@@ -446,7 +448,7 @@ class MainActivity : ComponentActivity() {
                             )
                             {
                                 TaskAddScreen(
-                                    taskViewModel = taskViewModel,
+                                    taskViewModel = addTaskViewModel,
                                     navController = navController
                                 )
                             }

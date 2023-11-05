@@ -8,7 +8,7 @@ import com.example.agroagil.Task.model.TaskCardData
 
 //Obtiene las tareas de firebase si hay conexión a internet
 class TaskRepository {
-    val firebaseApi = TaskFirebaseService()
+    private val firebaseApi = TaskFirebaseService()
 
     /**
      * GET - obtiene todas las tareas para un usuario de id userId
