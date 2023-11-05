@@ -66,7 +66,6 @@ import com.example.agroagil.Perfil.ui.EditarDatosPerfil
 import com.example.agroagil.Perfil.ui.NavigationEventPerfil
 import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
-import com.example.agroagil.Stock.ui.StockInfoScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Summary.SummaryScreen
@@ -424,27 +423,6 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                        }
-                        composable(
-                            "stockSummary/{stockId}/info",
-                            arguments = listOf(navArgument("stockId") { type = NavType.StringType })
-                        ) { backStackEntry ->
-                            val stockId: String? = backStackEntry.arguments?.getString("stockId")
-                            if (stockId is String)
-                                Menu(scope,
-                                    drawerState,
-                                    viewModelMenu,
-                                    title = titleCurrentPage,
-                                    NavigationEventFunction(navController),
-                                    false,
-                                    navController,
-                                    {
-                                        StockInfoScreen(
-                                            navController = navController,
-                                            stockViewModel = stockViewModel,
-                                            stockId
-                                        )
-                                    })
                         }
                         composable("cultivo") {
                             titleCurrentPage.value = "Mis cultivos"
