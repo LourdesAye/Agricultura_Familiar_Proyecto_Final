@@ -2,6 +2,7 @@ package com.example.agroagil
 
 import BuyAddScreen
 import BuyInfoScreen
+import CultivoAddScreen
 import DashboardViewModel
 import SellAddScreen
 import SellInfoScreen
@@ -34,6 +35,10 @@ import androidx.navigation.navArgument
 import com.example.agroagil.Buy.ui.BuyScreen
 import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Cultivo.ui.Cultivo
+import com.example.agroagil.Cultivo.ui.CultivoInfoScreen
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoAdd
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoEdit
+import com.example.agroagil.Cultivo.ui.CultivoTypeInfoScreen
 import com.example.agroagil.Cultivo.ui.CultivoViewModel
 import com.example.agroagil.Farm.ui.Farm
 import com.example.agroagil.Farm.ui.FarmViewModel
@@ -403,7 +408,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("cultivo") {
-                            titleCurrentPage.value = "CultivosTitulo"
+                            titleCurrentPage.value = "Mis cultivos"
                             Menu(
                                 scope,
                                 drawerState,
@@ -413,9 +418,89 @@ class MainActivity : ComponentActivity() {
                                 true,
                                 navController
                             ) {
-//                                Farm(farmViewModel)
-                                Cultivo(cultivoViewModel)
+                                Cultivo(cultivoViewModel, navController)
                             }
+                        }
+                        composable("cultivo/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoAddScreen(cultivoViewModel,navController)
+                            }
+                        }
+                        composable("cultivo/type/info") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            ) {
+                                CultivoTypeInfoScreen(cultivoViewModel, navController)
+                            }
+                        }
+                        composable("cultivo/type/add") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoAdd(
+                                    cultivoViewModel,
+                                    navController
+                                )
+                            }
+                        }
+                        composable("cultivo/type/edit") {
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                false,
+                                navController
+                            )
+                            {
+                                CultivoTypeInfoEdit(
+                                    cultivoViewModel,
+                                    navController
+                                )
+                            }
+                        }
+                        composable(
+                            "cultivo/{cultivoId}/info",
+                            arguments = listOf(navArgument("cultivoId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val cultivoId: String? = backStackEntry.arguments?.getString("cultivoId")
+                            if (cultivoId is String)
+                                Menu(scope,
+                                    drawerState,
+                                    viewModelMenu,
+                                    title = titleCurrentPage,
+                                    NavigationEventFunction(navController),
+                                    false,
+                                    navController,
+                                    {
+                                        CultivoInfoScreen(
+                                            navController = navController,
+                                            cultivoViewModel = cultivoViewModel,
+                                            cultivoId
+                                        )
+                                    })
                         }
                         composable("task") {
                             titleCurrentPage.value = "Mis Tareas"
@@ -537,9 +622,7 @@ class MainActivity : ComponentActivity() {
                             { SummaryScreen(summaryViewModel = summaryViewModel, navController = navController) }
                         }
 
-
                     }
-                    //Greeting("Android", model= LoanViewModel(), navController = navController)
                 }
             }
         }
