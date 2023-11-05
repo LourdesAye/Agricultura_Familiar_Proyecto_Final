@@ -66,6 +66,8 @@ import com.example.agroagil.Perfil.ui.EditarDatosPerfil
 import com.example.agroagil.Perfil.ui.NavigationEventPerfil
 import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
+import com.example.agroagil.Stock.ui.StockScreen
+import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
@@ -115,6 +117,7 @@ class MainActivity : ComponentActivity() {
                     val cultivoViewModel = CultivoViewModel()
                     val dashViewModel = DashboardViewModel()
                     val summaryViewModel = SummaryViewModel()
+                    val stockViewModel = StockViewModel()
 
                     //destino inicial principal si inicia sesion correctamente
                     val destinoPrincipal: String = "inicio"
@@ -404,7 +407,23 @@ class MainActivity : ComponentActivity() {
                                         )
                                     })
                         }
-
+                        composable("stock") {
+                            titleCurrentPage.value = "Mi Almacén"
+                            Menu(
+                                scope,
+                                drawerState,
+                                viewModelMenu,
+                                title = titleCurrentPage,
+                                NavigationEventFunction(navController),
+                                true,
+                                navController
+                            ) {
+                                StockScreen(
+                                    stockViewModel = stockViewModel,
+                                    navController = navController
+                                )
+                            }
+                        }
                         composable("cultivo") {
                             titleCurrentPage.value = "Mis cultivos"
                             Menu(
@@ -652,7 +671,7 @@ fun NavigationEventFunction(navController: NavController): (event: NavigationEve
             }
             //navegar a mi almacen
             NavigationEventMenu.ToMiAlmacen -> {
-                navController.navigate("home")
+                navController.navigate("stock")
             }
             //navegar a prestamos de articulos
             NavigationEventMenu.ToPrestamosArticulos -> {

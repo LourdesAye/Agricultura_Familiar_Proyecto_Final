@@ -1,8 +1,15 @@
 package com.example.agroagil.core.models
 
+import java.util.AbstractQueue
+
+class Stocks (
+    val stocks:List<Stock> = emptyList()
+)
  data class Stock (
-     val id: String = "",
+     var id: String = "",
      val type: String = "Herramienta",
      val date: String = "01/01/2023 00:00",
-     val product: Product = Product()
+     val product: Product = Product(),
+     val amountMinAlert: Int = 0,
+     val withAlert:Boolean = false,
  )
