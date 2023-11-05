@@ -69,6 +69,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Buy.ui.listItemData
+import com.example.agroagil.Buy.ui.listItemDataFilter
+import com.example.agroagil.core.models.Buy
 //import com.example.agroagil.Buy.ui.BuyViewModel
 //import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Stock
@@ -93,11 +96,11 @@ var nombreElementoDeStockFilter = mutableStateOf("")
 var tipoStockSeleccionado = mutableStateOf("")
 
 fun filterTieneStock(listaElementosDeStock: List<Stock>): List<Stock> {
-    return listaElementosDeStock.filter { it -> it.product.amount > 0 }
+    return listaElementosDeStock.filter { it -> it.product.amount > it.amountMinAlert }
 }
 
 fun filterSinStock(listaElementosStock: List<Stock>): List<Stock> {
-    return listaElementosStock.filter { it -> it.product.amount <= 0 }
+    return listaElementosStock.filter { it -> it.product.amount <= it.amountMinAlert }
 }
 
 fun filterNombreProductoDelStock(listaElementosStock: List<Stock>): List<Stock> {
@@ -133,23 +136,17 @@ fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
 }
 
 fun resetFilter() {
-    if (filters.size != 0) {
-        for (i in 0..filters.size - 1) {
-            if(listStockDataFilter.size==0){
-            var filtroExecute = mutableListOf<List<Stock>>()
-            filtroExecute.addAll(listOf(filters[i](listStockInicial)))
-            listStockDataFilter.addAll(filtroExecute.flatten())
-        }
-            else{
-                listStockDataFilter.clear()
-                var filtroExecute = mutableListOf<List<Stock>>()
-                filtroExecute.addAll(listOf(filters[i](listStockInicial)))
-                listStockDataFilter.addAll(filtroExecute.flatten())
-
-            }
+    listStockDataFilter.clear()
+    if (filters.size ==0){
+        listStockDataFilter.addAll(listStockInicial)
+    }
+    for (i in 0 .. filters.size-1) {
+        var filtroExecute = mutableListOf<List<Stock>>()
+        filtroExecute.addAll(listOf(filters[i](listStockInicial)))
+        listStockDataFilter.addAll(filtroExecute.flatten())
     }
 }
-}
+
 //}
 
 fun resetFilterExclude() {
@@ -462,187 +459,106 @@ fun filterStatus() {
         } else {
             colorConStock = Color(MaterialTheme.colorScheme.background.value)
         }
-
-        Card(
-            onClick = {
-                clickConStock = !clickConStock
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+            Card(
+                onClick = {
+                    clickConStock = !clickConStock
                     if (clickConStock) {
                         filters.add(::filterTieneStock)
                     } else {
                         filters.remove(::filterTieneStock)
                     }
+                    resetFilter()
+                },
+                modifier = Modifier
+                    .width(cardWidth)
+                    .padding(2.dp)
+                    .height(50.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+                colors = CardDefaults.cardColors(colorConStock)
+            ) {
+                Row(Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .background(Color(ConStock.toColorInt()))
+                            .width(10.dp)
+                            .fillMaxHeight()
+                            .fillMaxWidth()
+                    ) {
 
-                if( clickConStock && todosLosElementosStock){
-                    todosLosElementosStock = false
-                }
-                if( clickConStock && clickSinStock){
-                    clickSinStock = false
-                    filters.remove(::filterSinStock)
-                }
-                resetFilter()
-            },
-            modifier = Modifier
-                //.width(cardWidth)
-                .fillMaxWidth()
-                .padding(2.dp)
-                .height(50.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorConStock)
-        ) {
-            Row(Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .background(Color(ConStock.toColorInt()))
-                        .width(10.dp)
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                ) {
-
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        "En Almacén",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                    if (clickConStock) {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = "Localized description",
-                            modifier = Modifier
-                                .size(ButtonDefaults.IconSize)
-                                .align(Alignment.CenterEnd)
-                        )
                     }
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            "En Almacén",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                        if (clickConStock) {
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = "Localized description",
+                                modifier = Modifier
+                                    .size(ButtonDefaults.IconSize)
+                                    .align(Alignment.CenterEnd)
+                            )
+                        }
 
+                    }
                 }
             }
-        }
 
-        //se marca sin stock
-        if (clickSinStock) {
-            colorSinStock = Color(SinStockClick.toColorInt())
-        } else {
-            colorSinStock = Color(MaterialTheme.colorScheme.background.value)
-        }
-        Card(
-            onClick = {
-                clickSinStock = !clickSinStock
+            //se marca sin stock
+            if (clickSinStock) {
+                colorSinStock = Color(SinStockClick.toColorInt())
+            } else {
+                colorSinStock = Color(MaterialTheme.colorScheme.background.value)
+            }
+            Card(
+                onClick = {
+                    clickSinStock = !clickSinStock
                     if (clickSinStock) {
                         filters.add(::filterSinStock)
                     } else {
                         filters.remove(::filterSinStock)
                     }
 
-                if( clickSinStock && todosLosElementosStock){
-                    todosLosElementosStock = false
-                }
-                if( clickConStock && clickSinStock){
-                    clickConStock = false
-                    filters.remove(::filterTieneStock)
-                }
-
-                resetFilter()
-            },
-            modifier = Modifier
-                //.width(cardWidth)
-                .fillMaxWidth()
-                .padding(2.dp)
-                .height(50.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorSinStock)
-        ) {
-            Row() {
-                Column(
-                    modifier = Modifier
-                        .background(Color(SinStock.toColorInt()))
-                        .width(10.dp)
-                        .fillMaxHeight()
-                ) {
-
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        "No Disponible En Almacén",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                    if (clickSinStock) {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = "Localized description",
-                            modifier = Modifier
-                                .size(ButtonDefaults.IconSize)
-                                .align(Alignment.CenterEnd)
-                        )
-                    }
-                }
-            }
-        }
-        // todos los elementos del stock
-
-        Card(
-            onClick = {
-                todosLosElementosStock = !todosLosElementosStock
-
-                if(todosLosElementosStock){
-                    //filterAllStocks
-                        filters.add(::filterAllStocks)
-                    } else {
-                        filters.remove(::filterAllStocks)
-                    }
-
-                    if( clickSinStock && todosLosElementosStock){
-                        clickSinStock = false
-                        filters.remove(::filterSinStock)
-                    }
-                    if( clickConStock && todosLosElementosStock){
-                        clickConStock = false
-                        filters.remove(::filterTieneStock)
-                    }
-
                     resetFilter()
+                },
+                modifier = Modifier
+                    .width(cardWidth)
+                    .padding(2.dp)
+                    .height(50.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
+                colors = CardDefaults.cardColors(colorSinStock)
+            ) {
+                Row() {
+                    Column(
+                        modifier = Modifier
+                            .background(Color(SinStock.toColorInt()))
+                            .width(10.dp)
+                            .fillMaxHeight()
+                    ) {
 
-            },
-            modifier = Modifier
-                //.width(cardWidth)
-                .fillMaxWidth()
-                .padding(2.dp)
-                .height(50.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(Color.White)
-        ) {
-            Row(Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .background(Color.White)
-                        .width(10.dp)
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                ) {
-
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        "Todos",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                    if (todosLosElementosStock) {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = "Localized description",
-                            modifier = Modifier
-                                .size(ButtonDefaults.IconSize)
-                                .align(Alignment.CenterEnd)
-                        )
                     }
-
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            "No Disponible En Almacén",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                        if (clickSinStock) {
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = "Localized description",
+                                modifier = Modifier
+                                    .size(ButtonDefaults.IconSize)
+                                    .align(Alignment.CenterEnd)
+                            )
+                        }
+                    }
                 }
             }
         }
-
-
     }
 }
 
@@ -674,9 +590,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
         }
 
     } else {
-        listStockDataFilter.clear()
-        listStockDataFilter.addAll(listStockInicial)
-       //resetFilter()
+        resetFilter()
         //resetFilterExclude()
         Box() {
             Column(modifier = Modifier
@@ -702,7 +616,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Agregar elementos al almacén")
+                Text("Agregar")
             }
         }
     }
