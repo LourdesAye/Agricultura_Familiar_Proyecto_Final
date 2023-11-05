@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class AddTaskViewModel : ViewModel() {
+class TaskAddViewModel : ViewModel() {
     val taskRepository = TaskRepository()
     val farmRepository = FarmRepository()
 
@@ -33,10 +33,12 @@ class AddTaskViewModel : ViewModel() {
     val timeSelectedString: LiveData<String> = _timeSelectedString
 
     private val _allFarmMembers = MutableLiveData<List<Member>>()
-    private val _farmMembersToSuggest = MutableLiveData<List<Member>>()
 
-    private val _responsibleFieldText = MutableLiveData<String>("")
-    val responsibleFieldText: LiveData<String> = _responsibleFieldText
+    private val _farmMembersToSuggest = MutableLiveData<List<Member>>()
+    val farmMembersToSuggest: LiveData<List<Member>> = _farmMembersToSuggest
+
+    private val _responsibleInputText = MutableLiveData<String>("")
+    val responsibleInputText: LiveData<String> = _responsibleInputText
 
     init {
         refreshFarmMembersList(0)
@@ -106,12 +108,24 @@ class AddTaskViewModel : ViewModel() {
         _taskToCreate.postValue(updatedTask)
     }
 
-    fun onResponsibleChange(partialName: String) {
+    fun onResponsibleInputChange(partialName: String) {
         val allFarmMembers = _allFarmMembers.value ?: return
         val farmMembersWithMatchingName = allFarmMembers.filter { member -> member.name.contains(partialName, ignoreCase = true)}
 
         _farmMembersToSuggest.postValue(farmMembersWithMatchingName)
-        _responsibleFieldText.postValue(partialName)
+        _responsibleInputText.postValue(partialName)
+    }
+
+    fun onResponsibleOptionSelected(memberSelected: Member) {
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        val updatedTask = currentTaskToCreate.copy(resposibles = currentTaskToCreate.resposibles + memberSelected)
+        _taskToCreate.postValue(updatedTask)
+    }
+
+    fun onResponsibleChipClose(member: Member) {
+        val currentTaskToCreate = _taskToCreate.value ?: return
+        val updatedTask = currentTaskToCreate.copy(resposibles = currentTaskToCreate.resposibles - member)
+        _taskToCreate.postValue(updatedTask)
     }
 
     fun onHighPriorityChange() {
