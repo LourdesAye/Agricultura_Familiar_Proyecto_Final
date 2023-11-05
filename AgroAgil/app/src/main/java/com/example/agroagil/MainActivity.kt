@@ -66,7 +66,6 @@ import com.example.agroagil.Perfil.ui.EditarDatosPerfil
 import com.example.agroagil.Perfil.ui.NavigationEventPerfil
 import com.example.agroagil.Perfil.ui.PerfilViewModel
 import com.example.agroagil.Perfil.ui.VerDatosDelPerfil
-import com.example.agroagil.Stock.ui.StockAddScreen
 import com.example.agroagil.Stock.ui.StockInfoScreen
 import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
@@ -425,21 +424,6 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                        }
-                        composable("stock/add") {
-                            Menu(scope,
-                                drawerState,
-                                viewModelMenu,
-                                title = titleCurrentPage,
-                                NavigationEventFunction(navController),
-                                false,
-                                navController,
-                                {
-                                    StockAddScreen(
-                                        buyViewModel = stockViewModel,
-                                        navController = navController
-                                    )
-                                })
                         }
                         composable(
                             "stockSummary/{stockId}/info",

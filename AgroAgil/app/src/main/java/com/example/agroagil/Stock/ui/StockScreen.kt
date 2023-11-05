@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -49,6 +50,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -74,9 +76,14 @@ import androidx.navigation.NavController
 import com.example.agroagil.Buy.ui.listItemData
 import com.example.agroagil.Buy.ui.listItemDataFilter
 import com.example.agroagil.core.models.Buy
+import com.example.agroagil.core.models.Product
 //import com.example.agroagil.Buy.ui.BuyViewModel
 //import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Stock
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 val SinStock = "#A93226"
 val SinStockClick = "#f4e5e4"
@@ -93,9 +100,16 @@ var filters =
 var filtersExclude = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var chipsFilter = mutableStateListOf<Map<String, Function1<List<Stock>, List<Stock>>>>()
 var nombreElementoDeStockFilter = mutableStateOf("")
-
+val tiposDeElementosDeStock = listOf(
+    "Herramienta",
+    "Fertilizante",
+    "Cultivo",
+    "Semillas",
+    "Otro"
+)
 
 var tipoStockSeleccionado = mutableStateOf("")
+var dialogAddOpen = mutableStateOf(false)
 
 fun filterTieneStock(listaElementosDeStock: List<Stock>): List<Stock> {
     return listaElementosDeStock.filter { it -> it.product.amount > it.amountMinAlert }
@@ -112,19 +126,8 @@ fun filterNombreProductoDelStock(listaElementosStock: List<Stock>): List<Stock> 
     }
 }
 
-fun filterAllStocks(listaElementosStock: List<Stock>): List<Stock> {
-    return listaElementosStock
-}
 
 fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
-    Log.d("probando Filter tipo","${tipoStockSeleccionado.value}")
-    for (i in 0..listaElementosStock.size - 1){
-        Log.d("probando Filter tipo"," el valor seleccionado es : $tipoStockSeleccionado")
-        Log.d("probando Filter tipo"," el tipo de este producto es  : ${listaElementosStock[i].type}")
-        Log.d("probando Filter tipo","${tipoStockSeleccionado.value.equals( listaElementosStock[i].type)}")
-
-    }
-
     return listaElementosStock.filter { it ->
         if(tipoStockSeleccionado.value.isNullOrEmpty()){
             Log.d("probando filtro", "el filtro fue nulo o vacio " +
@@ -134,6 +137,145 @@ fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
             tipoStockSeleccionado.value= "Semillas"
         }
         it.type.equals(tipoStockSeleccionado.value)
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun dialogAdd(stockViewModel: StockViewModel){
+    var alertAmount by rememberSaveable { mutableStateOf("") }
+    var alertAmountError by rememberSaveable { mutableStateOf(false) }
+    var type by rememberSaveable { mutableStateOf("") }
+    var typeError by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var nameError by rememberSaveable { mutableStateOf(false) }
+    var units by rememberSaveable { mutableStateOf("") }
+    var unitsError by rememberSaveable { mutableStateOf(false) }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var amountError by rememberSaveable { mutableStateOf(false) }
+    var price by rememberSaveable { mutableStateOf("") }
+    var priceError by rememberSaveable { mutableStateOf(false) }
+    var expandedType by rememberSaveable { mutableStateOf(false) }
+    if (dialogAddOpen.value){
+        AlertDialog(
+            onDismissRequest = {
+                dialogAddOpen.value = false
+            },
+            title = {
+                Text(text = "Agregar nuevo producto")
+            },
+            text = {
+                Column(){
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    isError = nameError
+                )
+                    ExposedDropdownMenuBox(
+                        expanded = expandedType,
+                        onExpandedChange = { expandedType = !expandedType },
+                        modifier = Modifier.fillMaxWidth().padding(top=5.dp)
+                    ) {
+                        TextField(
+                            // The `menuAnchor` modifier must be passed to the text field for correctness.
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            readOnly = true,
+                            value = type,
+                            onValueChange = {},
+                            label = { Text("Tipo de Producto") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                            isError = typeError
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedType,
+                            onDismissRequest = { expandedType = false },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            tiposDeElementosDeStock.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        type = selectionOption
+                                        expandedType = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                OutlinedTextField(
+                    value = units,
+                    onValueChange = { units = it },
+                    label = { Text("Unidad") },
+                    isError = unitsError
+                )
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    label = { Text("Cantidad") },
+                    isError = amountError
+                )
+                    OutlinedTextField(
+                        value = price,
+                        onValueChange = { price = it },
+                        label = { Text("Precio estimado por unidad") },
+                        isError = priceError
+                    )
+                OutlinedTextField(
+                    value = alertAmount,
+                    onValueChange = { alertAmount = it },
+                    label = { Text("Cantidad minima para alertar (OPCIONAL)") },
+                    isError = alertAmountError
+                )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if(name!="" && units != "" && type !="" && amount != ""){
+                            if(alertAmount == ""){
+                                alertAmount= "0"
+                            }
+                            stockViewModel.addProduct(Stock(type=type, amountMinAlert=alertAmount.toInt(), product = Product(
+                                name=name,
+                                amount=amount.toInt(),
+                                units = units,
+                                price = price.toDouble()
+                            ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
+                            dialogAddOpen.value = false
+                        }else{
+                            if(name==""){
+                                nameError = true
+                            }
+                            if(units==""){
+                                unitsError = true
+                            }
+                            if(type==""){
+                                typeError = true
+                            }
+                            if(amount==""){
+                                amountError = true
+                            }
+                        }
+
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        dialogAddOpen.value = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
@@ -225,13 +367,7 @@ fun Actions(navController: NavController) {
                                     ""
                                 )
                             }
-                            val tiposDeElementosDeStock = listOf(
-                                "Herramienta",
-                                "Fertilizante",
-                                "Cultivo",
-                                "Semillas",
-                                "Otro"
-                            )
+
                             ExposedDropdownMenuBox(
                                 expanded = expandedType,
                                 onExpandedChange = { expandedType = !expandedType },
@@ -362,7 +498,7 @@ fun unProductoDelStock(navController: NavController){
                         defaultElevation = 10.dp
                     ),
                     onClick = {
-                        //navController.navigate("cultivo/"+ plantations[(i * 2) + item].id+"/info")
+                        navController.navigate("stockSummary/${listStockDataFilter[(i * 2) + item].id}/info")
                     },
                     colors = CardDefaults.cardColors(
                         containerColor = Color("#F8FAFB".toColorInt()),
@@ -587,8 +723,8 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
             }
             Button(
                 onClick = {
-                    //todo chequear esto
-                    navController.navigate("stock/add")
+                    //navController.navigate("stock/add")
+                    dialogAddOpen.value=true
                 }, modifier = Modifier
                     .padding(end = 20.dp, bottom = 40.dp)
                     .align(Alignment.BottomEnd)
@@ -602,5 +738,6 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                 Text("Agregar")
             }
         }
+        dialogAdd(stockViewModel)
     }
 }
