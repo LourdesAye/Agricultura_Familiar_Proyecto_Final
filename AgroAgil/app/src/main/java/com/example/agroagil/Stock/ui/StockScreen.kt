@@ -42,12 +42,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -171,6 +173,7 @@ fun resetFilterExclude() {
 @Composable
 fun Actions(navController: NavController) {
     var expandedFilter by rememberSaveable { mutableStateOf(false) }
+    var expandedType by rememberSaveable { mutableStateOf(false) }
     var nombreProductoDelStock by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     } //valor inicial una cadena vacía, y los valores que se coloquen se mantienen a pesar de rotar la pantalla
@@ -210,80 +213,60 @@ fun Actions(navController: NavController) {
                                 .align(Alignment.CenterHorizontally)
                                 .padding(30.dp)
                         ) {
-                            Text("Producto")
+
                             OutlinedTextField(
                                 value = nombreProductoDelStock,
                                 onValueChange = { nombreProductoDelStock = it },
-                                label = { },
+                                label = { Text("Producto")},
                                 modifier = Modifier.fillMaxWidth()
                             )
-
-                            Text(text="Tipo de Producto")
-                            var tipoDeElementoDeStockSeleccionado by rememberSaveable { mutableStateOf("") }
-                            var estaOpcionPorDefecto by rememberSaveable { mutableStateOf(true) }
-                            var expandirSelector by rememberSaveable { mutableStateOf(false) }
-                            val tiposDeElementosDeStock = listOf(" Herramienta", "Fertilizante","Cultivo","Semillas","Otros","Elegir tipo de producto")
-                            var sinTipoStockSeleccionado by rememberSaveable { mutableStateOf(true) }
-
-                                // en este componente se a ver la opción que se elige
-                                OutlinedTextField(
-                                    trailingIcon = {
-                                        //flechita para arriba o para abajo según corresponda en el selector
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = expandirSelector) },
-                                    value = tipoProducto,
-                                    //la opcion seleccionada
-                                    onValueChange = { nuevoTipoStockSeleccionado ->
-                                       tipoProducto = nuevoTipoStockSeleccionado
-                                    },
-                                    enabled = false, // con esto no podes escribir un rol
-                                    readOnly = true, // solo permite su lectura
-                                    label = {
-                                        if (estaOpcionPorDefecto) {
-                                            //valida que se seleccione un rol y que no sea el por defecto
-                                            Text("Elegir tipo de producto")
-                                            sinTipoStockSeleccionado = true
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .clickable {
-                                            estaOpcionPorDefecto = false
-                                            //se expande el selector
-                                            expandirSelector = true
-                                        }
-                                        .fillMaxWidth()
+                            var tipoDeElementoDeStockSeleccionado by rememberSaveable {
+                                mutableStateOf(
+                                    ""
                                 )
-
-                                if (!estaOpcionPorDefecto) {
-                                    DropdownMenu(
-                                        expanded = expandirSelector,
-                                        onDismissRequest = {
-                                            expandirSelector = false
-                                            if (tipoProducto.text.equals("Elegir tipo de producto")) {//si no selecciono un tipo esta la opcion por defecto
-                                                estaOpcionPorDefecto = true
-                                            } else {
-                                                sinTipoStockSeleccionado = false
-                                            }
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        tiposDeElementosDeStock.forEach { tipoStk ->
-                                            if (!tipoStk.equals("Elegir tipo de producto")) {
-                                                DropdownMenuItem(
-                                                    text = { Text(text = tipoStk) },
-                                                    onClick = {
-                                                        tipoProducto = TextFieldValue(tipoStk, TextRange(0, 200))
-                                                        expandirSelector = false
-                                                        tipoDeElementoDeStockSeleccionado = tipoStk
-                                                        sinTipoStockSeleccionado =
-                                                            tipoStk == "" || tipoStk.isEmpty()
-                                                    })
-                                            }
-                                        }
+                            }
+                            val tiposDeElementosDeStock = listOf(
+                                "Herramienta",
+                                "Fertilizante",
+                                "Cultivo",
+                                "Semillas",
+                                "Otro"
+                            )
+                            ExposedDropdownMenuBox(
+                                expanded = expandedType,
+                                onExpandedChange = { expandedType = !expandedType },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                TextField(
+                                    // The `menuAnchor` modifier must be passed to the text field for correctness.
+                                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                    readOnly = true,
+                                    value = tipoDeElementoDeStockSeleccionado,
+                                    onValueChange = {},
+                                    label = { Text("Tipo de Producto") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
+                                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = expandedType,
+                                    onDismissRequest = { expandedType = false },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    tiposDeElementosDeStock.forEach { selectionOption ->
+                                        DropdownMenuItem(
+                                            text = { Text(selectionOption) },
+                                            onClick = {
+                                                tipoProducto = TextFieldValue(selectionOption, TextRange(0, 200))
+                                                tipoDeElementoDeStockSeleccionado = selectionOption
+                                                expandedType = false
+                                            },
+                                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
                                     }
-
                                 }
                             }
+                        }
 
 
                             //botón circular
@@ -302,7 +285,7 @@ fun Actions(navController: NavController) {
                                     filtersExclude.add(::filterNombreProductoDelStock)
                                     nombreElementoDeStockFilter.value = nombreProductoDelStock.text
                                 }
-                                if (tipoProducto.text != "" && tipoProducto.text != "Elegir tipo de producto") {
+                                if (tipoProducto.text != "") {
                                     chipsFilter.add(mapOf(("Tipo de Producto: ${tipoProducto.text}") to ::filterTipoElementoStock))
                                     filtersExclude.add(::filterTipoElementoStock)
                                     tipoStockSeleccionado.value = tipoProducto.text
