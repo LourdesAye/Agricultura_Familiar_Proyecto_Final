@@ -119,12 +119,12 @@ class TaskFirebaseService {
     /**
      * GET tarea full con todos los datos
      */
-    suspend fun getTaskForUser(userId: Int, taskId: Int): Task {
+    suspend fun getTaskForUser(userId: Int, taskId: String): Task {
         try {
             return suspendCancellableCoroutine { continuation ->
                 Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId").get().addOnSuccessListener { snapshot ->
                     val value = snapshot.getValue(Task::class.java) as Task
-                    continuation.resume(value)
+                    continuation.resume(value.copy(id = taskId))
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
                 }
@@ -136,5 +136,29 @@ class TaskFirebaseService {
             return Task()
         }
     }
+
+    /**
+     * DELETE - Elimina una tarea específica dado un ID de tarea
+     * @param userId id del usuario
+     * @param taskId id de la tarea a eliminar
+     * @return Un booleano que indica si la operación fue exitosa
+     */
+    suspend fun deleteTaskForUser(userId: Int, taskId: String): Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            val taskReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId")
+
+            taskReference.removeValue()
+                .addOnSuccessListener {
+                    // The delete was successful, invoke the callback with true
+                    continuation.resume(true)
+                }
+                .addOnFailureListener { exception ->
+                    // The delete failed, print the exception and resume the coroutine with false
+                    exception.printStackTrace()
+                    continuation.resume(false)
+                }
+        }
+    }
+
 }
 

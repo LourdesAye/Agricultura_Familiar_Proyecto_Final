@@ -53,6 +53,7 @@ import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.agroagil.Loan.ui.listItemData
 import kotlinx.coroutines.launch
 
 data class CardColor(val surfaceColor: String, val textColor:String)
@@ -82,7 +83,8 @@ fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
                     item { FilteringBox(taskViewModel) }
                     item{ Spacer(modifier = Modifier.padding(10.dp)) }
                     items(taskCardDataList) {
-                        TaskCard(taskCardData = it, taskViewModel = taskViewModel, filterTasksBy)
+                        TaskCard(taskCardData = it, taskViewModel = taskViewModel,
+                            filterTasksBy = filterTasksBy, navController = navController)
                     }
                     item { Spacer(modifier = Modifier.padding(40.dp))  }
                 }
@@ -108,8 +110,9 @@ fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
     else return CardColor(INCOMPLETE_NORMAL_TASK_CARD_COLOR, INCOMPLETE_NORMAL_TASK_TEXT_COLOR)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTasksBy: AppliedFiltersForTasks?) {
+fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTasksBy: AppliedFiltersForTasks?, navController: NavController) {
     val roundedCornerShape = RoundedCornerShape(
     topStart = 0.dp, // 90-degree corner here
     topEnd = 14.dp,
@@ -123,6 +126,10 @@ fun TaskCard(taskCardData: TaskCardData, taskViewModel: TaskViewModel?, filterTa
     if(filterTasksBy != null && taskCardData.passFilters(filterTasksBy)) {
 
         Card(
+            onClick={
+                taskViewModel?.getTaskToVisualize(taskCardData.id)
+                navController.navigate("task/${taskCardData.id}/info")
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)

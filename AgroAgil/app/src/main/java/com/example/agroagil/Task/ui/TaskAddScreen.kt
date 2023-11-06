@@ -46,13 +46,13 @@ import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +68,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.agroagil.R
 import com.example.agroagil.core.models.Member
-import kotlinx.coroutines.launch
 import java.util.Calendar
 
 
@@ -79,11 +78,9 @@ fun TaskAddScreen (taskViewModel: TaskAddViewModel, navController: NavController
     val dateSelectedString = taskViewModel.dateSelectedString.observeAsState().value
     val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
     var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
-    var responsibleTextField = taskViewModel.responsibleInputText.observeAsState().value
 
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
-    val showSnackbarForTaskSaved: Boolean = taskViewModel.showSnackbarFortaskSaved.observeAsState().value!!
+    val taskSaved: Boolean = taskViewModel.taskSaved.observeAsState().value!!
 
     Column(
         modifier = Modifier
@@ -157,14 +154,21 @@ fun TaskAddScreen (taskViewModel: TaskAddViewModel, navController: NavController
 
         //Recordatorio
         //Botones de guardado y cancelar
-        SaveOrCancelbuttonsRow({
-            coroutineScope.launch {
+        SaveOrCancelButtonsRow(
+            onSave = {
                 taskViewModel.onSave()
-            }}, navController = navController)
+            },
+            onCancel = {
+                navController.popBackStack()
+            }
+        )
 
-        //Mensajito cuando guarda exitosamente
-        if(showSnackbarForTaskSaved) {
-            navController.popBackStack()
+        // Handle side effects such as navigation
+        LaunchedEffect(taskSaved) {
+            if (taskSaved) {
+                taskViewModel.taskUnsaved()
+                navController.popBackStack()
+            }
         }
     }
 }
@@ -172,7 +176,7 @@ fun TaskAddScreen (taskViewModel: TaskAddViewModel, navController: NavController
 
 
 @Composable
-private fun OutlinedTextFieldWithIcon(
+fun OutlinedTextFieldWithIcon(
     value: String,
     onValueChange: (String) -> Unit,
     descriptionText: String
@@ -380,25 +384,19 @@ fun SwitchWithText(description: String, checked: Boolean, onCheckedChange: () ->
 }
 
 @Composable
-fun SaveOrCancelbuttonsRow(onSave: () -> Unit, navController: NavController) {
-    Column(){
-        Box(modifier = Modifier.fillMaxSize()){
-            Row(horizontalArrangement = Arrangement.SpaceBetween,
+fun SaveOrCancelButtonsRow(onSave: () -> Unit, onCancel: () -> Unit) {
+    Column {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(30.dp)){
-                Button(onClick = onSave, modifier = Modifier.align(Alignment.CenterVertically)
-
-                ) {
-
+                    .padding(30.dp)
+            ) {
+                Button(onClick = onSave) {
                     Text("Guardar")
                 }
-                TextButton(
-                    onClick = {
-                        navController.popBackStack()
-                    },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
+                TextButton(onClick = onCancel) {
                     Text("Cancelar")
                 }
             }
@@ -496,7 +494,7 @@ fun ResponsibleEditableDropdownMenu(taskAddViewModel: TaskAddViewModel) {
             )
         )
 
-        if (options != null && options.isNotEmpty()) {
+        if (!options.isNullOrEmpty()) {
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
@@ -506,8 +504,6 @@ fun ResponsibleEditableDropdownMenu(taskAddViewModel: TaskAddViewModel) {
                             text = { Text(selectionOption.name) },
                             onClick = {
                                 taskAddViewModel.onResponsibleOptionSelected(selectionOption)
-                                //TODO: Crear chip y agregarlo al input, a la lista de responsables de la tarea
-                                //TODO: Pensar en cómo, al cerrar en chip, se elimina de la lista de chips y de la lista de responsables de la tarea
                                 expanded = false
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,

@@ -159,29 +159,37 @@ class TaskAddViewModel : ViewModel() {
         }
     }
 
-    private val _showSnackbarFortaskSaved = MutableLiveData<Boolean>(false)
-    val showSnackbarFortaskSaved: LiveData<Boolean> = _showSnackbarFortaskSaved
+    private val _taskSaved = MutableLiveData<Boolean>(false)
+    val taskSaved: LiveData<Boolean> = _taskSaved
 
-    suspend fun onSave() {
+    fun onSave() {
         val currentTaskToCreate = _taskToCreate.value ?: return
         val isoDate = currentTaskToCreate.getISODateFromCalendar() //2023-10-26T09:30:00Z --> error
         //TODO: Agregar validaciones a todos los campos de la tarea
         //TODO: El userId es 0 por defecto. Cambiar luego al ID del usuario logueado
         val taskToSave = currentTaskToCreate.copy(isoDate = isoDate).taskForAddScreenToTask()
-        val result = taskRepository.addNewTaskForUser(taskToSave, 0)
 
-        if(result) {
-            taskSaved()
-            _taskToCreate.postValue(TaskForAddScreen(calendarDate = null))
+        viewModelScope.launch {
+            try {
+                val result = taskRepository.addNewTaskForUser(taskToSave, 0)
+
+                if(result) {
+                    taskSaved()
+                    _taskToCreate.postValue(TaskForAddScreen(calendarDate = null))
+                }
+            } catch (e: Exception) {
+                println("onSave error TASK:")
+                e.printStackTrace()
+            }
         }
     }
 
     private fun taskSaved() {
-        _showSnackbarFortaskSaved.postValue(true)
+        _taskSaved.postValue(true)
     }
 
-    public fun taskUnsaved() {
-        _showSnackbarFortaskSaved.postValue(false)
+    fun taskUnsaved() {
+        _taskSaved.postValue(false)
     }
 
 }

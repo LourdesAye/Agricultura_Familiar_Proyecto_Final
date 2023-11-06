@@ -542,10 +542,10 @@ class MainActivity : ComponentActivity() {
 
                         composable(
                             "task/{taskId}/info",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            arguments = listOf(navArgument("taskId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
+                            val taskId: String? = backStackEntry.arguments?.getString("taskId")
+                            if (taskId is String)
                                 Menu(
                                     scope,
                                     drawerState,
@@ -558,7 +558,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     TaskInfoScreen(
                                         taskViewModel = taskViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        taskId = taskId
                                     )
                                 }
                         }
@@ -567,10 +568,10 @@ class MainActivity : ComponentActivity() {
 
                         composable(
                             "task/{taskId}/edit",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            arguments = listOf(navArgument("taskId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
+                            val taskId: String? = backStackEntry.arguments?.getString("taskId")
+                            if (taskId is String)
                                 Menu(
                                     scope,
                                     drawerState,
@@ -583,7 +584,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     TaskEditScreen(
                                         taskViewModel = taskViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        taskId = taskId
                                     )
                                 }
                         }

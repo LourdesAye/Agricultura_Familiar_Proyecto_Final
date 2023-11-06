@@ -43,7 +43,11 @@ class TaskRepository {
     /**
      * GET tarea full con todos los datos
      */
-    suspend fun getTaskForUser(userId: Int, taskId: Int): Task {
-        return getTaskForUser(userId, taskId)
+    suspend fun getTaskForUser(userId: Int, taskId: String): Task {
+        return firebaseApi.getTaskForUser(userId, taskId)
+    }
+
+    suspend fun deleteTaskForUser(userId: Int, taskId: String): Boolean {
+        return firebaseApi.deleteTaskForUser(userId, taskId)
     }
 }

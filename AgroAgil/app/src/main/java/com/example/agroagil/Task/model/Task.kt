@@ -23,4 +23,27 @@ data class Task(
     val repetitionIntervalInDays: Int? = 0,
     val creator: Member = Member(),
     //TODO validar si este campo va: val resultExpected: String
-)
+) {
+    /**
+     * Este método retorna un objeto tipo Task para guardar la tarea en firebase.
+     * Tiene los mismos campos que TaskForAddScreen, salvo el campo de tipo calendar
+     */
+    fun taskToTaskForAddScreen(): TaskForAddScreen {
+        return TaskForAddScreen(
+            id = this.id,
+            description = this.description,
+            isoDate = this.isoDate,
+            durationHours = this.durationHours,
+            completed = this.completed,
+            highPriority = this.highPriority,
+            completionIsoDate = this.completionIsoDate,
+            locationInFarm = this.locationInFarm,
+            resposibles = this.resposibles,
+            detailedInstructions = this.detailedInstructions,
+            repeatable = this.repeatable,
+            repetitionIntervalInDays = this.repetitionIntervalInDays,
+            creator = this.creator,
+            calendarDate = isoDate?.stringIsoDateToDate()?.toCalendar()
+        )
+    }
+}

@@ -10,6 +10,7 @@ import com.example.agroagil.Task.data.TaskRepository
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
+import com.example.agroagil.Task.model.TaskForAddScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -39,6 +40,9 @@ class TaskViewModel : ViewModel() {
 
     private val _taskCardDataList = MutableLiveData<List<TaskCardData>?>()
     val taskCardDataList: LiveData<List<TaskCardData>?> = _taskCardDataList
+
+    private val _taskToVisualize =  MutableLiveData<TaskForAddScreen?>(null)
+    val taskToVisualize: LiveData<TaskForAddScreen?> = _taskToVisualize
 
     init {
         refreshTaskCardsLiveData(0)
@@ -90,6 +94,46 @@ class TaskViewModel : ViewModel() {
             is TaskFilter.ByHigh -> return Color(INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR.toColorInt())
             is TaskFilter.ByDone -> return Color(COMPLETED_TASK_TEXT_COLOR.toColorInt())
         }
+    }
+
+    fun getTaskToVisualize(taskId: String) {
+        viewModelScope.launch {
+            try {
+                val result = taskRepository.getTaskForUser(0, taskId)
+                _taskToVisualize.postValue(result.taskToTaskForAddScreen())
+            } catch (e: Exception) {
+                println("TaskViewModel getTaskToVisualize error:")
+                e.printStackTrace()
+                _taskToVisualize.postValue(null)
+            }
+        }
+    }
+
+    fun onDeleteTask(taskId: String) {
+        viewModelScope.launch {
+            try {
+                val result = taskRepository.deleteTaskForUser(0, taskId)
+
+                if(result) {
+                    taskDeleted()
+                    _taskToVisualize.postValue(null)
+                }
+            } catch (e: Exception) {
+                println("TaskViewModel deleteTask error:")
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private val _taskDeleted = MutableLiveData<Boolean>(false)
+    val taskDeleted: LiveData<Boolean> = _taskDeleted
+
+    private fun taskDeleted() {
+        _taskDeleted.postValue(true)
+    }
+
+    fun taskNotDeleted() {
+        _taskDeleted.postValue(false)
     }
 
 }
