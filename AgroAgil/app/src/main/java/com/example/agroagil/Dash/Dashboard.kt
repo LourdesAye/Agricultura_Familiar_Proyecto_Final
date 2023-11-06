@@ -33,13 +33,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
@@ -53,10 +56,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.agroagil.Loan.ui.SelectColorCard
 import com.example.agroagil.R
+import com.example.agroagil.Task.ui.COMPLETED_TASK_CARD_COLOR
+import com.example.agroagil.Task.ui.COMPLETED_TASK_TEXT_COLOR
+import com.example.agroagil.Task.ui.INCOMPLETE_IMPORTANT_TASK_CARD_COLOR
+import com.example.agroagil.Task.ui.INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR
+import com.example.agroagil.Task.ui.INCOMPLETE_NORMAL_TASK_CARD_COLOR
+import com.example.agroagil.Task.ui.INCOMPLETE_NORMAL_TASK_TEXT_COLOR
+import com.example.agroagil.Task.ui.RoundCheckbox
+import com.example.agroagil.Task.ui.TaskViewModel
+import com.example.agroagil.Task.ui.TextDate
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Plantation
 import com.example.agroagil.core.models.Product
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Date
@@ -64,6 +77,7 @@ import java.util.TimeZone
 import java.util.Calendar
 import java.util.Locale
 import kotlin.math.min
+
 
 val weatherDescriptionsMap = mapOf(
     "thunderstorm with light rain" to "Tormenta con lluvia ligera",
@@ -353,70 +367,84 @@ private fun getWeatherIconResourceId(iconName: String): Int {
     }
 }
 
+
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCardDash(
     dashviewModel: DashboardViewModel,
-    backgroundColor: Color,
     borderColor: Color,
     textColor: Color
 ) {
     val topTasksState by dashviewModel.getTopTasks().observeAsState(initial = emptyList())
+    val roundedCornerShape = RoundedCornerShape(14.dp)
 
-    // Filtra las tareas para mostrar solo las que tienen una fecha igual o mayor a hoy
     val currentDate = LocalDate.now()
-    val topTasks = topTasksState?.filter { task ->
-        task?.isoDate?.let {
-            val taskDate = LocalDate.parse(it.substring(0, 10))
-            taskDate.isEqual(currentDate) || taskDate.isAfter(currentDate)
-        } ?: false
-    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Max), // La altura se ajusta automáticamente al contenido
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
-        ),
-        shape = MaterialTheme.shapes.small,
+            .height(IntrinsicSize.Max),
+        shape = roundedCornerShape,
         border = BorderStroke(2.dp, borderColor),
-        colors = CardDefaults.cardColors(
-            containerColor = backgroundColor
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Próximas tareas", color = textColor, fontWeight = FontWeight.Bold)
 
-            topTasks?.forEach { task ->
-                // Formatea la fecha al estilo "yyyy-MM-dd". Lo hago así pq si no, rompe todo
-                val originalDate = task?.isoDate ?: ""
-                val formattedDate = if (originalDate.length >= 10) {
-                    "${originalDate.substring(0, 10)}"
-                } else {
-                    "Fecha no disponible"
-                }
-
-                // Cada tarea se representa como una tarjeta individual con un borde celeste
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .border(BorderStroke(1.dp, textColor),
-                            shape = MaterialTheme.shapes.small),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = task?.getLimitedDescription() ?: "Descripción no disponible")
-                        Text(text = formattedDate) // Muestra la fecha formateada
-                        Spacer(modifier = Modifier.height(8.dp))
+            topTasksState?.forEach { task ->
+                val taskDate = LocalDate.parse(task?.isoDate?.substring(0, 10) ?: "")
+                if (taskDate.isEqual(currentDate) || taskDate.isAfter(currentDate)) {
+                    val cardColor = getCardColor(task?.highPriority ?: false, task?.completed ?: false)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        shape = roundedCornerShape,
+                        colors = CardDefaults.cardColors(containerColor = Color(cardColor.surfaceColor.toColorInt())),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = task?.getLimitedDescription() ?: "Descripción no disponible",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(cardColor.textColor.toColorInt()),
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                TextDate(taskCardData = task)
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+
+
+
+private data class CardColor(val surfaceColor: String, val textColor: String)
+
+private fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
+    if (completed)
+        return CardColor(COMPLETED_TASK_CARD_COLOR, COMPLETED_TASK_TEXT_COLOR)
+    if (highPriority)
+        return CardColor(INCOMPLETE_IMPORTANT_TASK_CARD_COLOR, INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR)
+    return CardColor(INCOMPLETE_NORMAL_TASK_CARD_COLOR, INCOMPLETE_NORMAL_TASK_TEXT_COLOR)
+}
+
+
 
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -937,8 +965,7 @@ fun dash(viewModel: DashboardViewModel) {
 
         item {
             // Usa las tareas filtradas del ViewModel en TaskCard
-            TaskCardDash(viewModel, backgroundColor, borderColor, textColor//, filterTasksBy
-            )
+            TaskCardDash(dashviewModel = viewModel, borderColor = borderColor, textColor = textColor)
         }
 
         item {
