@@ -70,6 +70,7 @@ import com.example.agroagil.Stock.ui.StockScreen
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Summary.SummaryScreen
 import com.example.agroagil.Summary.SummaryViewModel
+import com.example.agroagil.Task.ui.TaskAddViewModel
 import com.example.agroagil.Task.ui.TaskAddScreen
 import com.example.agroagil.Task.ui.TaskEditScreen
 import com.example.agroagil.Task.ui.TaskInfoScreen
@@ -112,6 +113,7 @@ class MainActivity : ComponentActivity() {
                     val scope = rememberCoroutineScope()
                     val sellViewModel = SellViewModel()
                     val taskViewModel = TaskViewModel()
+                    val taskAddViewModel = TaskAddViewModel()
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
@@ -550,7 +552,7 @@ class MainActivity : ComponentActivity() {
                             )
                             {
                                 TaskAddScreen(
-                                    taskViewModel = taskViewModel,
+                                    taskViewModel = taskAddViewModel,
                                     navController = navController
                                 )
                             }
@@ -559,10 +561,10 @@ class MainActivity : ComponentActivity() {
 
                         composable(
                             "task/{taskId}/info",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            arguments = listOf(navArgument("taskId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
+                            val taskId: String? = backStackEntry.arguments?.getString("taskId")
+                            if (taskId is String)
                                 Menu(
                                     scope,
                                     drawerState,
@@ -575,7 +577,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     TaskInfoScreen(
                                         taskViewModel = taskViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        taskId = taskId
                                     )
                                 }
                         }
@@ -584,10 +587,10 @@ class MainActivity : ComponentActivity() {
 
                         composable(
                             "task/{taskId}/edit",
-                            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+                            arguments = listOf(navArgument("taskId") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val taskId: Int? = backStackEntry.arguments?.getInt("taskId")
-                            if (taskId is Int)
+                            val taskId: String? = backStackEntry.arguments?.getString("taskId")
+                            if (taskId is String)
                                 Menu(
                                     scope,
                                     drawerState,
@@ -600,7 +603,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     TaskEditScreen(
                                         taskViewModel = taskViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        taskId = taskId
                                     )
                                 }
                         }

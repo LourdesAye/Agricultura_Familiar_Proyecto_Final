@@ -2,19 +2,17 @@ package com.example.agroagil.Task.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agroagil.Task.data.TaskRepository
 import com.example.agroagil.Task.model.AppliedFiltersForTasks
-import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.Task.model.TaskCardData
 import com.example.agroagil.Task.model.TaskFilter
+import com.example.agroagil.Task.model.TaskForAddScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 const val COMPLETED_TASK_CARD_COLOR = "#E2F2F2"
 const val INCOMPLETE_IMPORTANT_TASK_CARD_COLOR = "#FAE9E8"
@@ -43,11 +41,14 @@ class TaskViewModel : ViewModel() {
     private val _taskCardDataList = MutableLiveData<List<TaskCardData>?>()
     val taskCardDataList: LiveData<List<TaskCardData>?> = _taskCardDataList
 
+    private val _taskToVisualize =  MutableLiveData<TaskForAddScreen?>(null)
+    val taskToVisualize: LiveData<TaskForAddScreen?> = _taskToVisualize
+
     init {
         refreshTaskCardsLiveData(0)
     }
 
-    private fun refreshTaskCardsLiveData(userId: Int) {
+    fun refreshTaskCardsLiveData(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val realValue = taskRepository.getTaskCardsForUser(userId)
@@ -95,132 +96,44 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    //Pantalla para crear una nueva tarea -----------------------------------
-    private val _taskToCreate = MutableLiveData<TaskForAddScreen>(TaskForAddScreen(calendarDate = null))
-    val taskToCreate: LiveData<TaskForAddScreen> = _taskToCreate
-
-    fun onDescriptionChange(description: String) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        _taskToCreate.postValue(currentTaskToCreate.copy(description = description))
-    }
-
-    private val _dateSelectedString = MutableLiveData<String>("Definir fecha de la tarea")
-    val dateSelectedString: LiveData<String> = _dateSelectedString
-
-    private val _timeSelectedString = MutableLiveData<String>("Definir hora de la tarea")
-    val timeSelectedString: LiveData<String> = _timeSelectedString
-
-
-    fun onDateChange(timestamp: Long?) {
-        if (timestamp == null)
-            return
-
-        var calendarFromTimestamp = Calendar.getInstance()
-        calendarFromTimestamp.timeInMillis = timestamp // Convert time to Calendar object
-
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        val currentDate = currentTaskToCreate.calendarDate
-
-        if (currentDate != null) {
-            calendarFromTimestamp.set(Calendar.HOUR_OF_DAY, currentDate.get(Calendar.HOUR_OF_DAY))
-            calendarFromTimestamp.set(Calendar.MINUTE, currentDate.get(Calendar.MINUTE))
-        }
-
-        val updatedTask = currentTaskToCreate.copy(calendarDate = calendarFromTimestamp)
-        _taskToCreate.postValue(updatedTask)
-        _dateSelectedString.postValue("El día ${updatedTask.getTaskFormatDate()}")
-    }
-
-    fun onTimeChange(hour: Int, minute: Int) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        var currentDate = currentTaskToCreate.calendarDate
-        if (currentDate == null)
-            currentDate = Calendar.getInstance()
-
-        currentDate!!.set(Calendar.HOUR_OF_DAY, hour)
-        currentDate.set(Calendar.MINUTE, minute)
-        currentDate.isLenient = false
-
-        val updatedTask = currentTaskToCreate.copy(calendarDate = currentDate)
-        _taskToCreate.postValue(updatedTask)
-        _timeSelectedString.postValue("A las ${updatedTask.getTaskFormatTime()} horas")
-    }
-
-    fun onEstimationChange(estimationText: String) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        if (estimationText.isDigitsOnly() && estimationText.isNotEmpty()) {
-            val estimation = estimationText.toInt()
-            val updatedTask = currentTaskToCreate.copy(durationHours = estimation)
-            _taskToCreate.postValue(updatedTask)
+    fun getTaskToVisualize(taskId: String) {
+        viewModelScope.launch {
+            try {
+                val result = taskRepository.getTaskForUser(0, taskId)
+                _taskToVisualize.postValue(result.taskToTaskForAddScreen())
+            } catch (e: Exception) {
+                println("TaskViewModel getTaskToVisualize error:")
+                e.printStackTrace()
+                _taskToVisualize.postValue(null)
+            }
         }
     }
 
-    fun onLocationInFarmChange(location: String) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
+    fun onDeleteTask(taskId: String) {
+        viewModelScope.launch {
+            try {
+                val result = taskRepository.deleteTaskForUser(0, taskId)
 
-        val updatedTask = currentTaskToCreate.copy(locationInFarm = location)
-        _taskToCreate.postValue(updatedTask)
-    }
-
-    fun onResponsiblesChange() {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-
-        val updatedTask = currentTaskToCreate.copy()
-        _taskToCreate.postValue(updatedTask)
-    }
-
-    fun onHighPriorityChange() {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-
-        val updatedTask = currentTaskToCreate.copy(highPriority = !currentTaskToCreate.highPriority)
-        _taskToCreate.postValue(updatedTask)
-    }
-
-    fun onDetailedInstructionsChange(detailedInstructions: String) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        val updatedTask = currentTaskToCreate.copy(detailedInstructions = detailedInstructions)
-        _taskToCreate.postValue(updatedTask)
-    }
-
-    fun onRepetitionChange() {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-
-        val updatedTask = currentTaskToCreate.copy(repeatable = !currentTaskToCreate.repeatable)
-        _taskToCreate.postValue(updatedTask)
-    }
-
-    fun onFrequencyOfRepetitionChange(frecuencyText: String) {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-
-        if (frecuencyText.isDigitsOnly() && frecuencyText.isNotEmpty()) {
-            val frequency = frecuencyText.toInt()
-            val updatedTask = currentTaskToCreate.copy(repetitionIntervalInDays = frequency)
-            _taskToCreate.postValue(updatedTask)
-
+                if(result) {
+                    taskDeleted()
+                    _taskToVisualize.postValue(null)
+                }
+            } catch (e: Exception) {
+                println("TaskViewModel deleteTask error:")
+                e.printStackTrace()
+            }
         }
     }
 
-    private val _showSnackbarFortaskSaved = MutableLiveData<Boolean>(false)
-    val showSnackbarFortaskSaved: LiveData<Boolean> = _showSnackbarFortaskSaved
+    private val _taskDeleted = MutableLiveData<Boolean>(false)
+    val taskDeleted: LiveData<Boolean> = _taskDeleted
 
-    suspend fun onSave() {
-        val currentTaskToCreate = _taskToCreate.value ?: return
-        val isoDate = currentTaskToCreate.getISODateFromCalendar() //2023-10-26T09:30:00Z --> error
-        //TODO: Agregar validaciones a todos los campos de la tarea
-        //TODO: El userId es 0 por defecto. Cambiar luego al ID del usuario logueado
-        val taskToSave = currentTaskToCreate.copy(isoDate = isoDate).taskForAddScreenToTask()
-        val result = taskRepository.addNewTaskForUser(taskToSave, 0)
-
-        if(result)
-            showSnackBarForSavedTask()
+    private fun taskDeleted() {
+        _taskDeleted.postValue(true)
     }
 
-    private fun showSnackBarForSavedTask() {
-        _showSnackbarFortaskSaved.postValue(true)
-    }
-
-    public fun hideSnackBarForSavedTask() {
-        _showSnackbarFortaskSaved.postValue(false)
+    fun taskNotDeleted() {
+        _taskDeleted.postValue(false)
     }
 
 }

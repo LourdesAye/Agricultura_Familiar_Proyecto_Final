@@ -6,6 +6,51 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+val LOCALE_AR = Locale("es", "AR")
+
+fun String.stringIsoDateToDate(): Date? {
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", LOCALE_AR)
+    try {
+        return sdf.parse(this)
+    } catch (e: Exception) {
+        println("Failed to parse date: ${e.message}")
+    }
+    return null
+}
+
+fun Calendar.getTaskFormatDate(): String {
+    // Formatear el día de la semana (Domingo, Lunes, etc.)
+    val formatoDiaSemana = SimpleDateFormat("EEEE", LOCALE_AR)
+    //TODO Borrar:
+    val date = this.time
+
+    val diaSemana = formatoDiaSemana.format(this.time)
+
+    // Formatear la fecha (10/09)
+    val dateFormat = SimpleDateFormat("dd/MM", LOCALE_AR)
+    val formattedDate = dateFormat.format(this.time)
+
+    // Formatear el año (2023)
+    val yearFormat = SimpleDateFormat("yyyy", LOCALE_AR)
+    val formattedYear = yearFormat.format(this.time)
+
+    return "${diaSemana.replaceFirstChar { a -> a.uppercase() }} $formattedDate de $formattedYear"
+}
+
+fun Calendar.calendarDateToTaskFormatTime(): String {
+    // Formatear la hora (13:24)
+    val hourFormat = SimpleDateFormat("HH:mm", LOCALE_AR)
+    val hour = hourFormat.format(this.time)
+
+    return "$hour"
+}
+
+fun Date.toCalendar(): Calendar {
+    val calendar = Calendar.getInstance()
+    calendar.time = this // 'this' refers to the Date instance
+    return calendar
+}
+
 /**
  * Data class para la creación de una tarea. se usa solo para almacenar temporalmente
  * los datos que se van cargando en la pantalla de Agregar tarea.
@@ -31,49 +76,21 @@ data class TaskForAddScreen(
     @Transient
     val calendarDate: Calendar? //No guardar este campo en firebase
 ) {
-    private val LOCALE_AR = Locale("es", "AR")
 
     fun getDate(): Date? {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", LOCALE_AR)
-        try {
-            return sdf.parse(isoDate)
-        } catch (e: Exception) {
-            println("Failed to parse date: ${e.message}")
-        }
-        return null
+        return isoDate.stringIsoDateToDate()
     }
-
 
     fun getTaskFormatDate(): String {
         if(calendarDate == null)
             return ""
-
-        // Formatear el día de la semana (Domingo, Lunes, etc.)
-        val formatoDiaSemana = SimpleDateFormat("EEEE", LOCALE_AR)
-        //TODO Borrar:
-        val date = calendarDate.time
-
-        val diaSemana = formatoDiaSemana.format(calendarDate.time)
-
-        // Formatear la fecha (10/09)
-        val dateFormat = SimpleDateFormat("dd/MM", LOCALE_AR)
-        val formattedDate = dateFormat.format(calendarDate.time)
-
-        // Formatear el año (2023)
-        val yearFormat = SimpleDateFormat("yyyy", LOCALE_AR)
-        val formattedYear = yearFormat.format(calendarDate.time)
-
-        return "${diaSemana.replaceFirstChar { a -> a.uppercase() }} $formattedDate de $formattedYear"
+        return calendarDate.getTaskFormatDate()
     }
 
     fun getTaskFormatTime(): String {
         if(calendarDate == null)
             return ""
-        // Formatear la hora (13:24)
-        val hourFormat = SimpleDateFormat("HH:mm", LOCALE_AR)
-        val hour = hourFormat.format(calendarDate.time)
-
-        return "$hour"
+        return calendarDate.calendarDateToTaskFormatTime()
     }
 
     fun getISODateFromCalendar(): String {

@@ -71,6 +71,7 @@ class MenuViewModel @Inject constructor() : ViewModel() {
 
     fun onChangeOptionSelected(menuOption: ItemMenuPrincipal) {
         _currentOptionSelected.postValue(menuOption)
+
     }
 
     fun setItemsDeMenu(): List<ItemMenuPrincipal>{

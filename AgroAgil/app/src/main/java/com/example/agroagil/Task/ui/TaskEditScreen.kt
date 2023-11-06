@@ -6,6 +6,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 
 @Composable
-fun TaskEditScreen (taskViewModel: TaskViewModel, navController: NavController) {
-    Text(text = "Editar tarea...", fontWeight = FontWeight.Bold)
+fun TaskEditScreen (taskViewModel: TaskViewModel, navController: NavController, taskId: String) {
+    Text(text = "Editar tarea... $taskId", fontWeight = FontWeight.Bold)
 }
