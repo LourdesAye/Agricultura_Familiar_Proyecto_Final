@@ -61,6 +61,7 @@ const val CHECK_ICON_SIZE = 24
 
 @Composable
 fun TaskScreen(taskViewModel: TaskViewModel, navController: NavController) {
+    taskViewModel.refreshTaskCardsLiveData(0)
     var taskCardDataList = taskViewModel.taskCardDataList.observeAsState().value
     var filterTasksBy = taskViewModel.appliedFiltersForTasks.observeAsState().value
 

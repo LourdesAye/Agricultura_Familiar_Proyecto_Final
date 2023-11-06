@@ -48,7 +48,7 @@ class TaskViewModel : ViewModel() {
         refreshTaskCardsLiveData(0)
     }
 
-    private fun refreshTaskCardsLiveData(userId: Int) {
+    fun refreshTaskCardsLiveData(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val realValue = taskRepository.getTaskCardsForUser(userId)

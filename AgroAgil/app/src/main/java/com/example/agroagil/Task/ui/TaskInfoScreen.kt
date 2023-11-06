@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +53,7 @@ fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, 
         if (taskDeleted) {
             taskViewModel.taskNotDeleted()
             navController.popBackStack()
+            taskViewModel.refreshTaskCardsLiveData(0)
         }
     }
 
@@ -112,6 +114,7 @@ fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, 
 
 
             //Responsables de la tarea
+            Text(text = "Responsables:", style = MaterialTheme.typography.titleLarge)
             MemberChipsReadOnlyRow(members = taskToVisualize!!.resposibles)
 
 
