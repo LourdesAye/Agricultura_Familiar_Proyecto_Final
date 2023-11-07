@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -35,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -121,6 +123,9 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel,navController: NavCon
                                 modifier = Modifier.size(25.dp)
                             )
                         },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
                         isError = errorDurationDay,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -198,7 +203,10 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel,navController: NavCon
                     },
                     isError = priceError,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    ),
                 )
             }
 
@@ -218,7 +226,7 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel,navController: NavCon
                 OutlinedTextField(
                     value = durationUnitText,
                     onValueChange = {
-                        durationUnitText = it
+                        durationUnitText = it.uppercase()
                         unitsError = false
                     },
                     label = {
@@ -277,7 +285,7 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel,navController: NavCon
                             errorDurationDay = true
                         }else{
                             if (durationDay){
-                            selectedCrop.forEach { it.durationDay = durationDayText.toInt() }
+                            selectedCrop.forEach { it.durationDay = durationDayText.toFloat().toInt() }
                             }
                         }
                         if (price && (priceText=="" || selectedOptionText=="")){
@@ -285,7 +293,7 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel,navController: NavCon
                         }else{
                             if(price){
                             if (selectedOptionText == "Valor") {
-                                selectedCrop.forEach { it.price = priceText.toDouble() }
+                                selectedCrop.forEach { it.price = priceText.toFloat().toDouble() }
                             }else{
                                 selectedCrop.forEach { it.price = it.price*priceText.toFloat() }
                             }}

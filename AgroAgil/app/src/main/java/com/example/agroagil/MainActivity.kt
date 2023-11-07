@@ -517,7 +517,8 @@ class MainActivity : ComponentActivity() {
                                         CultivoInfoScreen(
                                             navController = navController,
                                             cultivoViewModel = cultivoViewModel,
-                                            cultivoId
+                                            cultivoId,
+                                            stockViewModel=stockViewModel,
                                         )
                                     })
                         }
