@@ -47,6 +47,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,7 +85,7 @@ fun FormCrop(){
         OutlinedTextField(
             value = units.value,
             onValueChange = {
-                units.value = it.uppercase()
+                units.value = it.uppercase().trim()
                 errorUnits.value = false
             },
             label = {
@@ -119,6 +120,9 @@ fun FormCrop(){
                     modifier = Modifier.size(25.dp)
                 )
             },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
             isError = errorPrice.value,
             modifier = Modifier.fillMaxWidth()
         )}
@@ -141,6 +145,9 @@ fun FormCrop(){
                         modifier = Modifier.size(25.dp)
                     )
                 },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ),
                 isError = errorDurationDay.value,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -327,14 +334,14 @@ fun CultivoAddScreen(cultivoViewModel: CultivoViewModel, navController: NavContr
                                     if(namePlantation!="" && type.value!="" && !isNew.value){
                                         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                                         val currentDate = sdf.format(Date())
-                                        cultivoViewModel.createPlantation(Plantation(namePlantation, currentDate, idReference.value,"CREADO"))
+                                        cultivoViewModel.createPlantation(Plantation(name = namePlantation, dateStart = currentDate,referenceId= idReference.value, status = "CREADO"))
                                         navController.popBackStack()
                                     }
                                     if(namePlantation!="" && type.value!="" && isNew.value && units.value!="" && price.value != "" && durationDay.value!=""){
                                         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                                         val currentDate = sdf.format(Date())
-                                        idReference.value = cultivoViewModel.createCrop(Crop(name = type.value, units = units.value, durationDay = durationDay.value.toInt(), price=price.value.toDouble())).toString()
-                                        cultivoViewModel.createPlantation(Plantation(namePlantation, currentDate, idReference.value,"CREADO"))
+                                        idReference.value = cultivoViewModel.createCrop(Crop(name = type.value, units = units.value, durationDay = durationDay.value.toFloat().toInt(), price=price.value.toFloat().toDouble())).toString()
+                                        cultivoViewModel.createPlantation(Plantation(name=namePlantation, dateStart = currentDate, referenceId = idReference.value,status="CREADO"))
                                         navController.popBackStack()
                                     }
                                     if(namePlantation == ""){

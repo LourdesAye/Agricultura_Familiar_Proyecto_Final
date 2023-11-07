@@ -101,7 +101,7 @@ fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavControl
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
                                 product= Product(
                                     name = currentCrop.value.name,
-                                    amount = dialogCosecharCantidad.value.toInt(),
+                                    amount = dialogCosecharCantidad.value.toFloat().toInt(),
                                     units = currentCrop.value.units,
                                     price = currentCrop.value.price
                                 )

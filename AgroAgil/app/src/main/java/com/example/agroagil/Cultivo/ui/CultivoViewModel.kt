@@ -185,6 +185,5 @@ class CultivoViewModel : ViewModel() {
         updates["/$getKey"] = Plantation()
         Firebase.database.getReference("plantation/0/").updateChildren(updates)
 
-
     }
 }
