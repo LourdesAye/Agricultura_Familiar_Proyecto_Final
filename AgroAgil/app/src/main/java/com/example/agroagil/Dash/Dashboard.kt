@@ -44,11 +44,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.core.graphics.toColorInt
@@ -448,6 +452,91 @@ private fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
 
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
+    val totalWidth = ingresos + egresos
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(2.dp, borderColor),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Caja", color = textColor, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Tarjeta celeste
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 12.dp
+                ),
+                shape = MaterialTheme.shapes.medium,
+                border = BorderStroke(2.dp, borderColor), // Borde de la tarjeta verde
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Dibuja la barra de ingresos
+                    drawProgressBar(ingresos, totalWidth, Color(0xFF81C784), textColor)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Ingresos: $$ingresos", color = textColor, fontWeight = FontWeight.Bold)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Dibuja la barra de egresos
+                    drawProgressBar(egresos, totalWidth, Color(0xFFE57373), textColor)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Egresos: $$egresos", color = textColor, fontWeight = FontWeight.Bold)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val total = ingresos - egresos
+                    // Muestra el total con el borde suave
+                    Text(
+                        text = "Total: $$total",
+                        color = textColor,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun drawProgressBar(value: Int, total: Int, barColor: Color, textColor: Color) {
+    val fraction = if (total != 0) value.toFloat() / total.toFloat() else 0f
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(fraction)
+            .height(20.dp)
+            .background(brush = Brush.horizontalGradient(listOf(barColor, Color.Black)))
+    ) {
+        // Texto dentro de la barra de progreso
+       /*Text(
+            text = "$value",
+            color = textColor,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 4.dp, end = 4.dp)
+        ) */
+    }
+}
+
+/*
+@Composable
+fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
     var totalwidth = ingresos + egresos
     // Tarjeta verde que envuelve la tarjeta celeste
     Card(
@@ -535,55 +624,8 @@ fun DrawBar(value: Int, total: Int, barColor: Color, modifier: Modifier = Modifi
         drawRect(brush = gradientShader, size = Size(barWidth, maxHeight.toPx()))
     }
 }
-
-/*
-@Composable
-fun DrawBar(value: Int, total: Int, barcolor: Color, textColor: Color, modifier: Modifier = Modifier) {
-    val maxWidth = 220.dp
-    val maxHeight = 40.dp
-    val xOffset = 10.dp
-    val textoSize = 20.sp
-
-    Canvas(modifier = modifier
-        .fillMaxWidth()
-        .padding(start = 10.dp)
-        .height(maxHeight)
-    ) {
-        // Calcula el ancho de la barra proporcional al valor actual y el total
-        val barWidth = ((value.toFloat() / total.toFloat()) * maxWidth.toPx()).coerceAtMost(maxWidth.toPx())
-
-        // Crea un degradado vertical desde la barra hasta negro
-        val gradientShader = Brush.verticalGradient(
-            colors = listOf(barcolor, Color.Black),
-            startY = 0f,
-            endY = barWidth
-        )
-
-        // Dibuja la barra de progreso con el degradado
-        drawRect(brush = gradientShader, size = Size(barWidth, maxHeight.toPx()))
-
-        // Calcula la posición X del texto para que esté justo al final de la barra, pero dentro de la card
-        val textWidth = android.graphics.Paint().apply {
-            textSize = textoSize.toPx()
-        }.measureText("$value")
-
-        val textX = (barWidth - textWidth).coerceAtLeast(0f) + xOffset.toPx()
-
-        // Dibuja el texto en la posición adecuada
-        drawContext.canvas.nativeCanvas.drawText(
-            "$value",
-            textX,
-            size.height / 2 + textoSize.toPx() / 2, // Alineación vertical del texto en el centro de la barra
-            android.graphics.Paint().apply {
-                color = textColor.toArgb() // Color del texto
-                textSize = (textoSize/1.5).toPx() // Tamaño del texto en píxeles
-                isAntiAlias = true // Suaviza los bordes del texto para una mejor apariencia
-                typeface = android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD) // Estilo del texto (negrita)
-            }
-        )
-    }
-}
  */
+
 
 @Composable
 fun itemProductDash(item: Product) {
