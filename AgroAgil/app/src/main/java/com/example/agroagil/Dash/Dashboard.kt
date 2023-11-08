@@ -507,7 +507,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                     defaultElevation = 12.dp
                 ),
                 shape = MaterialTheme.shapes.medium,
-                border = BorderStroke(2.dp, textColor),
+                border = BorderStroke(1.dp, textColor),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.White
                 ),
@@ -568,72 +568,6 @@ fun drawProgressBar(value: Int, total: Int, barColor: Color, textColor: Color) {
 }
 
 /*
-@Composable
-fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
-    var totalwidth = ingresos + egresos
-    // Tarjeta verde que envuelve la tarjeta celeste
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
-        ),
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(2.dp, borderColor), // Borde de la tarjeta verde
-        colors = CardDefaults.cardColors(
-            containerColor = backgroundColor
-        ),
-    ) {
-        // Contenido de la tarjeta verde
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Caja", color = textColor, fontWeight = FontWeight.Bold)
-
-            // Tarjeta celeste
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-                ){
-                Column(modifier = Modifier.padding(16.dp)) {
-                    // Dibuja la barra de ingresos
-                    Text(
-                        text = "Ingresos: $$ingresos\n",
-                        color = textColor,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    DrawBar(ingresos, totalwidth, Color(0xFF81C784)) //verde
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Dibuja la barra de egresos
-                    Text(
-                        text = "Egresos: $$egresos\n",
-                        color = textColor,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    DrawBar(egresos, totalwidth, Color(0xFFE57373))
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    var total = ingresos - egresos
-                    // Muestra el total con el borde suave
-                    Text(
-                        text = "Total: $$total",
-                        color = textColor,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun DrawBar(value: Int, total: Int, barColor: Color, modifier: Modifier = Modifier) {
     val maxWidth = 220.dp
@@ -793,36 +727,6 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
     }
 }
 
-/*
-// mostrar fecha con otro formato. Puede servir
-fun DisplayBuyItem(buy: Buy, textColor: Color) {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) // Define el formato de fecha deseado
-    val formattedDate = dateFormat.format(Date(buy.date))
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .border(BorderStroke(1.dp, textColor), shape = MaterialTheme.shapes.small),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Muestra la información de la compra con la fecha formateada
-            Text(text = "${buy.nameUser}  $formattedDate", color = Color.Black)
-            // Muestra los productos de la compra utilizando la función itemProductDash
-            buy.items.forEach { product ->
-                itemProductDash(product)
-                val totalPrice = String.format("%.2f", product.amount * buy.price)
-                Text(
-                    "$$totalPrice"
-                )
-            }
-        }
-    }
-}
- */
-
 @Composable
 fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     Card(
@@ -942,6 +846,7 @@ fun DisplayLoanItem(loan: Loan, textColor: Color, backgroundColor: Color) {
     }
 }
 
+/*
 @Composable
 fun DisplayCropItem(crop: Plantation, textColor: Color, backgroundColor: Color) {
     Card(
@@ -979,6 +884,7 @@ fun DisplayCropItem(crop: Plantation, textColor: Color, backgroundColor: Color) 
         }
     }
 }
+ */
 
 @Composable
 fun CropCard(topCrops: List<Plantation>, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -989,17 +895,38 @@ fun CropCard(topCrops: List<Plantation>, backgroundColor: Color, borderColor: Co
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(2.dp, borderColor),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
-
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Cultivos", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "Plantaciones a cosechar", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
-            for (crop in topCrops) {
-                // Each crop is represented as a card with the specified format
-                DisplayCropItem(crop, textColor, backgroundColor)
+            for (plantation in topCrops) {
+                // mostrar cada plantación
+                DisplayPlantationItem(plantation, textColor, backgroundColor)
             }
+        }
+    }
+}
+
+@Composable
+fun DisplayPlantationItem(plantation: Plantation, textColor: Color, backgroundColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "${plantation.name}", color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Fecha de Inicio: ${plantation.dateStart}", color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Estado: ${plantation.status}", color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            // más campos...
         }
     }
 }

@@ -35,7 +35,7 @@ class DashboardViewModel : ViewModel() {
     val topPlantations: LiveData<List<Plantation>> get() = _topPlantations
 
     private fun fetchTopPlantations() {
-        Firebase.database.getReference("crop/0").get().addOnSuccessListener { snapshot ->
+        Firebase.database.getReference("plantation/0").get().addOnSuccessListener { snapshot ->
             val plantationsList = mutableListOf<Plantation>()
 
             snapshot.children.forEach { childSnapshot ->
@@ -45,21 +45,25 @@ class DashboardViewModel : ViewModel() {
                 }
             }
 
+            // Filtrar las plantaciones que no han sido cosechadas todavía
+            val nonHarvestedPlantations = plantationsList.filter { it.status != "COSECHADO" }
+
             // Formatear dates como "yyyy-MM-dd"
-            val formattedPlantations = plantationsList.map { plantation ->
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val formattedPlantations = nonHarvestedPlantations.map { plantation ->
+                val dateFormat = SimpleDateFormat("yyyy-dd-MM", Locale.getDefault())
                 val formattedDate = dateFormat.format(Date(plantation.dateStart))
                 plantation.copy(dateStart = formattedDate) // crea copia de plantación
             }
 
-            // Top 5, date descendiente
-            val topPlantations = formattedPlantations.sortedByDescending { it.dateStart }
+            // Top 5, date ascendente (las fechas más antiguas primero)
+            val topNonHarvestedPlantations = formattedPlantations.sortedBy { it.dateStart }
                 .take(5)
-            _topPlantations.postValue(topPlantations)
+            _topPlantations.postValue(topNonHarvestedPlantations)
         }.addOnFailureListener { exception ->
             // Manejo error
         }
     }
+
 
     init {
         fetchTopPlantations()
