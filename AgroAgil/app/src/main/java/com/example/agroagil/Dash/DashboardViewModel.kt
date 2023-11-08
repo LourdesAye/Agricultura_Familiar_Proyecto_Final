@@ -81,6 +81,7 @@ class DashboardViewModel : ViewModel() {
         fetchAllBuys()
     }
 
+    // esto tiene las fechas en formato dd-MM-yyyy
     private fun fetchAllSells() {
         Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Sells::class.java) as? Sells
@@ -171,7 +172,7 @@ class DashboardViewModel : ViewModel() {
             value?.let {
                 // Formatea las fechas al estilo "yyyy-MM-dd"
                 val formattedSells = it.sells.map { sell ->
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault()) //ver esto
                     val formattedDate = dateFormat.format(Date(sell.date))
                     sell.copy(date = formattedDate) // Crea una copia del objeto Sell con la fecha formateada
                 }
@@ -201,7 +202,7 @@ class DashboardViewModel : ViewModel() {
             value?.let {
                 // Formatea las fechas al estilo "yyyy-MM-dd"
                 val formattedBuys = it.buys.map { buy ->
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
                     val formattedDate = dateFormat.format(Date(buy.date))
                     buy.copy(date = formattedDate) // Crea una copia del objeto Buy con la fecha formateada
                 }
@@ -228,7 +229,7 @@ class DashboardViewModel : ViewModel() {
             value?.let {
                 // Formatea las fechas al estilo "yyyy-MM-dd"
                 val formattedLoans = it.loans.map { loan ->
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
                     val formattedDate = dateFormat.format(Date(loan.date))
                     loan.copy(date = formattedDate) // Crea una copia del objeto Loan con la fecha formateada
                 }

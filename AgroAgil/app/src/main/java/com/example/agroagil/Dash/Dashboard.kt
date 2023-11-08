@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -503,7 +504,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
                     defaultElevation = 12.dp
                 ),
                 shape = MaterialTheme.shapes.medium,
-                border = BorderStroke(2.dp, borderColor), // Borde de la tarjeta verde
+                border = BorderStroke(2.dp, textColor),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.White
                 ),
@@ -523,18 +524,22 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
 
                     Spacer(modifier = Modifier.height(16.dp))
                     val total = ingresos - egresos
-                    // Muestra el total con el borde suave
+                    // Muestra el total alineado a la derecha
                     Text(
                         text = "Total: $$total",
                         color = textColor,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.End) // Alinea el texto a la derecha
                     )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun drawProgressBar(value: Int, total: Int, barColor: Color, textColor: Color) {
@@ -738,7 +743,7 @@ fun BuyCard(topBuys: List<Buy>, backgroundColor: Color, borderColor: Color, text
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Compras", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "Últimas Compras", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             for (buy in topBuys.take(5)) {
@@ -827,7 +832,7 @@ fun SellCard(topSells: List<Sell>, backgroundColor: Color, borderColor: Color, t
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Ventas", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "Últimas Ventas", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             for (sell in topSells.take(5)) {
@@ -887,7 +892,7 @@ fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, t
     ) {
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Préstamos", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "Préstamos pendientes", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             for (loan in topLoans.take(5)) {
