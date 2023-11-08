@@ -494,6 +494,7 @@ class MainActivity : ComponentActivity() {
                             {
                                 CultivoTypeInfoEdit(
                                     cultivoViewModel,
+                                    stockViewModel,
                                     navController
                                 )
                             }
