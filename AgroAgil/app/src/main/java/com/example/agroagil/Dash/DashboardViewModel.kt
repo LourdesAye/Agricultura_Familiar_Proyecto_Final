@@ -116,6 +116,32 @@ class DashboardViewModel : ViewModel() {
     }
 
     fun getTotalIncome(): Double {
+        val thirtyDaysAgo = Calendar.getInstance()
+        thirtyDaysAgo.add(Calendar.DAY_OF_MONTH, -30)
+
+        return _allSells.value?.flatMap { sell ->
+            sell.items.filter { product ->
+                val sellDate = SimpleDateFormat("dd/MM/yyyy").parse(sell.date)
+                sellDate.after(thirtyDaysAgo.time) // Filtrar las ventas de los últimos 30 días
+            }.map { product -> product.amount * sell.price }
+        }?.sum() ?: 0.0
+    }
+
+    fun getTotalExpenses(): Double {
+        val thirtyDaysAgo = Calendar.getInstance()
+        thirtyDaysAgo.add(Calendar.DAY_OF_MONTH, -30)
+
+        return _allBuys.value?.flatMap { buy ->
+            buy.items.filter { product ->
+                val buyDate = SimpleDateFormat("dd/MM/yyyy").parse(buy.date)
+                buyDate.after(thirtyDaysAgo.time) // Filtrar las compras de los últimos 30 días
+            }.map { product -> product.amount * buy.price }
+        }?.sum() ?: 0.0
+    }
+
+
+/*
+    fun getTotalIncome(): Double {
         return _allSells.value?.flatMap { sell ->
             sell.items.map { product -> product.amount * sell.price }
         }?.sum() ?: 0.0
@@ -126,6 +152,8 @@ class DashboardViewModel : ViewModel() {
             buy.items.map { product -> product.amount * buy.price }
         }?.sum() ?: 0.0
     }
+
+*/
 
     // ----------------------- Ventas
 
@@ -237,7 +265,13 @@ class DashboardViewModel : ViewModel() {
         try {
             val tasks = taskViewModel.taskRepository.getTaskCardsForUser(userId).take(5) // Solo toma las primeras 5 tareas
 
+            /*
             val sortedTasks = tasks.sortedByDescending { task ->
+                task.isoDate
+            }
+            */
+
+            val sortedTasks = tasks.sortedBy { task ->
                 task.isoDate
             }
 

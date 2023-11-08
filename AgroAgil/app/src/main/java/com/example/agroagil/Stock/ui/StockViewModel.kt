@@ -63,13 +63,20 @@ class StockViewModel : ViewModel() {
         }
 
     }
-    fun addUpdateProduct(stock: Stock) {
+    fun addUpdateProduct(stockNew: Stock) {
         var getKey: String?
+        var stock = stockNew
         if(stock.id ==""){
-        getKey = Firebase.database.getReference("stockSummary/0/").push().key
-        if (getKey != null) {
-            stock.id = getKey
-        }
+            var result = stockEnBaseDeDatos.value!!.find {it.product.name == stock.product.name}
+            if(result != null){
+                getKey = result.id
+                result.product.amount = result.product.amount+stock.product.amount
+                stock = result
+            }else{
+            getKey = Firebase.database.getReference("stockSummary/0/").push().key
+            if (getKey != null) {
+                stock.id = getKey
+            }}
         }else{
             getKey = stock.id
         }
@@ -77,29 +84,5 @@ class StockViewModel : ViewModel() {
         updates["/$getKey"] = stock
         Firebase.database.getReference("stockSummary/0/").updateChildren(updates)
         setFarm()
-    }
-
-    fun addBuy(buy: Stock) {
-        val currentBuys = mutableListOf<Stock>()
-        stockEnBaseDeDatos.value?.let {
-            currentBuys.clear()
-            currentBuys.addAll(it)
-            currentBuys.add(buy)
-            Firebase.database.getReference("stockSummary/0").setValue(Stocks(currentBuys))
-            setFarm()
-        }
-    }
-
-    fun updateBuy(buy: Stock, indexLoan: Int) {
-        val currentBuy = mutableListOf<Stock>()
-
-        stockEnBaseDeDatos.value?.let {
-            currentBuy.clear()
-            currentBuy.addAll(it)
-            currentBuy[indexLoan] = buy
-            Firebase.database.getReference("stockSummary/0").setValue(Stocks(currentBuy))
-            setFarm()
-        }
-
     }
 }

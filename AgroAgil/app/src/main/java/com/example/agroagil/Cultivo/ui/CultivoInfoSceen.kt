@@ -4,24 +4,34 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.ArrowCircleRight
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.agroagil.Buy.ui.BuyViewModel
+import com.example.agroagil.Stock.ui.dialogEditOpen
 import com.example.agroagil.Summary.dataDateStart
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Crop
@@ -46,22 +57,86 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
+import androidx.compose.ui.text.input.KeyboardType.Companion.Number
+import com.example.agroagil.Stock.ui.StockViewModel
+import com.example.agroagil.core.models.Product
+import com.example.agroagil.core.models.Stock
 
 var currentPlantation = mutableStateOf(Plantation())
 var currentCrop = mutableStateOf(Crop())
+var dialogCosecharOpen = mutableStateOf(false)
+var dialogCosecharCantidadError = mutableStateOf(false)
+var dialogCosecharCantidad = mutableStateOf("")
+
+@Composable
+fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavController, stockViewModel: StockViewModel){
+    if(dialogCosecharOpen.value){
+        AlertDialog(
+            onDismissRequest = {
+                dialogCosecharOpen.value = false
+            },
+            title = {
+                Text(text = "Cosechar")
+            },
+            text = {
+                OutlinedTextField(
+                    value = dialogCosecharCantidad.value,
+                    onValueChange = { dialogCosecharCantidad.value = it },
+                    label = { Text("Cuantos "+ currentCrop.value.units+" fue cosechado?") },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = Number
+                    ),
+                    isError = dialogCosecharCantidadError.value
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (dialogCosecharCantidad.value==""){
+                            dialogCosecharCantidadError.value = true
+                        }else{
+                            currentPlantation.value.status = "COSECHADO"
+                            cultivoViewModel.updatePlantation(currentPlantation.value)
+                            stockViewModel.addUpdateProduct(Stock(type="Cultivo", date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                product= Product(
+                                    name = currentCrop.value.name,
+                                    amount = dialogCosecharCantidad.value.toFloat().toInt(),
+                                    units = currentCrop.value.units,
+                                    price = currentCrop.value.price
+                                )
+                            ))
+                            dialogCosecharOpen.value = false
+                            navController.popBackStack()
+                        }
+                    }) {
+                    Text("Guardar")
+                }},
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            dialogEditOpen.value = false
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                })}
+
+}
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoViewModel, plantationId: String){
+fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoViewModel, plantationId: String, stockViewModel: StockViewModel){
     cultivoViewModel.getPlantation(plantationId)
     var valuesPlantation = cultivoViewModel.currentPlantation?.observeAsState()?.value
+    var stocks = stockViewModel.stockEnBaseDeDatos?.observeAsState()?.value
     var valuesCrop: Crop? = null
     if (valuesPlantation != null) {
         cultivoViewModel.getCrop(valuesPlantation.referenceId)
         valuesCrop = cultivoViewModel.currentCrop?.observeAsState()?.value
     }
-    if (valuesPlantation == null || valuesCrop==null){
+    if (valuesPlantation == null || valuesCrop==null || stocks==null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -175,6 +250,19 @@ fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoView
                     )
                     Divider()
                 }
+                Button(onClick = { dialogCosecharOpen.value=true},
+                        modifier= Modifier
+                            .padding(end = 20.dp, bottom = 40.dp, top = 40.dp)
+                            .align(Alignment.End)) {
+                Icon(
+                    Icons.Filled.Agriculture,
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(30.dp)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Cosechar")
+                }
+                dialogCosechar(cultivoViewModel, navController, stockViewModel)
             }
         }
     }

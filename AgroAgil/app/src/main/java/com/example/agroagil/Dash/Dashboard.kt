@@ -34,8 +34,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -385,6 +388,12 @@ fun TaskCardDash(
 
     val currentDate = LocalDate.now()
 
+    // Calcula el número de tareas atrasadas (con fecha menor y no completadas)
+    val backlogTasksCount = topTasksState?.count { task ->
+        val taskDate = LocalDate.parse(task?.isoDate?.substring(0, 10) ?: "")
+        taskDate.isBefore(currentDate) && !(task?.completed ?: true)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,11 +404,31 @@ fun TaskCardDash(
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Row para la campanita y el número de tareas atrasadas
+
             Text(text = "Próximas tareas", color = textColor, fontWeight = FontWeight.Bold)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.NotificationsActive,
+                    contentDescription = null,
+                    tint = Color.Red
+                )
+                Text(
+                    text = "$backlogTasksCount tareas atrasadas",
+                    color = textColor
+                )
+            }
 
             topTasksState?.forEach { task ->
                 val taskDate = LocalDate.parse(task?.isoDate?.substring(0, 10) ?: "")
-                if (taskDate.isEqual(currentDate) || taskDate.isAfter(currentDate)) {
+                if (taskDate.isEqual(currentDate) || taskDate.isAfter(currentDate) || (taskDate.isBefore(currentDate) && !(task?.completed ?: true))) {
                     val cardColor = getCardColor(task?.highPriority ?: false, task?.completed ?: false)
                     Card(
                         modifier = Modifier
@@ -436,8 +465,6 @@ fun TaskCardDash(
     }
 }
 
-
-
 private data class CardColor(val surfaceColor: String, val textColor: String)
 
 private fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
@@ -447,8 +474,6 @@ private fun getCardColor(highPriority: Boolean, completed: Boolean): CardColor {
         return CardColor(INCOMPLETE_IMPORTANT_TASK_CARD_COLOR, INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR)
     return CardColor(INCOMPLETE_NORMAL_TASK_CARD_COLOR, INCOMPLETE_NORMAL_TASK_TEXT_COLOR)
 }
-
-
 
 @Composable
 fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: Color, textColor: Color) {
@@ -466,7 +491,7 @@ fun CashCard(ingresos: Int, egresos: Int, backgroundColor: Color, borderColor: C
         ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Caja", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "Caja - Últimos 30 días", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
 
             // Tarjeta celeste
