@@ -408,23 +408,26 @@ fun TaskCardDash(
             // Row para la campanita y el número de tareas atrasadas
 
             Text(text = "Próximas tareas", color = textColor, fontWeight = FontWeight.Bold)
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.NotificationsActive,
-                    contentDescription = null,
-                    tint = Color.Red
-                )
-                Text(
-                    text = "$backlogTasksCount tareas atrasadas",
-                    color = textColor
-                )
+            if (backlogTasksCount != null) {
+                if (backlogTasksCount > 0) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotificationsActive,
+                            contentDescription = null,
+                            tint = Color.Red
+                        )
+                        Text(
+                            text = "Tareas atrasadas: $backlogTasksCount",
+                            color = textColor
+                        )
+                    }
+                }
             }
 
             topTasksState?.forEach { task ->
