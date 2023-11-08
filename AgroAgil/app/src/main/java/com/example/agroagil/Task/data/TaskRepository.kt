@@ -50,4 +50,9 @@ class TaskRepository {
     suspend fun deleteTaskForUser(userId: Int, taskId: String): Boolean {
         return firebaseApi.deleteTaskForUser(userId, taskId)
     }
+
+    suspend fun updateTaskForUser(task: Task, userId: Int, taskId: String): Boolean {
+        return firebaseApi.updateTaskForUser(task, userId, taskId)
+    }
+
 }

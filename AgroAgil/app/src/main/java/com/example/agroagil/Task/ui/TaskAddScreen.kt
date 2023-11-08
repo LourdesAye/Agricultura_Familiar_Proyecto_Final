@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Person2
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -57,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
@@ -67,108 +69,136 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.agroagil.R
+import com.example.agroagil.Task.model.TaskForAddScreen
 import com.example.agroagil.core.models.Member
 import java.util.Calendar
 
 
 @Composable
-fun TaskAddScreen (taskViewModel: TaskAddViewModel, navController: NavController) {
+fun TaskAddScreen (taskViewModel: TaskAddViewModel, navController: NavController, editMode: Boolean = false, taskToEditId: String = "") {
     val showDatePickerDialog = remember { mutableStateOf(false) }
     var showTimePicker = remember { mutableStateOf(false) }
     val dateSelectedString = taskViewModel.dateSelectedString.observeAsState().value
     val timeSelectedString = taskViewModel.timeSelectedString.observeAsState().value
-    var taskToCreate = taskViewModel.taskToCreate.observeAsState().value
 
-    val scrollState = rememberScrollState()
+    var taskToCreate: TaskForAddScreen?
+    if(editMode)
+        taskToCreate = taskViewModel.taskToEdit.observeAsState().value
+    else taskToCreate = taskViewModel.taskToCreate.observeAsState().value
+
     val taskSaved: Boolean = taskViewModel.taskSaved.observeAsState().value!!
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ){
-        Text(
-            "Agrega una tarea",
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 30.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        )
-
-        OutlinedTextFieldWithIcon(taskToCreate!!.description,
-            { taskViewModel.onDescriptionChange(it) }, "Descripción")
-
-        //Fecha
-        TextButtonWithIcon(
-            onClick = { showDatePickerDialog.value = true },
-            icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
-            text = dateSelectedString!!
-        )
-        DatePickerScreen(showDatePickerDialog, taskViewModel)
-
-        //Hora
-        TextButtonWithIcon(
-            onClick = { showTimePicker.value = true },
-            icon = { Icon(
-                painter = painterResource(id = R.drawable.clock_24),
-                contentDescription = "Time Picker Icon"
-            )
-            },
-            text = timeSelectedString!!
-        )
-        TimePickerDialogScreen(showTimePicker, taskViewModel)
-
-        //Estimación de tiempo
-        OutlinedNumericField(taskToCreate!!.durationHours.toString(),
-            { taskViewModel.onEstimationChange(it) },"Estimación de tiempo necesário (Hs)")
-
-        //Ubicación en el campo
-        OutlinedTextFieldWithIcon(taskToCreate!!.locationInFarm,
-            { taskViewModel.onLocationInFarmChange(it) }, "Ubicación en el campo")
-
-
-        //Responsables de la tarea
-        ResponsibleEditableDropdownMenu(taskViewModel)
-        MemberChipsRow(members = taskToCreate!!.resposibles, taskViewModel)
-
-
-        //Prioridad alta
-        SwitchWithText("Tiene prioridad alta", taskToCreate!!.highPriority, { taskViewModel.onHighPriorityChange() })
-        //Instrucciones detalladas
-
-        OutlinedTextFieldWithIcon(taskToCreate!!.detailedInstructions,
-            { taskViewModel.onDetailedInstructionsChange(it) }, "Instrucciones detalladas")
-
-        //Repetición
-        SwitchWithText("Se repite", taskToCreate!!.repeatable, { taskViewModel.onRepetitionChange() })
-        //Frecuencia de repetición
-        if(taskToCreate!!.repeatable) {
-
-            OutlinedNumericField(taskToCreate!!.repetitionIntervalInDays.toString(),
-                { taskViewModel.onFrequencyOfRepetitionChange(it) },"Días entre repetición")
-
+    // Handle side effects such as navigation
+    LaunchedEffect(taskSaved) {
+        if (taskSaved) {
+            taskViewModel.taskUnsaved()
+            navController.popBackStack()
         }
+    }
 
-        //Recordatorio
-        //Botones de guardado y cancelar
-        SaveOrCancelButtonsRow(
-            onSave = {
-                taskViewModel.onSave()
-            },
-            onCancel = {
-                navController.popBackStack()
-            }
-        )
+    if(taskToCreate == null) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+            .fillMaxSize()) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .semantics(mergeDescendants = true) {}
+                    .padding(10.dp)
+            )
+        }
+    } else {
+        val scrollState = rememberScrollState()
+        val mainTitle = if(editMode) "Editar tarea" else "Agrega una tarea"
 
-        // Handle side effects such as navigation
-        LaunchedEffect(taskSaved) {
-            if (taskSaved) {
-                taskViewModel.taskUnsaved()
-                navController.popBackStack()
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+
+            Text(
+                mainTitle,
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            OutlinedTextFieldWithIcon(taskToCreate!!.description,
+                { taskViewModel.onDescriptionChange(it) }, "Descripción"
+            )
+
+            //Fecha
+            TextButtonWithIcon(
+                onClick = { showDatePickerDialog.value = true },
+                icon = { Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon") },
+                text = dateSelectedString!!
+            )
+            DatePickerScreen(showDatePickerDialog, taskViewModel)
+
+            //Hora
+            TextButtonWithIcon(
+                onClick = { showTimePicker.value = true },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.clock_24),
+                        contentDescription = "Time Picker Icon"
+                    )
+                },
+                text = timeSelectedString!!
+            )
+            TimePickerDialogScreen(showTimePicker, taskViewModel)
+
+            //Estimación de tiempo
+            OutlinedNumericField(taskToCreate!!.durationHours.toString(),
+                { taskViewModel.onEstimationChange(it) }, "Estimación de tiempo necesário (Hs)"
+            )
+
+            //Responsables de la tarea
+            ResponsibleEditableDropdownMenu(taskViewModel)
+            MemberChipsRow(members = taskToCreate!!.resposibles, taskViewModel)
+
+
+            //Prioridad alta
+            SwitchWithText(
+                "Tiene prioridad alta",
+                taskToCreate!!.highPriority,
+                { taskViewModel.onHighPriorityChange() })
+            //Instrucciones detalladas
+
+            OutlinedTextFieldWithIcon(taskToCreate!!.detailedInstructions,
+                { taskViewModel.onDetailedInstructionsChange(it) }, "Instrucciones detalladas"
+            )
+
+            //Repetición
+            SwitchWithText(
+                "Se repite",
+                taskToCreate!!.repeatable,
+                { taskViewModel.onRepetitionChange() })
+            //Frecuencia de repetición
+            if (taskToCreate!!.repeatable) {
+
+                OutlinedNumericField(taskToCreate!!.repetitionIntervalInDays.toString(),
+                    { taskViewModel.onFrequencyOfRepetitionChange(it) }, "Días entre repetición"
+                )
+
             }
+
+            //Recordatorio
+            //Botones de guardado y cancelar
+            SaveOrCancelButtonsRow(
+                onSave = {
+                    if(editMode)
+                        taskViewModel.onSave(taskToEditId)
+                    else taskViewModel.onSave()
+                },
+                onCancel = {
+                    navController.popBackStack()
+                }
+            )
+
         }
     }
 }

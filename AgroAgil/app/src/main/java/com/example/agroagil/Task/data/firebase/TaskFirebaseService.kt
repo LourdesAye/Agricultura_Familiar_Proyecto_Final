@@ -160,5 +160,23 @@ class TaskFirebaseService {
         }
     }
 
+    suspend fun updateTaskForUser(task: Task, userId: Int, taskId: String): Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            val taskReference = Firebase.database.getReference("$PARENT_TASK_PATH$userId$CHILD_TASK_LIST_PATH$taskId")
+
+            taskReference.setValue(task)
+                .addOnSuccessListener {
+                    // The update was successful, invoke the callback with true
+                    continuation.resume(true)
+                }
+                .addOnFailureListener { exception ->
+                    // The update failed, print the exception and resume the coroutine with false
+                    exception.printStackTrace()
+                    continuation.resume(false)
+                }
+        }
+    }
+
+
 }
 

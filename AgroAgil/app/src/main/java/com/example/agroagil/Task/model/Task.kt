@@ -16,7 +16,6 @@ data class Task(
     val highPriority: Boolean = false,
 
     val completionIsoDate: String = "", //Ej 2001-01-01T00:00:00-03:00
-    val locationInFarm: String = "",
     val resposibles: List<Member> = emptyList(),
     val detailedInstructions: String = "",
     val repeatable: Boolean = false,
@@ -37,7 +36,6 @@ data class Task(
             completed = this.completed,
             highPriority = this.highPriority,
             completionIsoDate = this.completionIsoDate,
-            locationInFarm = this.locationInFarm,
             resposibles = this.resposibles,
             detailedInstructions = this.detailedInstructions,
             repeatable = this.repeatable,
