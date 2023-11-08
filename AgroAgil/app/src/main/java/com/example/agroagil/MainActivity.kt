@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity() {
                     val sellViewModel = SellViewModel()
                     val taskViewModel = TaskViewModel()
                     val taskAddViewModel = TaskAddViewModel()
+                    val taskEditViewModel = TaskAddViewModel(editMode = true)
                     val buyViewModel = BuyViewModel()
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
@@ -603,7 +604,7 @@ class MainActivity : ComponentActivity() {
                                 )
                                 {
                                     TaskEditScreen(
-                                        taskViewModel = taskViewModel,
+                                        taskEditViewModel = taskEditViewModel,
                                         navController = navController,
                                         taskId = taskId
                                     )

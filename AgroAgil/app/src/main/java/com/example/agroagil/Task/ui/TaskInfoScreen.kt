@@ -45,6 +45,7 @@ import com.example.agroagil.core.models.Member
 
 @Composable
 fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, taskId: String) {
+    taskViewModel.getTaskToVisualize(taskId)
     var taskToVisualize = taskViewModel.taskToVisualize.observeAsState().value
     val taskDeleted = taskViewModel.taskDeleted.observeAsState().value!!
 
@@ -89,8 +90,7 @@ fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, 
             ) {
                 Icon(Icons.Default.DateRange, contentDescription = "Date Picker Icon")
                 Text(
-                    text = "El día ${taskToVisualize.getTaskFormatDate()!!}",
-                    fontWeight = FontWeight.Bold
+                    text = "El día ${taskToVisualize.getTaskFormatDate()!!}"
                 )
             }
 
@@ -100,17 +100,13 @@ fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, 
             ) {
                 Icon(painter = painterResource(id = R.drawable.clock_24), contentDescription = "Time Picker Icon")
                 Text(
-                    text = "A las ${taskToVisualize.getTaskFormatTime()!!} horas",
-                    fontWeight = FontWeight.Bold
+                    text = "A las ${taskToVisualize.getTaskFormatTime()!!} horas"
                 )
             }
 
 
             //Estimación de tiempo
             OutlinedTextFieldReadOnly(taskToVisualize!!.durationHours.toString(),"Estimación de tiempo necesário (Hs)")
-
-            //Ubicación en el campo
-            OutlinedTextFieldReadOnly(taskToVisualize!!.locationInFarm, "Ubicación en el campo")
 
 
             //Responsables de la tarea
