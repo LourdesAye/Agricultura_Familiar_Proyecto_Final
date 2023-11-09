@@ -1,4 +1,6 @@
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,22 +26,25 @@ import java.net.HttpURLConnection
 import java.net.URL
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 class DashboardViewModel : ViewModel() {
 
     // cultivos
     private val _topPlantations = MutableLiveData<List<Pair<Plantation, Crop>>>()
     val topPlantations: LiveData<List<Pair<Plantation, Crop>>> get() = _topPlantations
 
-    private fun fetchTopPlantations() {
-        val plantationsList = mutableListOf<Plantation>()
-        val cropsList = mutableListOf<Crop>()
 
-        // Obtener todas las plantaciones
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchTopPlantations() {
         Firebase.database.getReference("plantation/0").get().addOnSuccessListener { snapshot ->
+            val plantationsList = mutableListOf<Plantation>()
+            val cropsList = mutableListOf<Crop>()
+
             snapshot.children.forEach { childSnapshot ->
                 val plantation = childSnapshot.getValue(Plantation::class.java)
                 plantation?.let {
@@ -66,9 +71,14 @@ class DashboardViewModel : ViewModel() {
                     matchingCrop?.let { Pair(plantation, it) }
                 }
 
-                // Top 5, date ascendente (las fechas más antiguas primero)
+                // Formatear las fechas y obtener las 5 plantaciones no cosechadas más antiguas
+                val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                 val topNonHarvestedPlantations = combinedList.sortedBy { it.first.dateStart }
                     .take(5)
+                    .map { pair ->
+                        val formattedDate = pair.first.dateStart.format(dateFormat)
+                        Pair(pair.first.copy(dateStart = formattedDate), pair.second)
+                    }
                 _topPlantations.postValue(topNonHarvestedPlantations)
 
                 // Hacer algo con topNonHarvestedPlantations, por ejemplo, almacenarlo en una variable de estado
@@ -81,9 +91,12 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
+
     init {
         fetchTopPlantations()
     }
+
+
 
     // -------------- Ingresos y egresos
     private val _allSells = MutableLiveData<List<Sell>>()
