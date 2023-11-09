@@ -31,15 +31,12 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
 class DashboardViewModel : ViewModel() {
 
     // cultivos
     private val _topPlantations = MutableLiveData<List<Pair<Plantation, Crop>>>()
     val topPlantations: LiveData<List<Pair<Plantation, Crop>>> get() = _topPlantations
 
-
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchTopPlantations() {
         Firebase.database.getReference("plantation/0").get().addOnSuccessListener { snapshot ->
             val plantationsList = mutableListOf<Plantation>()
@@ -72,7 +69,7 @@ class DashboardViewModel : ViewModel() {
                 }
 
                 // Formatear las fechas y obtener las 5 plantaciones no cosechadas más antiguas
-                val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy")
                 val topNonHarvestedPlantations = combinedList.sortedBy { it.first.dateStart }
                     .take(5)
                     .map { pair ->
