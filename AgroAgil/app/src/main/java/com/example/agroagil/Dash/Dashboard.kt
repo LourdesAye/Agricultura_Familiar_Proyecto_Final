@@ -917,14 +917,14 @@ fun DisplayPlantationItem(plantation: Plantation, textColor: Color, backgroundCo
             .padding(vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        colors = CardDefaults.cardColors(containerColor = Color(android.graphics.Color.parseColor("#E5EFE5")))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "${plantation.name}", color = textColor)
+            Text(text = "${plantation.name}", color = textColor, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Fecha de Inicio: ${plantation.dateStart}", color = textColor)
+            Text(text = "Fecha de Inicio: ${plantation.dateStart}", color = Color.Black)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Estado: ${plantation.status}", color = textColor)
+            Text(text = "Estado: ${plantation.status}", color = Color.Black)
             Spacer(modifier = Modifier.height(8.dp))
             // más campos...
         }
