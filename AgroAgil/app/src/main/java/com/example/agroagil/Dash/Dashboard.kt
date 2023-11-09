@@ -22,14 +22,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -41,27 +39,15 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.agroagil.Loan.ui.SelectColorCard
 import com.example.agroagil.R
 import com.example.agroagil.Task.ui.COMPLETED_TASK_CARD_COLOR
@@ -70,21 +56,17 @@ import com.example.agroagil.Task.ui.INCOMPLETE_IMPORTANT_TASK_CARD_COLOR
 import com.example.agroagil.Task.ui.INCOMPLETE_IMPORTANT_TASK_TEXT_COLOR
 import com.example.agroagil.Task.ui.INCOMPLETE_NORMAL_TASK_CARD_COLOR
 import com.example.agroagil.Task.ui.INCOMPLETE_NORMAL_TASK_TEXT_COLOR
-import com.example.agroagil.Task.ui.RoundCheckbox
-import com.example.agroagil.Task.ui.TaskViewModel
 import com.example.agroagil.Task.ui.TextDate
 import com.example.agroagil.core.models.Buy
+import com.example.agroagil.core.models.Crop
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Plantation
 import com.example.agroagil.core.models.Product
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.util.Date
 import java.util.TimeZone
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.min
 
 
 val weatherDescriptionsMap = mapOf(
@@ -887,7 +869,7 @@ fun DisplayCropItem(crop: Plantation, textColor: Color, backgroundColor: Color) 
  */
 
 @Composable
-fun CropCard(topCrops: List<Plantation>, backgroundColor: Color, borderColor: Color, textColor: Color) {
+fun CropCard(topCrops: List<Pair<Plantation, Crop>>, backgroundColor: Color, borderColor: Color, textColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -910,7 +892,7 @@ fun CropCard(topCrops: List<Plantation>, backgroundColor: Color, borderColor: Co
 }
 
 @Composable
-fun DisplayPlantationItem(plantation: Plantation, textColor: Color, backgroundColor: Color) {
+fun DisplayPlantationItem(plantation: Pair<Plantation, Crop>, textColor: Color, backgroundColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -920,11 +902,12 @@ fun DisplayPlantationItem(plantation: Plantation, textColor: Color, backgroundCo
         colors = CardDefaults.cardColors(containerColor = Color(android.graphics.Color.parseColor("#E5EFE5")))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "${plantation.name}", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "${plantation.second.name}", color = textColor, fontWeight = FontWeight.Bold)
+            Text(text = "(${plantation.first.name})", color = textColor)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Fecha de Inicio: ${plantation.dateStart}", color = Color.Black)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Estado: ${plantation.status}", color = Color.Black)
+            val originalDate = plantation.first.dateStart
+            val formattedDate = originalDate.substring(0, 10) // Obtener los primeros 10 caracteres (la parte de la fecha)
+            Text(text = formattedDate, color = Color.Black)
             Spacer(modifier = Modifier.height(8.dp))
             // más campos...
         }

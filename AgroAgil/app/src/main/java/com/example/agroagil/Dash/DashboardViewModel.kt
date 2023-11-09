@@ -31,13 +31,15 @@ import java.util.Locale
 class DashboardViewModel : ViewModel() {
 
     // cultivos
-    private val _topPlantations = MutableLiveData<List<Plantation>>()
-    val topPlantations: LiveData<List<Plantation>> get() = _topPlantations
+    private val _topPlantations = MutableLiveData<List<Pair<Plantation, Crop>>>()
+    val topPlantations: LiveData<List<Pair<Plantation, Crop>>> get() = _topPlantations
 
     private fun fetchTopPlantations() {
-        Firebase.database.getReference("plantation/0").get().addOnSuccessListener { snapshot ->
-            val plantationsList = mutableListOf<Plantation>()
+        val plantationsList = mutableListOf<Plantation>()
+        val cropsList = mutableListOf<Crop>()
 
+        // Obtener todas las plantaciones
+        Firebase.database.getReference("plantation/0").get().addOnSuccessListener { snapshot ->
             snapshot.children.forEach { childSnapshot ->
                 val plantation = childSnapshot.getValue(Plantation::class.java)
                 plantation?.let {
@@ -45,30 +47,43 @@ class DashboardViewModel : ViewModel() {
                 }
             }
 
-            // Filtrar las plantaciones que no han sido cosechadas todavía
-            val nonHarvestedPlantations = plantationsList.filter { it.status != "COSECHADO" }
+            // Obtener todos los cultivos
+            Firebase.database.getReference("crop/0").get().addOnSuccessListener { cropSnapshot ->
+                cropSnapshot.children.forEach { childSnapshot ->
+                    val crop = childSnapshot.getValue(Crop::class.java)
+                    crop?.let {
+                        cropsList.add(it)
+                    }
+                }
 
-            // Formatear dates como "yyyy-MM-dd"
-            val formattedPlantations = nonHarvestedPlantations.map { plantation ->
-                val dateFormat = SimpleDateFormat("yyyy-dd-MM", Locale.getDefault())
-                val formattedDate = dateFormat.format(Date(plantation.dateStart))
-                plantation.copy(dateStart = formattedDate) // crea copia de plantación
+                // Filtrar las plantaciones que no han sido cosechadas todavía
+                val nonHarvestedPlantations = plantationsList.filter { it.status != "COSECHADO" }
+
+                // Combinar plantaciones y cultivos usando el ID de referencia de cada cultivo
+                val combinedList = nonHarvestedPlantations.mapNotNull { plantation ->
+                    val cropId = plantation.referenceId
+                    val matchingCrop = cropsList.firstOrNull { crop -> crop.id == cropId }
+                    matchingCrop?.let { Pair(plantation, it) }
+                }
+
+                // Top 5, date ascendente (las fechas más antiguas primero)
+                val topNonHarvestedPlantations = combinedList.sortedBy { it.first.dateStart }
+                    .take(5)
+                _topPlantations.postValue(topNonHarvestedPlantations)
+
+                // Hacer algo con topNonHarvestedPlantations, por ejemplo, almacenarlo en una variable de estado
+                // o notificar a los observadores, según el patrón de arquitectura que estés utilizando
+            }.addOnFailureListener { exception ->
+                // Manejo de errores al obtener los cultivos
             }
-
-            // Top 5, date ascendente (las fechas más antiguas primero)
-            val topNonHarvestedPlantations = formattedPlantations.sortedBy { it.dateStart }
-                .take(5)
-            _topPlantations.postValue(topNonHarvestedPlantations)
         }.addOnFailureListener { exception ->
-            // Manejo error
+            // Manejo de errores al obtener las plantaciones
         }
     }
-
 
     init {
         fetchTopPlantations()
     }
-
 
     // -------------- Ingresos y egresos
     private val _allSells = MutableLiveData<List<Sell>>()
