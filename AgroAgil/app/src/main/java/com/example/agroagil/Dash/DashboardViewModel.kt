@@ -78,8 +78,6 @@ class DashboardViewModel : ViewModel() {
                     }
                 _topPlantations.postValue(topNonHarvestedPlantations)
 
-                // Hacer algo con topNonHarvestedPlantations, por ejemplo, almacenarlo en una variable de estado
-                // o notificar a los observadores, según el patrón de arquitectura que estés utilizando
             }.addOnFailureListener { exception ->
                 // Manejo de errores al obtener los cultivos
             }
