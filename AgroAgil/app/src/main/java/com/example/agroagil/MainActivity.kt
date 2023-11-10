@@ -243,6 +243,7 @@ class MainActivity : ComponentActivity() {
                                 {
                                     LoanAddScreen(
                                         loanViewModel = loanViewModel,
+                                        stockViewModel= stockViewModel,
                                         navController = navController
                                     )
                                 })

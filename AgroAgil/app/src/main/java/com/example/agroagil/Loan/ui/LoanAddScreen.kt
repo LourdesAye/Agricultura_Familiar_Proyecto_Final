@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,19 +27,25 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,14 +58,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Loan.ui.LoanViewModel
+import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
+import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -67,15 +77,223 @@ import java.util.Date
 
 val openDialogAddItem =  mutableStateOf(false)
 val products = mutableStateListOf<Product>()
+var user = mutableStateOf("")
+var error_name = mutableStateOf(false)
+val productsStock = mutableStateListOf<Stock>()
+var nameProduct = mutableStateOf("")
+var errorNameProduct = mutableStateOf(false)
+var nameUnidad = mutableStateOf("")
+var errorNameUnidad = mutableStateOf(false)
+var nameUnidadConvert = mutableStateOf("")
+var isNewProduct = mutableStateOf(false)
+var stockSelected = mutableStateOf<Stock?>(null)
+var isNewUnidad = mutableStateOf(false)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextProduct(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorNameProduct.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = nameProduct.value,
+                onValueChange = {
+                    nameProduct.value = it
+                    expanded = true
+                    errorNameProduct.value=false
+                },
+                label = { Text("Nombre del producto") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            val filteringOptions =
+                productsStock.filter { it.product.name.contains(nameProduct.value, ignoreCase = true) }
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo producto") },
+                        onClick = {
+                            expanded = false
+                            isNewProduct.value=true
+                            stockSelected.value=null
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
+
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption.product.name) },
+                            onClick = {
+                                //idReference.value = selectionOption.id
+                                nameProduct.value = selectionOption.product.name
+                                expanded = false
+                                isNewProduct.value=false
+                                stockSelected.value = selectionOption
+                                nameUnidad.value = selectionOption.product.units
+                                //isNew.value = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextUnidad(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorNameUnidad.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = nameUnidad.value,
+                onValueChange = {
+                    nameUnidad.value = it.uppercase()
+                    expanded = true
+                    errorNameUnidad.value=false
+                },
+                label = { Text("Unidad") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            var listUnits = mutableListOf<String>()
+            listUnits.addAll(stockSelected.value!!.conversion.map { it.name })
+            listUnits.add(stockSelected.value!!.product.units)
+            val filteringOptions = listUnits.filter{ it.contains(nameUnidad.value, ignoreCase = true) }.toSet().toList()
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nueva unidad") },
+                        onClick = {
+                            expanded = false
+                            isNewUnidad.value = true
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
+
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                //idReference.value = selectionOption.id
+                                nameUnidad.value = selectionOption
+                                expanded = false
+                                isNewUnidad.value = false
+                                //isNew.value = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+    if(isNewUnidad.value){
+        OutlinedTextField(
+            value = nameUnidadConvert.value,
+            onValueChange = {
+                nameUnidadConvert.value = it
+                errorNameUnidad.value = false
+            },
+            label = {
+                Text("Cuanto de "+ stockSelected.value!!.product.units+" equivale a 1 "+nameUnidad.value+"?")
+            },
+            trailingIcon = {
+                Icon(
+                    Icons.Filled.Edit,
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(25.dp)
+                )
+            },
+            isError = errorNameUnidad.value,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+           modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProduct(){
-    var name by rememberSaveable { mutableStateOf("") }
     var amount by rememberSaveable { mutableStateOf("") }
-    var measure by rememberSaveable { mutableStateOf("") }
-    var error_name by rememberSaveable { mutableStateOf(false)}
     var error_amount by rememberSaveable { mutableStateOf(false)}
-    var error_measure by rememberSaveable { mutableStateOf(false)}
 
     if (openDialogAddItem.value){
     AlertDialog(
@@ -90,22 +308,22 @@ fun AddProduct(){
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (name == ""){
-                        error_name=true
+                    if (nameProduct.value == ""){
+                        errorNameProduct.value=true
                     }
                     if (amount == ""){
                         error_amount=true
                     }
-                    if (measure == ""){
-                        error_measure=true
+                    if (nameUnidad.value == "" || (isNewUnidad.value && nameUnidadConvert.value=="")){
+                        errorNameUnidad.value=true
                     }
-                    if (name != "" && amount != "" && measure != ""){
-                        var new_item = Product(name,amount.toInt(), units = measure)
+                    if (nameProduct.value != "" && amount != "" && ((nameUnidad.value != "" && !isNewUnidad.value)|| (nameUnidad.value != "" &&isNewUnidad.value && nameUnidadConvert.value!=""))){
+                        var new_item = Product(nameProduct.value,amount.toInt(), units = nameUnidad.value)
                         products.add(new_item)
                     openDialogAddItem.value=false
-                    name = ""
+                        nameProduct.value = ""
                         amount=""
-                        measure=""
+                        nameProduct.value=""
                     }
                 }
             ) {
@@ -117,9 +335,9 @@ fun AddProduct(){
             TextButton(
                 onClick = {
                     openDialogAddItem.value = false
-                    name = ""
+                    nameProduct.value = ""
                     amount=""
-                    measure=""
+                    nameProduct.value=""
                 }
             ) {
                 Text("No, Cancelar")
@@ -127,29 +345,8 @@ fun AddProduct(){
         },
 
         text = {
-            Column(){
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it
-                                    error_name=false
-                                },
-                isError= error_name,
-                label = {
-                    Text("Nombre del producto")
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Filled.Search,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(25.dp)
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()){
+            Column {
+                TextProduct()
                     OutlinedTextField(
                         value = amount,
                         onValueChange = { amount = it
@@ -159,28 +356,117 @@ fun AddProduct(){
                             Text("Cantidad")
                         },
                         isError = error_amount,
-                        modifier = Modifier.width(130.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        )
                     )
-                    OutlinedTextField(
-                        value = measure,
-                        onValueChange = { measure = it
-                                        error_measure= false},
-                        label = {
-                            Text("Unidad")
-                        }
-                        ,
-                        isError = error_measure,
-                        modifier = Modifier.width(130.dp)
-
-                    )
-                }
+                    if(isNewProduct.value==true){
+                        OutlinedTextField(
+                            value = nameUnidad.value,
+                            onValueChange = {
+                                nameUnidad.value = it.uppercase()
+                                errorNameUnidad.value= false},
+                            label = {
+                                Text("Unidad")
+                            }
+                            ,
+                            isError = errorNameUnidad.value,
+                            modifier = Modifier.fillMaxWidth())
+                    }
+                if(stockSelected.value != null){
+                        TextUnidad()
+                    }
             }
 
         })
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextUser(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = error_name.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = user.value,
+                onValueChange = {
+                    user.value = it
+                    expanded = true
+                    error_name.value=false
+                },
+                label = { Text("Nombre de usuario") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            val filteringOptions =
+                listItemData.filter { it.nameUser.contains(user.value, ignoreCase = true) }
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo usuario") },
+                        onClick = {
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
 
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption.nameUser) },
+                            onClick = {
+                                //idReference.value = selectionOption.id
+                                user.value = selectionOption.nameUser
+                                expanded = false
+                                //isNew.value = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -188,14 +474,25 @@ fun AddProduct(){
     "CoroutineCreationDuringComposition"
 )
 @Composable
-fun LoanAddScreen(loanViewModel: LoanViewModel, navController: NavController) {
-    var user by rememberSaveable { mutableStateOf("") }
-    var error_name by rememberSaveable { mutableStateOf(false)}
+fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, navController: NavController) {
+    val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
     var lend by rememberSaveable { mutableStateOf(true)}
-    //var snackbarHost = SnackbarHost(snackbarHostState)
     val scope = rememberCoroutineScope()
     var clickCount by remember { mutableStateOf(0) }
+    if (stockValues == null){
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
+            .fillMaxSize()) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .semantics(mergeDescendants = true) {}
+                    .padding(10.dp)
+            )
+        }
+
+    }else {
+        productsStock.clear()
+        productsStock.addAll(stockValues)
     AddProduct()
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -215,28 +512,12 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, navController: NavController) {
                         .align(Alignment.CenterVertically)
                 )
             }
-
-            OutlinedTextField(
-                value = user,
-                onValueChange = { user = it
-                    error_name=false},
-                label = {
-                    Text("Nombre de usuario")
-                },
-                trailingIcon = {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(25.dp)
-                    )
-                },
+        TextUser()
+            Row(horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 20.dp, end = 20.dp),
-                isError = error_name
-            )
-            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(start = 20.dp, end = 20.dp,top=30.dp))
+                    .align(Alignment.CenterHorizontally)
+                    .padding(start = 20.dp, end = 20.dp, top = 30.dp))
             {
                 var textLend = ""
                 if(lend){
@@ -343,13 +624,13 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, navController: NavController) {
                                 )
                             }
                         }
-                        if(user==""){
-                            error_name = true
+                        if(user.value==""){
+                            error_name.value = true
                         }
-                        if (products.size !=0 && user!=""){
+                        if (products.size !=0 && user.value!=""){
                             val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                             val currentDate = sdf.format(Date())
-                            loanViewModel.addLoan(Loan(nameUser=user, items= products,date= currentDate,lend=lend))
+                            loanViewModel.addLoan(Loan(nameUser=user.value, items= products,date= currentDate,lend=lend))
                             products.clear()
                             navController.popBackStack()
                         }
@@ -369,6 +650,7 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, navController: NavController) {
                     }
                 }
             }}
+    }
 
 
 }
