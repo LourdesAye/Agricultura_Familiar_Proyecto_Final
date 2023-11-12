@@ -246,6 +246,7 @@ class MainActivity : ComponentActivity() {
                                 {
                                     LoanAddScreen(
                                         loanViewModel = loanViewModel,
+                                        stockViewModel= stockViewModel,
                                         navController = navController
                                     )
                                 })
@@ -288,7 +289,8 @@ class MainActivity : ComponentActivity() {
                                         LoanEditScreen(
                                             navController = navController,
                                             loanViewModel = loanViewModel,
-                                            loanId
+                                            loanId,
+                                            stockViewModel
                                         )
                                     })
                         }
@@ -497,6 +499,7 @@ class MainActivity : ComponentActivity() {
                             {
                                 CultivoTypeInfoEdit(
                                     cultivoViewModel,
+                                    stockViewModel,
                                     navController
                                 )
                             }

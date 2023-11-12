@@ -102,7 +102,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 var expandedFilter = mutableStateOf(false)
-val titles = listOf("Caja", "Tarea", "Stock")
+val titles = listOf("Caja", "Stock")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 var dateFilterChip = mutableStateOf(false)
@@ -418,11 +418,8 @@ fun SummaryScreen(summaryViewModel: SummaryViewModel, navController: NavControll
         if (state == 0){
             BoxSummary(summaryViewModel,navController)
         }else{
-            if (state == 1){
-
-            }else{
                 StockSummary(summaryViewModel,navController)
-            }
+
         }
 
     }

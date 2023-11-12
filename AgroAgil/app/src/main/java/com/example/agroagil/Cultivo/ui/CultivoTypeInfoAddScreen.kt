@@ -91,7 +91,7 @@ fun CultivoTypeInfoAdd(cultivoViewModel: CultivoViewModel,navController: NavCont
                         OutlinedTextField(
                             value = units,
                             onValueChange = {
-                                units = it.uppercase().trim()
+                                units = it.uppercase()
                                 errorUnits = false
                             },
                             label = {

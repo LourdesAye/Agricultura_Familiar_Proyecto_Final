@@ -610,7 +610,7 @@ fun Actions(navController: NavController) {
         }
     }
 
-fun SelectColorCard(amount: Int, alertAmount: Int): String {
+fun SelectColorCard(amount: Float, alertAmount: Int): String {
     var color: String
     if (amount > alertAmount) {
         color = ConStockClick
