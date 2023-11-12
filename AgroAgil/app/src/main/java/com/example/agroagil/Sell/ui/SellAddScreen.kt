@@ -66,15 +66,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Loan.ui.SubstackStock
 import com.example.agroagil.R
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.core.models.Conversion
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 val openDialogAddItem =  mutableStateOf(false)
 val products = mutableStateListOf<Product>()
@@ -95,6 +100,8 @@ var nameType = mutableStateOf("")
 var errorNameType = mutableStateOf(false)
 var isNewUnidad = mutableStateOf(false)
 var nameUnidadConvert = mutableStateOf("")
+val productsType = mutableMapOf<String,String>()
+val productsConvert = mutableMapOf<String, Conversion>()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -378,6 +385,11 @@ fun AddProduct(){
                             errorNameUnidad.value=true
                         }
                         if (nameProduct.value != "" && amount.value != "" && nameUnidad.value != ""){
+                            if (isNewUnidad.value){
+                                productsConvert[nameProduct.value] = Conversion(
+                                    nameUnidad.value, nameUnidadConvert.value.toFloat())
+                            }
+                            productsType[nameProduct.value] = nameType.value
                             var new_item = Product(nameProduct.value,amount.value.toInt(), units = nameUnidad.value, price=priceSellAdd.value)
                             products.add(new_item)
                             totalPrice.value += priceSellAdd.value*amount.value.toFloat()
@@ -710,6 +722,46 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                 if (products.size != 0 && user != "") {
                                     val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                                     val currentDate = sdf.format(Date())
+                                    for (product in products) {
+                                        var stockFinds =
+                                            stockValues.filter { it.product.name == product.name }
+                                        if (stockFinds.size == 0) {
+                                            var productStock = Product(
+                                                name = product.name,
+                                                amount = (SubstackStock(0f, product.amount)),
+                                                units = product.units, price = product.price
+                                            )
+                                            var stockNew = Stock(
+                                                type = productsType[product.name]!!,
+                                                product = productStock,
+                                                amountMinAlert = 0,
+                                                date = SimpleDateFormat(
+                                                    "yyyy/MM/dd HH:mm",
+                                                    Locale.getDefault()
+                                                )
+                                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
+                                            )
+                                            stockViewModel.addUpdateProduct(stockNew)
+                                        } else {
+                                            var stockFind = stockFinds[0]
+                                            if (product.name in productsConvert.keys) {
+                                                var listConversion = mutableListOf<Conversion>()
+                                                listConversion.addAll(stockFind.conversion)
+                                                listConversion.add(productsConvert[product.name]!!)
+                                                stockFind.conversion = listConversion.toList()
+                                                stockFind.product.amount = SubstackStock(
+                                                    stockFind.product.amount,
+                                                    product.amount * productsConvert[product.name]!!.amount
+                                                )
+                                            } else {
+                                                stockFind.product.amount = SubstackStock(
+                                                    stockFind.product.amount,
+                                                    product.amount
+                                                )
+                                            }
+                                            stockViewModel.addUpdateProduct(stockFind)
+                                        }
+                                    }
                                     sellViewModel.addSell(
                                         Sell(
                                             nameUser = user, items = products,
