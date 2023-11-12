@@ -388,7 +388,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     BuyAddScreen(
                                         buyViewModel = buyViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        stockViewModel=stockViewModel
                                     )
                                 })
                         }

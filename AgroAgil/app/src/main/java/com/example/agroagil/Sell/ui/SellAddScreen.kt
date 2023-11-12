@@ -67,8 +67,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Loan.ui.SubstackStock
-import com.example.agroagil.Loan.ui.error_name
-import com.example.agroagil.Loan.ui.user
 import com.example.agroagil.R
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.Stock.ui.StockViewModel
@@ -385,10 +383,13 @@ fun AddProduct(){
                         if (amount.value == ""){
                             errorAmount.value=true
                         }
-                        if (nameUnidad.value == ""){
+                        if (nameUnidad.value == "" || (isNewUnidad.value && nameUnidadConvert.value=="")){
                             errorNameUnidad.value=true
                         }
-                        if (nameProduct.value != "" && amount.value != "" && nameUnidad.value != ""){
+                        if (nameType.value == ""){
+                            errorType.value=true
+                        }
+                        if (nameProduct.value != "" && amount.value != "" && nameType.value != ""  && ((nameUnidad.value != "" && !isNewUnidad.value)|| (nameUnidad.value != "" && isNewUnidad.value && nameUnidadConvert.value!=""))){
                             if (isNewUnidad.value){
                                 productsConvert[nameProduct.value] = Conversion(
                                     nameUnidad.value, nameUnidadConvert.value.toFloat())
