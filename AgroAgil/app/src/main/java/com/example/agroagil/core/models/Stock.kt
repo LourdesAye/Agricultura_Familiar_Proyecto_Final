@@ -16,5 +16,5 @@ data class Conversion(
      val product: Product = Product("",0,"KG",0.0),
      val amountMinAlert: Int = 0,
      val withAlert:Boolean = false,
-     val conversion: List<Conversion> = emptyList()
+     var conversion: List<Conversion> = emptyList()
  )
