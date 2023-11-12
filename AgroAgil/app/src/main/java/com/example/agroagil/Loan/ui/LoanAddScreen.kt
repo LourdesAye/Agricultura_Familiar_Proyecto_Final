@@ -561,7 +561,6 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
     val snackbarHostState = remember { SnackbarHostState() }
     var lend by rememberSaveable { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
-    var clickCount by remember { mutableStateOf(0) }
     if (stockValues == null) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

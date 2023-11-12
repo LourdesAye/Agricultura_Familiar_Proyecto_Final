@@ -327,7 +327,7 @@ fun CultivoTypeInfoEdit(cultivoViewModel: CultivoViewModel, stockViewModel: Stoc
                                     if (price) {
                                         if (selectedOptionText == "Valor") {
                                             selectedCrop.forEach {
-                                                it.price = priceText.toFloat().toDouble()
+                                                it.price = priceText.toFloat()
                                             }
                                         } else {
                                             selectedCrop.forEach {

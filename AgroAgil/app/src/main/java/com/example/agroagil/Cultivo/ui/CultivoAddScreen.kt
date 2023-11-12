@@ -340,7 +340,7 @@ fun CultivoAddScreen(cultivoViewModel: CultivoViewModel, navController: NavContr
                                     if(namePlantation!="" && type.value!="" && isNew.value && units.value!="" && price.value != "" && durationDay.value!=""){
                                         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                                         val currentDate = sdf.format(Date())
-                                        idReference.value = cultivoViewModel.createCrop(Crop(name = type.value, units = units.value, durationDay = durationDay.value.toFloat().toInt(), price=price.value.toFloat().toDouble())).toString()
+                                        idReference.value = cultivoViewModel.createCrop(Crop(name = type.value, units = units.value, durationDay = durationDay.value.toFloat().toInt(), price=price.value.toFloat())).toString()
                                         cultivoViewModel.createPlantation(Plantation(name=namePlantation, dateStart = currentDate, referenceId = idReference.value,status="CREADO"))
                                         navController.popBackStack()
                                     }

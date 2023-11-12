@@ -6,10 +6,10 @@ data class Crop (
     val name: String = "Papa",
     var units: String = "Unidad",
     var durationDay: Int = 60,
-    var price:Double = 100.0, //Valor de 100 por unidad
+    var price:Float = 100.0f, //Valor de 100 por unidad
 ){
     constructor(id:String, name: String,units:String, durationDay: Int = 0, price: Int = 0, conversion: List<Conversion>  =  emptyList()):
-            this(id, name,units, durationDay, price.toDouble()) {}
+            this(id, name,units, durationDay, price.toFloat()) {}
 }
 
 data class Plantation(

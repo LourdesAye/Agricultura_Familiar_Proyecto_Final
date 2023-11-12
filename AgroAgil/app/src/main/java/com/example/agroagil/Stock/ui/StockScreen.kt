@@ -256,7 +256,7 @@ fun dialogEdit(stockViewModel: StockViewModel
                                 name=name,
                                 amount=amount.toInt(),
                                 units = units,
-                                price = price.toDouble()
+                                price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
                             resetFilter()
@@ -400,7 +400,7 @@ fun dialogAdd(stockViewModel: StockViewModel
                                 name=name,
                                 amount=amount.toInt(),
                                 units = units,
-                                price = price.toDouble()
+                                price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
                             dialogAddOpen.value = false

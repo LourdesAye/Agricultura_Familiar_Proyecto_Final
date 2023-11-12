@@ -334,7 +334,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     SellAddScreen(
                                         sellViewModel = sellViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        stockViewModel = stockViewModel
                                     )
                                 })
                         }
