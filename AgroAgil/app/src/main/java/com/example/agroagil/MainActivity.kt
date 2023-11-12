@@ -286,7 +286,8 @@ class MainActivity : ComponentActivity() {
                                         LoanEditScreen(
                                             navController = navController,
                                             loanViewModel = loanViewModel,
-                                            loanId
+                                            loanId,
+                                            stockViewModel
                                         )
                                     })
                         }

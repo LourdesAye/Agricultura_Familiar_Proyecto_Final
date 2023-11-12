@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,18 +25,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,30 +49,304 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Stock.ui.StockViewModel
+import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.core.models.Conversion
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
+import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 var openDialogAddItemEdit =  mutableStateOf(false)
 var currentLoanEdit = Loan("Usuario1", listOf<Product>(Product("Tomate", 1, "KG")), emptyList(), 0)
+var currentLoanEditId = mutableStateOf(-1)
 var productsEdit = mutableStateListOf<Product>()
+val productsTypeEdit = mutableMapOf<String,String>()
+val productsConvertEdit = mutableMapOf<String, Conversion>()
+var nameEdit = mutableStateOf("")
+var amountEdit = mutableStateOf("")
+var measureEdit = mutableStateOf("")
+var errorNameEdit = mutableStateOf(false)
+var errorAmountEdit = mutableStateOf(false)
+var errorMeasureEdit = mutableStateOf(false)
+var typeEdit = mutableStateOf("")
+var errorTypeEdit =mutableStateOf(false)
+var isNewUnidadEdit = mutableStateOf(false)
+var isNewProductEdit = mutableStateOf(false)
+var nameUnidadConvertEdit = mutableStateOf("")
+var stockSelectedEdit = mutableStateOf<Stock?>(null)
+var productsStockEdit = mutableStateListOf<Stock>()
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextProductEdit(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorNameEdit.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = nameEdit.value,
+                onValueChange = {
+                    nameEdit.value = it
+                    expanded = true
+                    errorNameEdit.value=false
+                },
+                label = { Text("Nombre del producto") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            val filteringOptions =
+                productsStockEdit.filter { it.product.name.contains(nameEdit.value, ignoreCase = true) }
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo producto") },
+                        onClick = {
+                            expanded = false
+                            isNewProductEdit.value=true
+                            stockSelectedEdit.value=null
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
+
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption.product.name) },
+                            onClick = {
+                                nameEdit.value = selectionOption.product.name
+                                expanded = false
+                                isNewProductEdit.value=false
+                                stockSelectedEdit.value = selectionOption
+                                measureEdit.value = selectionOption.product.units
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextTypeEdit() {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded},
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorTypeEdit.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = typeEdit.value,
+                onValueChange = {
+                    typeEdit.value = it
+                    expanded = true
+                    errorTypeEdit.value = false
+                },
+                label = { Text("Tipo de producto") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                tiposDeElementosDeStock.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            typeEdit.value = selectionOption
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+
+            }
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextUnidadEdit(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorMeasureEdit.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = measureEdit.value,
+                onValueChange = {
+                    measureEdit.value = it.uppercase()
+                    expanded = true
+                    errorMeasureEdit.value=false
+                },
+                label = { Text("Unidad") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            var listUnits = mutableListOf<String>()
+            listUnits.addAll(stockSelectedEdit.value!!.conversion.map { it.name })
+            listUnits.add(stockSelectedEdit.value!!.product.units)
+            val filteringOptions = listUnits.filter{ it.contains(measureEdit.value, ignoreCase = true) }.toSet().toList()
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nueva unidad") },
+                        onClick = {
+                            expanded = false
+                            isNewUnidadEdit.value = true
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
+
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                measureEdit.value = selectionOption
+                                expanded = false
+                                isNewUnidadEdit.value = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+    if(isNewUnidadEdit.value){
+        OutlinedTextField(
+            value = nameUnidadConvertEdit.value,
+            onValueChange = {
+                nameUnidadConvertEdit.value = it
+                errorMeasureEdit.value = false
+            },
+            label = {
+                Text("Cuanto de "+ stockSelectedEdit.value!!.product.units+" equivale a 1 "+ measureEdit.value+"?")
+            },
+            trailingIcon = {
+                Icon(
+                    Icons.Filled.Edit,
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(25.dp)
+                )
+            },
+            isError = errorMeasureEdit.value,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductEidt(){
-    var name by rememberSaveable { mutableStateOf("") }
-    var amount by rememberSaveable { mutableStateOf("") }
-    var measure by rememberSaveable { mutableStateOf("") }
-    var error_name by rememberSaveable { mutableStateOf(false)}
-    var error_amount by rememberSaveable { mutableStateOf(false)}
-    var error_measure by rememberSaveable { mutableStateOf(false)}
-
     if (openDialogAddItemEdit.value){
         AlertDialog(
             title={Text("Nuevo Producto")},
@@ -80,22 +360,29 @@ fun AddProductEidt(){
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (name == ""){
-                            error_name=true
+                        if (nameEdit.value == ""){
+                            errorNameEdit.value=true
                         }
-                        if (amount == ""){
-                            error_amount=true
+                        if (amountEdit.value == ""){
+                            errorAmountEdit.value=true
                         }
-                        if (measure == ""){
-                            error_measure=true
+                        if (typeEdit.value == ""){
+                            errorType.value=true
                         }
-                        if (name != "" && amount != "" && measure != ""){
-                            var new_item = Product(name,amount.toInt(), units = measure)
+                        if (measureEdit.value == "" || (isNewUnidadEdit.value && nameUnidadConvertEdit.value=="")){
+                            errorMeasureEdit.value=true
+                        }
+                        if (nameEdit.value != "" && (typeEdit.value != "") && amountEdit.value != "" && ((measureEdit.value != "" && !isNewUnidadEdit.value)|| (measureEdit.value != "" && isNewUnidadEdit.value && nameUnidadConvertEdit.value!=""))){
+                            if (isNewUnidadEdit.value){
+                                productsConvertEdit[nameEdit.value] = Conversion(measureEdit.value, nameUnidadConvertEdit.value.toFloat())
+                            }
+                            var new_item = Product(nameEdit.value, amountEdit.value.toInt(), units = measureEdit.value)
                             productsEdit.add(new_item)
+                            productsTypeEdit[nameEdit.value] = typeEdit.value
                             openDialogAddItemEdit.value=false
-                            name = ""
-                            amount=""
-                            measure=""
+                            nameEdit.value = ""
+                            amountEdit.value=""
+                            nameEdit.value=""
                         }
                     }
                 ) {
@@ -107,9 +394,8 @@ fun AddProductEidt(){
                 TextButton(
                     onClick = {
                         openDialogAddItemEdit.value = false
-                        name = ""
-                        amount=""
-                        measure=""
+                        nameEdit.value = ""
+                        amountEdit.value=""
                     }
                 ) {
                     Text("No, Cancelar")
@@ -117,52 +403,38 @@ fun AddProductEidt(){
             },
 
             text = {
-                Column(){
+                Column {
+                    TextProductEdit()
+                    TextTypeEdit()
                     OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it
-                            error_name=false
+                        value = amountEdit.value,
+                        onValueChange = { amountEdit.value = it
+                            errorAmountEdit.value=false
                         },
-                        isError= error_name,
                         label = {
-                            Text("Nombre del producto")
+                            Text("Cantidad")
                         },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Filled.Search,
-                                contentDescription = "Localized description",
-                                modifier = Modifier.size(25.dp)
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()){
-                        OutlinedTextField(
-                            value = amount,
-                            onValueChange = { amount = it
-                                error_amount=false
-                            },
-                            label = {
-                                Text("Cantidad")
-                            },
-                            isError = error_amount,
-                            modifier = Modifier.width(130.dp)
+                        isError = errorAmountEdit.value,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
                         )
+                    )
+                    if(isNewProductEdit.value==true){
                         OutlinedTextField(
-                            value = measure,
-                            onValueChange = { measure = it
-                                error_measure= false},
+                            value = measureEdit.value,
+                            onValueChange = {
+                                measureEdit.value = it.uppercase()
+                                errorMeasureEdit.value = false},
                             label = {
                                 Text("Unidad")
                             }
                             ,
-                            isError = error_measure,
-                            modifier = Modifier.width(130.dp)
-
-                        )
+                            isError = errorMeasureEdit.value,
+                            modifier = Modifier.fillMaxWidth())
+                    }
+                    if(stockSelectedEdit.value != null){
+                        TextUnidadEdit()
                     }
                 }
 
@@ -204,13 +476,13 @@ fun itemProductClose(item: Product){
                         item.amount.toString()+" "+ item.units.toString(), modifier = Modifier
                             .padding(end = 10.dp)
                             .align(Alignment.CenterVertically))
-                    IconButton(
+                    /*IconButton(
                         onClick = { productsEdit.remove(item)}){
                         Icon(
                             Icons.Outlined.Close,
                             contentDescription = "Localized description",
                             modifier = Modifier.size(25.dp))
-                    }
+                    }*/
                 }
             }
             Divider()
@@ -220,9 +492,10 @@ fun itemProductClose(item: Product){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int) {
+fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int, stockViewModel: StockViewModel) {
     var valuesLoan = loanViewModel.farm.observeAsState().value
-    if (valuesLoan == null){
+    val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
+    if (valuesLoan == null || stockValues == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxSize()) {
             CircularProgressIndicator(
@@ -231,9 +504,13 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
         }
 
     }else {
+        productsStockEdit.clear()
+        productsStockEdit.addAll(stockValues)
         currentLoanEdit = valuesLoan.get(loanId)
-        if (productsEdit.size ==0){
+        if (productsEdit.size ==0 || currentLoanEditId.value != loanId ){
+            productsEdit.clear()
             productsEdit.addAll(currentLoanEdit.paid)
+            currentLoanEditId.value = loanId
         }
         var percentagePaid by rememberSaveable { mutableStateOf(currentLoanEdit.percentagePaid.toString()+ " %") }
         var percentagePaidError by rememberSaveable { mutableStateOf(false)}
@@ -339,11 +616,64 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                     .padding(30.dp)
                     .fillMaxWidth()){
                 Button(onClick = {
+                    var stockAcction: Function2<Float, Float, Float>
+                    if (currentLoanEdit.lend) {
+                        stockAcction = ::SubstackStock
+                    } else {
+                        stockAcction = ::AddStock
+                    }
+                    //var initLoan = valuesLoan.get(loanId)
+                    for (product in productsEdit) {
+                        //var stockFinds =
+                        //    stockValues.filter { it.product.name == product.name }
+                        var loanInitFind = currentLoanEdit.paid.filter { it.name == product.name }
+                        if (loanInitFind.size ==0){
+                            var stockFinds =
+                                stockValues.filter { it.product.name == product.name }
+                            if (stockFinds.size == 0) {
+                                var productStock = Product(
+                                    name = product.name,
+                                    amount = (stockAcction(0f, product.amount)),
+                                    units = product.units, price = product.price
+                                )
+                                var stockNew = Stock(
+                                    type = productsTypeEdit[product.name]!!,
+                                    product = productStock,
+                                    amountMinAlert = 0,
+                                    date = SimpleDateFormat(
+                                        "yyyy/MM/dd HH:mm",
+                                        Locale.getDefault()
+                                    )
+                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
+                                )
+                                stockViewModel.addUpdateProduct(stockNew)
+                            } else {
+                                var stockFind = stockFinds[0]
+                                if (product.name in productsConvertEdit.keys) {
+                                    var listConversion = mutableListOf<Conversion>()
+                                    listConversion.addAll(stockFind.conversion)
+                                    listConversion.add(productsConvertEdit[product.name]!!)
+                                    stockFind.conversion = listConversion.toList()
+                                    stockFind.product.amount = stockAcction(
+                                        stockFind.product.amount,
+                                        product.amount * productsConvertEdit[product.name]!!.amount
+                                    )
+                                } else {
+                                    stockFind.product.amount = stockAcction(
+                                        stockFind.product.amount,
+                                        product.amount
+                                    )
+                                }
+                                stockViewModel.addUpdateProduct(stockFind)
+                            }
+                        }
+
+                    }
                     currentLoanEdit.percentagePaid = percentagePaid.replace("%", "").replace(" ", "").toInt()
                     currentLoanEdit.paid = productsEdit
                     loanViewModel.updateLoan(currentLoanEdit, loanId)
-                        productsEdit.clear()
-                        navController.popBackStack()
+                    productsEdit.clear()
+                    navController.popBackStack()
 
                 }, modifier = Modifier.align(Alignment.CenterVertically)
 
