@@ -67,6 +67,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Loan.ui.SubstackStock
+import com.example.agroagil.Loan.ui.error_name
+import com.example.agroagil.Loan.ui.user
 import com.example.agroagil.R
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.Stock.ui.StockViewModel
@@ -102,6 +104,8 @@ var isNewUnidad = mutableStateOf(false)
 var nameUnidadConvert = mutableStateOf("")
 val productsType = mutableMapOf<String,String>()
 val productsConvert = mutableMapOf<String, Conversion>()
+var user = mutableStateOf("")
+var errorUser = mutableStateOf(false)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -482,7 +486,88 @@ fun AddProduct(){
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextUser(){
+    var expanded by remember {mutableStateOf(false)}
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {  },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextField(
+                isError = errorUser.value,
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = user.value,
+                onValueChange = {
+                    user.value = it
+                    expanded = true
+                    errorUser.value=false
+                },
+                label = { Text("Nombre de usuario") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(25.dp)
+                    )
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+            val filteringOptions =
+                listItemData.filter { it.nameUser.contains(user.value, ignoreCase = true) }
+            if (filteringOptions.isEmpty()) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {expanded=!expanded},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Nuevo usuario") },
+                        onClick = {
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                    )
+                }
 
+            } else {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption.nameUser) },
+                            onClick = {
+                                user.value = selectionOption.nameUser
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState",
@@ -491,8 +576,6 @@ fun AddProduct(){
 @Composable
 fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,stockViewModel: StockViewModel) {
     val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
-    var user by rememberSaveable { mutableStateOf("") }
-    var error_name by rememberSaveable { mutableStateOf(false)}
     val snackbarHostState = remember { SnackbarHostState() }
     var paid by rememberSaveable { mutableStateOf(true)}
     val scope = rememberCoroutineScope()
@@ -540,7 +623,8 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                             .align(Alignment.CenterVertically)
                     )
                 }
-
+                TextUser()
+                /*
                 OutlinedTextField(
                     value = user,
                     onValueChange = {
@@ -561,7 +645,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                         .fillMaxWidth()
                         .padding(start = 20.dp, end = 20.dp),
                     isError = error_name
-                )
+                )*/
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
@@ -704,7 +788,8 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                 Box(modifier = Modifier.fillMaxSize()) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(30.dp)
                     ) {
                         Button(
@@ -716,10 +801,10 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                         )
                                     }
                                 }
-                                if (user == "") {
-                                    error_name = true
+                                if (user.value == "") {
+                                    errorUser.value = true
                                 }
-                                if (products.size != 0 && user != "") {
+                                if (products.size != 0 && user.value != "") {
                                     val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                                     val currentDate = sdf.format(Date())
                                     for (product in products) {
@@ -764,7 +849,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                     }
                                     sellViewModel.addSell(
                                         Sell(
-                                            nameUser = user, items = products,
+                                            nameUser = user.value, items = products,
                                             date = currentDate, paid = paid,
                                             price = totalPrice.value
                                         )
