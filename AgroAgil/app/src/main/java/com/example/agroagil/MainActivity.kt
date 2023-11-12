@@ -334,7 +334,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     SellAddScreen(
                                         sellViewModel = sellViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        stockViewModel = stockViewModel
                                     )
                                 })
                         }
@@ -387,7 +388,8 @@ class MainActivity : ComponentActivity() {
                                 {
                                     BuyAddScreen(
                                         buyViewModel = buyViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        stockViewModel=stockViewModel
                                     )
                                 })
                         }

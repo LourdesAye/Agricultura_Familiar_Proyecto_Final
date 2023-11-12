@@ -13,7 +13,7 @@ data class Conversion(
      var id: String = "",
      val type: String = "Herramienta", //Cultivo
      val date: String = "01/01/2023 00:00",
-     val product: Product = Product("",0,"KG",0.0),
+     val product: Product = Product("",0,"KG",0.0f),
      val amountMinAlert: Int = 0,
      val withAlert:Boolean = false,
      var conversion: List<Conversion> = emptyList()

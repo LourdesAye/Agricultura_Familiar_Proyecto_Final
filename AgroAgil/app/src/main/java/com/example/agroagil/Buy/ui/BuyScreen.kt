@@ -76,7 +76,7 @@ val SinPagarClick = "#f4e5e4"
 val Pagado = "#28B463"
 val PagadoClick = "#d7f1e2"
 
-var listItemData = mutableStateListOf<Buy>()
+var listItemDataBuy = mutableStateListOf<Buy>()
 var listItemDataFilter = mutableStateListOf<Buy>()
 
 var filters = mutableStateListOf<Function1<List<Buy>, List<Buy>>>()
@@ -137,11 +137,11 @@ fun filterDateRange(buys:List<Buy>): List<Buy> {
 fun resetFilter(){
     listItemDataFilter.clear()
     if (filters.size ==0){
-        listItemDataFilter.addAll(listItemData)
+        listItemDataFilter.addAll(listItemDataBuy)
     }
     for (i in 0 .. filters.size-1) {
         var filtroExecute = mutableListOf<List<Buy>>()
-        filtroExecute.addAll(listOf(filters[i](listItemData)))
+        filtroExecute.addAll(listOf(filters[i](listItemDataBuy)))
         listItemDataFilter.addAll(filtroExecute.flatten())
     }
 }
@@ -390,7 +390,7 @@ fun OneBuy(itemData:Buy, navController: NavController){
     Column(){
         Card(
             onClick={
-                navController.navigate("buy/${listItemData.indexOf(itemData)}/info")
+                navController.navigate("buy/${listItemDataBuy.indexOf(itemData)}/info")
             },
             modifier = Modifier
                 .height(100.dp)
@@ -564,8 +564,8 @@ fun filterStatus(){
 fun BuyScreen(buyViewModel: BuyViewModel, navController: NavController) {
     var valuesBuy= buyViewModel.farm.observeAsState().value
     valuesBuy?.let {
-        listItemData.clear()
-        listItemData.addAll(it)
+        listItemDataBuy.clear()
+        listItemDataBuy.addAll(it)
     }
     if (valuesBuy == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier

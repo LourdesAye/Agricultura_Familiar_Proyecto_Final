@@ -168,7 +168,7 @@ fun CultivoTypeInfoAdd(cultivoViewModel: CultivoViewModel,navController: NavCont
             if(crop!=null){
                 errorName=true
             }else{
-                cultivoViewModel.createCrop(Crop(name=name, units=units, durationDay = durationDay.toFloat().toInt(), price = price.toFloat().toDouble()))
+                cultivoViewModel.createCrop(Crop(name=name, units=units, durationDay = durationDay.toFloat().toInt(), price = price.toFloat()))
                 navController.popBackStack()
             }
         }else{

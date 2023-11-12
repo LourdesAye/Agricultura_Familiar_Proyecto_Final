@@ -74,12 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
-import com.example.agroagil.Buy.ui.listItemData
-import com.example.agroagil.Buy.ui.listItemDataFilter
-import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
-//import com.example.agroagil.Buy.ui.BuyViewModel
-//import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Stock
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -256,7 +251,7 @@ fun dialogEdit(stockViewModel: StockViewModel
                                 name=name,
                                 amount=amount.toInt(),
                                 units = units,
-                                price = price.toDouble()
+                                price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
                             resetFilter()
@@ -400,7 +395,7 @@ fun dialogAdd(stockViewModel: StockViewModel
                                 name=name,
                                 amount=amount.toInt(),
                                 units = units,
-                                price = price.toDouble()
+                                price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
                             dialogAddOpen.value = false
