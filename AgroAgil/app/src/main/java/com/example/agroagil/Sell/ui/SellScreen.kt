@@ -82,6 +82,10 @@ var listItemDataFilter = mutableStateListOf<Sell>()
 var filters = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
 var filtersExclude = mutableStateListOf<Function1<List<Sell>, List<Sell>>>()
 var chipsFilter = mutableStateListOf<Map<String,Function1<List<Sell>, List<Sell>>>>()
+var clickPagado = mutableStateOf(false)
+var colorPagado = mutableStateOf<Color>(Color(0))
+var clickSinPagar = mutableStateOf(false)
+var colorSinPagar = mutableStateOf<Color>(Color(0))
 
 var UserFilter = mutableStateOf("")
 var dataDateStart = mutableStateOf("")
@@ -446,12 +450,6 @@ fun OneSell(itemData:Sell, navController: NavController){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun filterStatus(){
-    var clickPagado by remember {mutableStateOf(false)}
-    var colorPagado by remember {mutableStateOf<Color>(Color(0))}
-    var clickPagadoParcialmente by remember {mutableStateOf(false)}
-    var colorPagadoParcialmente by remember {mutableStateOf<Color>(Color(0))}
-    var clickSinPagar by remember {mutableStateOf(false)}
-    var colorSinPagar by remember {mutableStateOf<Color>(Color(0))}
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier= Modifier
@@ -461,15 +459,15 @@ fun filterStatus(){
         val cardWidth =  with(LocalDensity.current) {
             screenWidth * 0.45f
         }
-        if (clickPagado){
-            colorPagado = Color(PagadoClick.toColorInt())
+        if (clickPagado.value){
+            colorPagado.value = Color(PagadoClick.toColorInt())
         }else{
-            colorPagado=Color(MaterialTheme.colorScheme.background.value)
+            colorPagado.value=Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
             onClick={
-                clickPagado = !clickPagado
-                if(clickPagado){
+                clickPagado.value = !clickPagado.value
+                if(clickPagado.value){
                     filters.add(::filterPagado)
                 }else{
                     filters.remove(::filterPagado)
@@ -481,7 +479,7 @@ fun filterStatus(){
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorPagado)
+            colors = CardDefaults.cardColors(colorPagado.value)
         ) {
             Row() {
                 Column(
@@ -494,7 +492,7 @@ fun filterStatus(){
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text("Pagado", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickPagado){
+                    if(clickPagado.value){
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
@@ -507,15 +505,15 @@ fun filterStatus(){
                 }
             }
         }
-        if (clickSinPagar){
-            colorSinPagar = Color(SinPagarClick.toColorInt())
+        if (clickSinPagar.value){
+            colorSinPagar.value = Color(SinPagarClick.toColorInt())
         }else{
-            colorSinPagar=Color(MaterialTheme.colorScheme.background.value)
+            colorSinPagar.value=Color(MaterialTheme.colorScheme.background.value)
         }
         Card(
             onClick = {
-                clickSinPagar=!clickSinPagar
-                if(clickSinPagar){
+                clickSinPagar.value=!clickSinPagar.value
+                if(clickSinPagar.value){
                     filters.add(::filterSinPagar)
                 }else{
                     filters.remove(::filterSinPagar)
@@ -527,7 +525,7 @@ fun filterStatus(){
                 .padding(2.dp)
                 .height(50.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            colors = CardDefaults.cardColors(colorSinPagar)
+            colors = CardDefaults.cardColors(colorSinPagar.value)
         ) {
             Row() {
                 Column(
@@ -540,7 +538,7 @@ fun filterStatus(){
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text("Sin pagar", textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
-                    if(clickSinPagar){
+                    if(clickSinPagar.value){
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = "Localized description",
