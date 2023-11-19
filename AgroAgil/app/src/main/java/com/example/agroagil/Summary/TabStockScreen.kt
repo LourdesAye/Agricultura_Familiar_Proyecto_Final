@@ -535,7 +535,7 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
 @Composable
 fun StockSummary(summaryViewModel: SummaryViewModel, navController: NavController){
     //summaryViewModel.init()
-    val valuesStocks by summaryViewModel.stocks.observeAsState()
+    val valuesStocks by summaryViewModel.GetStock().observeAsState()
     val valuesEvents by summaryViewModel.eventsStock.observeAsState()
     if (valuesStocks == null || valuesEvents == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier

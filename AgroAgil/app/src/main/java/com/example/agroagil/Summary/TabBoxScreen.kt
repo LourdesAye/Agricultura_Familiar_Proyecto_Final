@@ -451,8 +451,8 @@ fun OneOperation(itemData: EventOperation, navController: NavController, summary
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun BoxSummary(summaryViewModel: SummaryViewModel, navController: NavController){
-    val valuesSell by summaryViewModel.sells.observeAsState()
-    val valuesBuy by summaryViewModel.buys.observeAsState()
+    val valuesSell by summaryViewModel.GetSell().observeAsState()
+    val valuesBuy by summaryViewModel.GetBuy().observeAsState()
     val valuesEvents by summaryViewModel.events.observeAsState()
     if (valuesSell == null || valuesBuy == null || valuesEvents == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
