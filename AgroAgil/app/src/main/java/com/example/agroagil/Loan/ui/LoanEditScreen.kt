@@ -57,7 +57,9 @@ import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Conversion
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Stock
@@ -492,7 +494,7 @@ fun itemProductClose(item: Product){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int, stockViewModel: StockViewModel) {
+fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, loanId: Int, stockViewModel: StockViewModel, eventViewModel: SummaryViewModel) {
     var valuesLoan = loanViewModel.farm.observeAsState().value
     val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     if (valuesLoan == null || stockValues == null){
@@ -646,7 +648,15 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                                     )
                                         .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                 )
-                                stockViewModel.addUpdateProduct(stockNew)
+                                var stockID = stockViewModel.addUpdateProduct(stockNew)
+                                eventViewModel.addEventOperationStock(
+                                    EventOperationStock(
+                                        date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                            .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                        typeEvent = "Se realizo la devolucion de un prestamo",
+                                        referenceID=stockID
+                                    )
+                                )
                             } else {
                                 var stockFind = stockFinds[0]
                                 if (product.name in productsConvertEdit.keys) {
@@ -664,7 +674,15 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                                         product.amount
                                     )
                                 }
-                                stockViewModel.addUpdateProduct(stockFind)
+                                var stockID = stockViewModel.addUpdateProduct(stockFind)
+                                eventViewModel.addEventOperationStock(
+                                    EventOperationStock(
+                                        date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                            .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                        typeEvent = "Se realizo la devolucion de un prestamo",
+                                        referenceID=stockID
+                                    )
+                                )
                             }
                         }
 

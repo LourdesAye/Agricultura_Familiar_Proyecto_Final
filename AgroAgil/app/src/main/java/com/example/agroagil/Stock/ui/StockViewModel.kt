@@ -63,7 +63,7 @@ class StockViewModel : ViewModel() {
         }
 
     }
-    fun addUpdateProduct(stockNew: Stock) {
+    fun addUpdateProduct(stockNew: Stock): String {
         var getKey: String?
         var stock = stockNew
         if(stock.id ==""){
@@ -84,5 +84,6 @@ class StockViewModel : ViewModel() {
         updates["/$getKey"] = stock
         Firebase.database.getReference("stockSummary/0/").updateChildren(updates)
         setFarm()
+        return stock.id
     }
 }

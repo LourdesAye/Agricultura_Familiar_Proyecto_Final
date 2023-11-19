@@ -247,7 +247,8 @@ class MainActivity : ComponentActivity() {
                                     LoanAddScreen(
                                         loanViewModel = loanViewModel,
                                         stockViewModel= stockViewModel,
-                                        navController = navController
+                                        navController = navController,
+                                        eventViewModel = summaryViewModel
                                     )
                                 })
                         }
@@ -290,7 +291,8 @@ class MainActivity : ComponentActivity() {
                                             navController = navController,
                                             loanViewModel = loanViewModel,
                                             loanId,
-                                            stockViewModel
+                                            stockViewModel,
+                                            summaryViewModel
                                         )
                                     })
                         }
@@ -335,7 +337,8 @@ class MainActivity : ComponentActivity() {
                                     SellAddScreen(
                                         sellViewModel = sellViewModel,
                                         navController = navController,
-                                        stockViewModel = stockViewModel
+                                        stockViewModel = stockViewModel,
+                                        eventViewModel = summaryViewModel,
                                     )
                                 })
                         }
@@ -389,7 +392,8 @@ class MainActivity : ComponentActivity() {
                                     BuyAddScreen(
                                         buyViewModel = buyViewModel,
                                         navController = navController,
-                                        stockViewModel=stockViewModel
+                                        stockViewModel=stockViewModel,
+                                        eventViewModel = summaryViewModel
                                     )
                                 })
                         }
@@ -427,7 +431,8 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 StockScreen(
                                     stockViewModel = stockViewModel,
-                                    navController = navController
+                                    navController = navController,
+                                    eventViewModel = summaryViewModel
                                 )
                             }
                         }
@@ -525,6 +530,7 @@ class MainActivity : ComponentActivity() {
                                             cultivoViewModel = cultivoViewModel,
                                             cultivoId,
                                             stockViewModel=stockViewModel,
+                                            stockEvent = summaryViewModel
                                         )
                                     })
                         }

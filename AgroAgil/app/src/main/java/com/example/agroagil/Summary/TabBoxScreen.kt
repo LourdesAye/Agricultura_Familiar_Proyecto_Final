@@ -91,7 +91,7 @@ fun filterOutput(events:List<EventOperation>): List<EventOperation> {
 
 class CurrencyValueFormatter(private val currencySymbol: String) : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
-        return "$currencySymbol${String.format(Locale.getDefault(), "%.2f", value)}"
+        return "$currencySymbol${String.format(Locale.getDefault(), "%.0f", value)}"
     }
 }
 @SuppressLint("UnrememberedMutableState")

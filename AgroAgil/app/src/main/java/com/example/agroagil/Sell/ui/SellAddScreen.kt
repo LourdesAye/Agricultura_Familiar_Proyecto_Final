@@ -71,7 +71,9 @@ import com.example.agroagil.R
 import com.example.agroagil.Sell.ui.SellViewModel
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Conversion
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
@@ -83,7 +85,7 @@ import java.util.TimeZone
 
 val openDialogAddItem =  mutableStateOf(false)
 val products = mutableStateListOf<Product>()
-val totalPrice = mutableStateOf(0.0)
+val totalPrice = mutableStateOf(0f)
 val productsStock = mutableStateListOf<Stock>()
 
 var nameProduct = mutableStateOf("")
@@ -575,7 +577,7 @@ fun TextUser(){
     "CoroutineCreationDuringComposition"
 )
 @Composable
-fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,stockViewModel: StockViewModel) {
+fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,stockViewModel: StockViewModel, eventViewModel: SummaryViewModel) {
     val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
     var paid by rememberSaveable { mutableStateOf(true)}
@@ -742,7 +744,10 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                     .align(Alignment.CenterVertically)
                                             )
                                             IconButton(
-                                                onClick = { products.remove(products[i]) }) {
+                                                onClick = { products.remove(products[i])
+                                                totalPrice.value = products.map{it.amount*it.price}.sum().toFloat()
+                                                }
+                                            ) {
                                                 Icon(
                                                     Icons.Outlined.Close,
                                                     contentDescription = "Localized description",
@@ -827,7 +832,15 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                 )
                                                     .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                             )
-                                            stockViewModel.addUpdateProduct(stockNew)
+                                            var stockID = stockViewModel.addUpdateProduct(stockNew)
+                                            eventViewModel.addEventOperationStock(
+                                                EventOperationStock(
+                                                    date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                    typeEvent = "Se realizo una venta",
+                                                    referenceID=stockID
+                                                )
+                                            )
                                         } else {
                                             var stockFind = stockFinds[0]
                                             if (product.name in productsConvert.keys) {
@@ -845,7 +858,15 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                     product.amount
                                                 )
                                             }
-                                            stockViewModel.addUpdateProduct(stockFind)
+                                            var stockID = stockViewModel.addUpdateProduct(stockFind)
+                                            eventViewModel.addEventOperationStock(
+                                                EventOperationStock(
+                                                    date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                    typeEvent = "Se realizo una venta",
+                                                    referenceID=stockID
+                                                )
+                                            )
                                         }
                                     }
                                     sellViewModel.addSell(

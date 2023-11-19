@@ -67,7 +67,9 @@ import androidx.navigation.NavController
 import com.example.agroagil.Loan.ui.LoanViewModel
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Conversion
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Loan
 import com.example.agroagil.core.models.Stock
@@ -556,7 +558,7 @@ fun SubstackStock(stock: Float, units: Float): Float {
     "CoroutineCreationDuringComposition"
 )
 @Composable
-fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, navController: NavController) {
+fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, navController: NavController, eventViewModel:SummaryViewModel) {
     val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
     var lend by rememberSaveable { mutableStateOf(true) }
@@ -759,7 +761,15 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
                                             )
                                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                         )
-                                        stockViewModel.addUpdateProduct(stockNew)
+                                        var stockId = stockViewModel.addUpdateProduct(stockNew)
+                                        eventViewModel.addEventOperationStock(
+                                            EventOperationStock(
+                                                date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                typeEvent = "Se agrego un prestamo",
+                                                referenceID=stockId
+                                            )
+                                        )
                                     } else {
                                         var stockFind = stockFinds[0]
                                         if (product.name in productsConvert.keys) {
@@ -777,7 +787,15 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
                                                 product.amount
                                             )
                                         }
-                                        stockViewModel.addUpdateProduct(stockFind)
+                                        var stockId = stockViewModel.addUpdateProduct(stockFind)
+                                        eventViewModel.addEventOperationStock(
+                                            EventOperationStock(
+                                                date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                typeEvent = "Se agrego un prestamo",
+                                                referenceID=stockId
+                                            )
+                                        )
                                     }
                                 }
                                 loanViewModel.addLoan(
