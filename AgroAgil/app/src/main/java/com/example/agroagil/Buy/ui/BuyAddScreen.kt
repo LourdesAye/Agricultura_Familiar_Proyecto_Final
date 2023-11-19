@@ -72,8 +72,10 @@ import com.example.agroagil.Buy.ui.listItemDataBuy
 import com.example.agroagil.Loan.ui.AddStock
 import com.example.agroagil.Stock.ui.StockViewModel
 import com.example.agroagil.Stock.ui.tiposDeElementosDeStock
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Conversion
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 import kotlinx.coroutines.launch
@@ -547,7 +549,7 @@ fun TextUserBuy(){
     "CoroutineCreationDuringComposition"
 )
 @Composable
-fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stockViewModel: StockViewModel) {
+fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stockViewModel: StockViewModel, eventViewModel: SummaryViewModel) {
     var error_price by rememberSaveable { mutableStateOf(false)}
     val stockValues = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
@@ -793,7 +795,15 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                             )
                                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                         )
-                                        stockViewModel.addUpdateProduct(stockNew)
+                                        var stockId = stockViewModel.addUpdateProduct(stockNew)
+                                        eventViewModel.addEventOperationStock(
+                                            EventOperationStock(
+                                                date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                typeEvent = "Se realizo una compra",
+                                                referenceID=stockId
+                                            )
+                                        )
                                     } else {
                                         var stockFind = stockFinds[0]
                                         if (product.name in productsConvertBuy.keys) {
@@ -811,7 +821,15 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                                 product.amount
                                             )
                                         }
-                                        stockViewModel.addUpdateProduct(stockFind)
+                                        var stockId = stockViewModel.addUpdateProduct(stockFind)
+                                        eventViewModel.addEventOperationStock(
+                                            EventOperationStock(
+                                                date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                                typeEvent = "Se realizo una compra",
+                                                referenceID=stockId
+                                            )
+                                        )
                                     }
                                 }
                                 buyViewModel.addBuy(

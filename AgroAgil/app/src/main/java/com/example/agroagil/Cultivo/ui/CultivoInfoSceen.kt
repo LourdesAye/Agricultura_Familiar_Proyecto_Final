@@ -5,21 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.ArrowCircleRight
-import androidx.compose.material.icons.filled.ArrowRight
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,13 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
@@ -47,10 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.agroagil.Buy.ui.BuyViewModel
 import com.example.agroagil.Stock.ui.dialogEditOpen
-import com.example.agroagil.Summary.dataDateStart
-import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Crop
 import com.example.agroagil.core.models.Plantation
 import java.text.SimpleDateFormat
@@ -59,6 +45,9 @@ import java.util.Locale
 import java.util.TimeZone
 import androidx.compose.ui.text.input.KeyboardType.Companion.Number
 import com.example.agroagil.Stock.ui.StockViewModel
+import com.example.agroagil.Summary.SummaryViewModel
+import com.example.agroagil.core.models.EventOperationBox
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 
@@ -69,7 +58,7 @@ var dialogCosecharCantidadError = mutableStateOf(false)
 var dialogCosecharCantidad = mutableStateOf("")
 
 @Composable
-fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavController, stockViewModel: StockViewModel){
+fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavController, stockViewModel: StockViewModel, stockEvent: SummaryViewModel){
     if(dialogCosecharOpen.value){
         AlertDialog(
             onDismissRequest = {
@@ -97,7 +86,7 @@ fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavControl
                         }else{
                             currentPlantation.value.status = "COSECHADO"
                             cultivoViewModel.updatePlantation(currentPlantation.value)
-                            stockViewModel.addUpdateProduct(Stock(type="Cultivo", date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                            var stockID=stockViewModel.addUpdateProduct(Stock(type="Cultivo", date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
                                 product= Product(
                                     name = currentCrop.value.name,
@@ -106,6 +95,15 @@ fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavControl
                                     price = currentCrop.value.price
                                 )
                             ))
+                            stockEvent.addEventOperationStock(
+                                EventOperationStock(
+                                    date = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                    typeEvent = "Cosechado desde la seccion Cultivo",
+                                    referenceID = stockID,
+                                    amount=dialogCosecharCantidad.value.toFloat()
+                                )
+                            )
                             dialogCosecharOpen.value = false
                             navController.popBackStack()
                         }
@@ -127,7 +125,7 @@ fun dialogCosechar(cultivoViewModel: CultivoViewModel, navController: NavControl
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoViewModel, plantationId: String, stockViewModel: StockViewModel){
+fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoViewModel, plantationId: String, stockViewModel: StockViewModel, stockEvent: SummaryViewModel){
     cultivoViewModel.getPlantation(plantationId)
     var valuesPlantation = cultivoViewModel.currentPlantation?.observeAsState()?.value
     var stocks = stockViewModel.stockEnBaseDeDatos?.observeAsState()?.value
@@ -262,7 +260,7 @@ fun CultivoInfoScreen(navController: NavController,cultivoViewModel: CultivoView
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text("Cosechar")
                 }
-                dialogCosechar(cultivoViewModel, navController, stockViewModel)
+                dialogCosechar(cultivoViewModel, navController, stockViewModel, stockEvent)
             }
         }
     }

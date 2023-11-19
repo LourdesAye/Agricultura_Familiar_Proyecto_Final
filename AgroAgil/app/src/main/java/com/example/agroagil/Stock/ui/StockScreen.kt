@@ -74,6 +74,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import com.example.agroagil.Summary.SummaryViewModel
+import com.example.agroagil.core.models.EventOperationStock
 import com.example.agroagil.core.models.Product
 import com.example.agroagil.core.models.Stock
 import java.text.SimpleDateFormat
@@ -140,7 +142,7 @@ fun filterTipoElementoStock(listaElementosStock: List<Stock>): List<Stock> {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun dialogEdit(stockViewModel: StockViewModel
+fun dialogEdit(stockViewModel: StockViewModel, eventViewModel: SummaryViewModel
 ){
     var alertAmount by remember{ mutableStateOf(productEditOpen.value.amountMinAlert.toString()) }
     var alertAmountError by remember { mutableStateOf(false) }
@@ -247,13 +249,21 @@ fun dialogEdit(stockViewModel: StockViewModel
                             if(alertAmount == ""){
                                 alertAmount= "0"
                             }
-                            stockViewModel.addUpdateProduct(Stock(id=productEditOpen.value.id,type=type, amountMinAlert=alertAmount.toInt(), product = Product(
+                            var stockId = stockViewModel.addUpdateProduct(Stock(id=productEditOpen.value.id,type=type, amountMinAlert=alertAmount.toInt(), product = Product(
                                 name=name,
-                                amount=amount.toInt(),
+                                amount=amount.toFloat(),
                                 units = units,
                                 price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
+                            eventViewModel.addEventOperationStock(
+                                EventOperationStock(
+                                    date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                    typeEvent = "Se edito el producto desde Almacen",
+                                    referenceID=stockId
+                                )
+                            )
                             resetFilter()
                             resetFilterExclude()
                             dialogEditOpen.value = false
@@ -292,7 +302,7 @@ fun dialogEdit(stockViewModel: StockViewModel
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun dialogAdd(stockViewModel: StockViewModel
+fun dialogAdd(stockViewModel: StockViewModel, eventViewModel: SummaryViewModel
 ){
     var alertAmount by remember{ mutableStateOf("") }
     var alertAmountError by remember { mutableStateOf(false) }
@@ -391,13 +401,21 @@ fun dialogAdd(stockViewModel: StockViewModel
                             if(alertAmount == ""){
                                 alertAmount= "0"
                             }
-                            stockViewModel.addUpdateProduct(Stock(type=type, amountMinAlert=alertAmount.toInt(), product = Product(
+                            var stockId = stockViewModel.addUpdateProduct(Stock(type=type, amountMinAlert=alertAmount.toInt(), product = Product(
                                 name=name,
-                                amount=amount.toInt(),
+                                amount=amount.toFloat(),
                                 units = units,
                                 price = price.toFloat()
                             ), date= SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)))
+                            eventViewModel.addEventOperationStock(
+                                EventOperationStock(
+                                    date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                                        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time),
+                                    typeEvent = "Se agrego el producto desde Almacen",
+                                    referenceID=stockId
+                                )
+                            )
                             dialogAddOpen.value = false
                         }else{
                             if(name==""){
@@ -840,7 +858,7 @@ fun filterStatus() {
 
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
-fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
+fun StockScreen(stockViewModel: StockViewModel, navController: NavController, eventViewModel: SummaryViewModel) {
     //se cargarían los distintos elementos con su stock en el view model y se traen a la variable valueStock
     var valuesStock = stockViewModel.stockEnBaseDeDatos.observeAsState().value
     valuesStock?.let {
@@ -894,7 +912,7 @@ fun StockScreen(stockViewModel: StockViewModel, navController: NavController) {
                 Text("Agregar")
             }
         }
-        dialogAdd(stockViewModel)
-        dialogEdit(stockViewModel)
+        dialogAdd(stockViewModel, eventViewModel)
+        dialogEdit(stockViewModel, eventViewModel)
     }
 }

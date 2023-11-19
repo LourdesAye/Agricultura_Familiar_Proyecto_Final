@@ -143,7 +143,7 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    fun getTotalIncome(): Double {
+    fun getTotalIncome(): Float {
         val thirtyDaysAgo = Calendar.getInstance()
         thirtyDaysAgo.add(Calendar.DAY_OF_MONTH, -30)
 
@@ -152,7 +152,7 @@ class DashboardViewModel : ViewModel() {
                 val sellDate = SimpleDateFormat("dd/MM/yyyy").parse(sell.date)
                 sellDate.after(thirtyDaysAgo.time) // Filtrar las ventas de los últimos 30 días
             }.map { product -> product.amount * sell.price }
-        }?.sum() ?: 0.0
+        }?.sum() ?: 0f
     }
 
     fun getTotalExpenses(): Float {
