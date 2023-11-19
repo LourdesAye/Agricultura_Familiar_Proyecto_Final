@@ -119,8 +119,9 @@ class MainActivity : ComponentActivity() {
                     val farmViewModel = FarmViewModel()
                     val cultivoViewModel = CultivoViewModel()
                     val dashViewModel = DashboardViewModel()
-                    val summaryViewModel = SummaryViewModel()
                     val stockViewModel = StockViewModel()
+                    val summaryViewModel = SummaryViewModel(sellViewModel, buyViewModel, stockViewModel)
+
 
                     //destino inicial principal si inicia sesion correctamente
                     val destinoPrincipal: String = "inicio"
