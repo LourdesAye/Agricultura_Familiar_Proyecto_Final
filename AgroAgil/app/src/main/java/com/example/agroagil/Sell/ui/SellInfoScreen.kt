@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Sell.ui.SellViewModel
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Product
 
 var currentSell = mutableStateOf(Sell(price=0))
@@ -83,7 +84,7 @@ fun itemProduct(item: Product){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, sellId: Int){
+fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, sellId: Int, eventViewModel:SummaryViewModel){
     var valuesSell = sellViewModel.farm.observeAsState().value
     if (valuesSell == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
@@ -194,6 +195,7 @@ fun SellInfoScreen(navController: NavController, sellViewModel: SellViewModel, s
                         Button(onClick = {
                             currentSell.value = currentSell.value.copy(paid = true)
                             sellViewModel.updateSell(currentSell.value, sellId)
+                            eventViewModel.setEventsBox()
                         }, content={Text("Confirmar pago")})
                     }}
 

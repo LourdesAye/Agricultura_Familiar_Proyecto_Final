@@ -360,7 +360,8 @@ class MainActivity : ComponentActivity() {
                                         SellInfoScreen(
                                             navController = navController,
                                             sellViewModel = sellViewModel,
-                                            sellId
+                                            sellId,
+                                            summaryViewModel
                                         )
                                     })
                         }
@@ -415,7 +416,8 @@ class MainActivity : ComponentActivity() {
                                         BuyInfoScreen(
                                             navController = navController,
                                             buyViewModel = buyViewModel,
-                                            buyId
+                                            buyId,
+                                            summaryViewModel
                                         )
                                     })
                         }
