@@ -136,8 +136,8 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
         val location = "${weatherData.name}, ${weatherData.sys.country}"
         val temperature = (weatherData.main.temp - 273.15).toInt()
         val description = weatherData.weather.firstOrNull()?.description ?: "N/A"
-        val temperatureMin = (weatherData.main.temp_min - 273.15).toInt()
-        val temperatureMax = (weatherData.main.temp_max - 273.15).toInt()
+        var temperatureMin = (weatherData.main.temp_min - 273.15).toInt()
+        var temperatureMax = (weatherData.main.temp_max - 273.15).toInt()
         val translatedDescription = weatherDescriptionsMap[description] ?: description
 
         val currentDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -210,6 +210,9 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                                     .align(Alignment.CenterVertically),  // Alinea el icono verticalmente al centro
                                 contentScale = ContentScale.FillBounds  // Escala sin estirar
                             )
+                            // La API no trae las temp min y max del día, si no q hace variación de la actual
+                            temperatureMin -= 5
+                            temperatureMax +=1
 
                             // Muestra la fecha, la descripción traducida y la min y max
                             Column(
@@ -255,8 +258,21 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     val iconResourceId = if (description != "Sin conexión") R.drawable._01d else R.drawable._01n
     val iconResourceId2 = if (description != "Sin conexión") R.drawable._10d else R.drawable._01n
 
-    val text1 = "$nextDayDate\n${if (description != "Sin conexión") "Cielo despejado" else "Sin conexión"}\n${if (description != "Sin conexión") minTemp + 1 else minTemp}°C / ${if (description != "Sin conexión") maxTemp + 1 else maxTemp}°C"
-    val text2 = "$nextDayDate2\n${if (description != "Sin conexión") "Lluvia ligera" else "Sin conexión"}\n${if (description != "Sin conexión") minTemp - 5 else minTemp}°C / ${if (description != "Sin conexión") maxTemp - 4 else maxTemp}°C"
+    val isConnected = description != "Sin conexión"
+
+// Variables para text1
+    val conditionText1 = if (isConnected) "Cielo despejado" else "Sin conexión"
+    val minTempText1 = minTemp-5
+    val maxTempText1 = maxTemp
+
+// Variables para text2
+    val conditionText2 = if (isConnected) "Lluvia ligera" else "Sin conexión"
+    val minTempText2 = minTemp-4
+    val maxTempText2 = maxTemp+1
+// Cadenas de texto
+    val text1 = "$nextDayDate\n$conditionText1\n$minTempText1°C / $maxTempText1°C"
+    val text2 = "$nextDayDate2\n$conditionText2\n$minTempText2°C / $maxTempText2°C"
+
 
     val textColor = Color(android.graphics.Color.parseColor("#0CBFDF"))
     Card(
