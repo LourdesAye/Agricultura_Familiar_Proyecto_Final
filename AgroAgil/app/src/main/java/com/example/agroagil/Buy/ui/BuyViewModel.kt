@@ -9,6 +9,10 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -59,8 +63,16 @@ class BuyViewModel : ViewModel()  {
             Firebase.database.getReference("buy/0").setValue(Buys(currentBuys))
             var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
             val updates = HashMap<String, Any>()
-            updates["/$getKey"] = EventOperationBox( buy.date, "Registro de la compra", "Buy",   (currentBuys.size-1).toString())
+            updates["/$getKey"] = EventOperationBox( date = SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time), typeEvent= "Registro de la compra", operation = "Buy",   referenceID= (currentBuys.size-1).toString())
             Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
+            if (buy.paid){
+                var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
+                val updates = HashMap<String, Any>()
+                updates["/$getKey"] = EventOperationBox( date = SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
+                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time), typeEvent= "Pago de la compra", operation = "Buy",   referenceID= (currentBuys.size-1).toString())
+                Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
+            }
             setFarm()
         }
     }
@@ -73,6 +85,12 @@ class BuyViewModel : ViewModel()  {
             currentBuy.addAll(it)
             currentBuy[indexLoan] = buy
             Firebase.database.getReference("buy/0").setValue(Buys(currentBuy))
+            var getKey = Firebase.database.getReference("events/0/boxs/events").push().key
+            val updates = HashMap<String, Any>()
+            updates["/$getKey"] = EventOperationBox( date = SimpleDateFormat("yyyy/MM/dd HH:mm",
+                Locale.getDefault())
+                .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time), typeEvent= "Pago de la compra", operation = "Buy",   referenceID= indexLoan.toString())
+            Firebase.database.getReference("events/0/boxs/events").updateChildren(updates)
             setFarm()
         }
 

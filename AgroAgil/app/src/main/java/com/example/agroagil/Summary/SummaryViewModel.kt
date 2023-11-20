@@ -64,11 +64,6 @@ class SummaryViewModel(var sellViewModel: SellViewModel, var buyViewModel: BuyVi
                     val value = snapshot.getValue(genericType)
                     val result = value?.values?.toList() ?: emptyList()
                     continuation.resume(result)
-                    /*
-                    val value = snapshot.getValue(HashMap<String, EventOperationBox>()::class.java) as HashMap<String, EventOperationBox>
-                    var result = mutableListOf<EventOperationBox>()
-                    result = value.values.toMutableList()
-                    continuation.resume(result)*/
                 }.addOnFailureListener { exception ->
                     continuation.resumeWithException(exception)
                 }
@@ -76,6 +71,27 @@ class SummaryViewModel(var sellViewModel: SellViewModel, var buyViewModel: BuyVi
             emit(realValue)
         } catch (e: Exception) {
             // Handle exception if needed
+        }
+    }
+    fun setEventsBox(){
+        events = liveData(Dispatchers.IO) {
+            emit(null)
+
+            try {
+                val realValue = suspendCancellableCoroutine<List<EventOperationBox>> { continuation ->
+                    Firebase.database.getReference("events/0/boxs/events").get().addOnSuccessListener { snapshot ->
+                        val genericType = object : GenericTypeIndicator<HashMap<String, EventOperationBox>>() {}
+                        val value = snapshot.getValue(genericType)
+                        val result = value?.values?.toList() ?: emptyList()
+                        continuation.resume(result)
+                    }.addOnFailureListener { exception ->
+                        continuation.resumeWithException(exception)
+                    }
+                }
+                emit(realValue)
+            } catch (e: Exception) {
+                // Handle exception if needed
+            }
         }
     }
     fun setEventsStock(){
@@ -168,14 +184,5 @@ class SummaryViewModel(var sellViewModel: SellViewModel, var buyViewModel: BuyVi
         updates["/$getKey"] = eventOperationStock
         Firebase.database.getReference("events/0/stock").updateChildren(updates)
         setEventsStock()
-    }
-
-    fun init(){
-        var getKey = Firebase.database.getReference("stockSummary/0/").push().key
-        val updates = HashMap<String, Any>()
-        updates["/$getKey"] = Stock()
-        Firebase.database.getReference("stockSummary/0/").updateChildren(updates)
-
-
     }
 }

@@ -876,6 +876,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                             price = totalPrice.value
                                         )
                                     )
+                                    eventViewModel.setEventsBox()
                                     products.clear()
                                     navController.popBackStack()
                                 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
 import com.example.agroagil.Buy.ui.BuyViewModel
+import com.example.agroagil.Summary.SummaryViewModel
 import com.example.agroagil.core.models.Buy
 import com.example.agroagil.core.models.Product
 
@@ -92,7 +93,7 @@ fun itemProductBuy(item: Product){
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int){
+fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyId: Int, eventViewModel: SummaryViewModel){
     var valuesBuy = buyViewModel.farm.observeAsState().value
     if (valuesBuy == null){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier
@@ -205,6 +206,7 @@ fun BuyInfoScreen(navController: NavController, buyViewModel: BuyViewModel, buyI
                     Button(onClick = {
                         currentBuy.value = currentBuy.value.copy(paid = true)
                         buyViewModel.updateBuy(currentBuy.value, buyId)
+                        eventViewModel.setEventsBox()
                     }, content={Text("Confirmar pago")})
                 }}
             }

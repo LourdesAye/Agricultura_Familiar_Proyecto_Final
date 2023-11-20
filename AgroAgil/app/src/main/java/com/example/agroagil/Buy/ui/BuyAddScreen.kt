@@ -838,6 +838,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                     date = currentDate, paid =paid,
                                     price =totalPriceBuy.value)
                                 )
+                                eventViewModel.setEventsBox()
                                 productsBuy.clear()
                                 navController.popBackStack()
                             }
