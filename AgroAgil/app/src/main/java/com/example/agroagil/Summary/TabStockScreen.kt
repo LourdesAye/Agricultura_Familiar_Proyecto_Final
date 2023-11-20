@@ -3,6 +3,7 @@ package com.example.agroagil.Summary
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -73,6 +75,7 @@ var filtersDateStock = mutableStateListOf<Function1<List<Stock>, List<Stock>>>()
 var listItemDataStock = mutableStateListOf<Stock>()
 var listItemDataFilterStock = mutableStateListOf<Stock>(
 )
+var summaryViewModelCurrent = mutableStateOf<SummaryViewModel?>(null)
 
 fun filterHerramienta(events:List<Stock>): List<Stock> {
     return events.filter { it -> it.type=="Herramienta" }
@@ -92,14 +95,17 @@ fun filterSemilla(events:List<Stock>): List<Stock> {
 @SuppressLint("SimpleDateFormat")
 fun filterDatesStock(events:List<Stock>): List<Stock> {
     val date_format = SimpleDateFormat("yyyy/MM/dd")
-    val date_format_buy = SimpleDateFormat("dd/MM/yyyy")
     val filter_date = date_format.parse(dataDateStart.value)
     val filterDateEnd = date_format.parse(dataDateEnd.value)
     return events.filter { event ->
-        var date_event = date_format_buy.parse(event.date.split(" ")[0])
-        (filter_date.before(date_event) or filter_date.equals(date_event)
-                )and (filterDateEnd.after(date_event) or filterDateEnd.equals(date_event)
-                )
+        var eventsStock = summaryViewModelCurrent.value!!.getAllEventsStock(event)
+        var eventsDate = eventsStock.filter{
+            var date_event = date_format.parse( it.date.split(" ")[0])
+            (filter_date.before(date_event) or filter_date.equals(date_event)
+                    )and (filterDateEnd.after(date_event) or filterDateEnd.equals(date_event)
+                    )
+        }
+        eventsDate.size >0
     }
 }
 
@@ -444,22 +450,22 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                Text(
+                                /*Text(
                                     itemData.date,
                                     fontSize = 10.sp,
                                     modifier = Modifier
                                         .align(Alignment.End)
                                         .padding(5.dp)
-                                )
+                                )*/
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
 
-
+                                    LocalConfiguration.current.densityDpi
                                     Column(
                                         modifier = Modifier
-                                            .padding(top=5.dp,bottom=5.dp, start=10.dp)
+                                            .padding(top=20.dp,bottom=5.dp, start=10.dp).fillMaxWidth(0.9f)
                                     ) {
 
 
@@ -472,11 +478,6 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
                                             events.addAll(summaryViewModel.getAllEventsStock(itemData))
 
                                             expandedEvents = !expandedEvents
-                                            /*if (expandedEvents) {
-                                                heightCard = 100.dp * (events.size+1)
-                                            }else{
-                                                heightCard = 100.dp
-                                            }*/
                                             iconAction =  if(expandedEvents == true) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                                         },
                                         modifier = Modifier.padding(end = 5.dp)
@@ -493,8 +494,23 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
                     }
                     AnimatedVisibility(visible = expandedEvents) {
                         Column(modifier = Modifier.padding(top=20.dp,start=10.dp, end= 10.dp)) {
-
-                            events.map{
+                            var eventsFilter = mutableStateListOf<EventOperationStock>()
+                            eventsFilter.clear()
+                            eventsFilter.addAll(events)
+                            if (filtersDateStock.contains(::filterDatesStock) ){
+                                val date_format = SimpleDateFormat("yyyy/MM/dd")
+                                val filter_date = date_format.parse(dataDateStart.value)
+                                val filterDateEnd = date_format.parse(dataDateEnd.value)
+                                val eventsCurrent = eventsFilter.filter{
+                                    val date_event = date_format.parse( it.date.split(" ")[0])
+                                    (filter_date.before(date_event) or filter_date.equals(date_event)
+                                            )and (filterDateEnd.after(date_event) or filterDateEnd.equals(date_event)
+                                            )
+                                }
+                                eventsFilter.clear()
+                                eventsFilter.addAll(eventsCurrent)
+                            }
+                            eventsFilter.map{
                                 Column(modifier = Modifier.defaultMinSize(minHeight = 100.dp)) {
 
 
@@ -534,7 +550,7 @@ fun OneOperationStock(itemData: Stock, navController: NavController, summaryView
 @SuppressLint("MutableCollectionMutableState", "UnrememberedMutableState")
 @Composable
 fun StockSummary(summaryViewModel: SummaryViewModel, navController: NavController){
-    //summaryViewModel.init()
+    summaryViewModelCurrent.value = summaryViewModel
     val valuesStocks by summaryViewModel.GetStock().observeAsState()
     val valuesEvents by summaryViewModel.eventsStock.observeAsState()
     if (valuesStocks == null || valuesEvents == null){
