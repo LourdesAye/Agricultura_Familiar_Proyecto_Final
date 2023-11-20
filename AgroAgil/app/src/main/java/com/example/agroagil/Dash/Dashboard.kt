@@ -717,7 +717,9 @@ fun DisplayBuyItem(buy: Buy, textColor: Color) {
                 itemProductDash(product)
                 val totalPrice = String.format("%.2f", product.amount * buy.price)
                 Text(
-                    "$$totalPrice"
+                    text = "Total: $$totalPrice",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
                 }
             }
@@ -768,21 +770,29 @@ fun DisplaySellItem(sell: Sell, textColor: Color, backgroundColor: Color) {
             ) {
                 // Barra de color a la izquierda de la tarjeta
             }
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Muestra la información de la venta
-            Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
-            // Muestra los productos de la venta utilizando la función itemProductDash
-            sell.items.forEach { product ->
-                itemProductDash(product)
-                val totalPrice = String.format("%.2f", sell.price * product.amount)
-                Text(
-                    "$$totalPrice"
-                )
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Muestra la información de la venta
+                Text(text = "${sell.nameUser}  ${sell.date}", color = Color.Black)
+
+                // Muestra los productos de la venta utilizando la función itemProductDash
+                sell.items.forEach { product ->
+                    itemProductDash(product)
                 }
+
+                // Calcular el precio total
+                val totalPrice = sell.items.sumByDouble { it.price.toDouble() * it.amount }
+
+                // Mostrar el precio total al final de todos los elementos
+                Text(
+                    text = "Total: $$totalPrice",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
         }
     }
 }
+
 
 @Composable
 fun LoanCard(topLoans: List<Loan>, backgroundColor: Color, borderColor: Color, textColor: Color) {

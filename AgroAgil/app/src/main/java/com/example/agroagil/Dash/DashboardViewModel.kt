@@ -151,9 +151,10 @@ class DashboardViewModel : ViewModel() {
             sell.items.filter { product ->
                 val sellDate = SimpleDateFormat("dd/MM/yyyy").parse(sell.date)
                 sellDate.after(thirtyDaysAgo.time) // Filtrar las ventas de los últimos 30 días
-            }.map { product -> product.amount * sell.price }
+            }.map { sell.price }.distinct() // esto es el total de la venta, y en la venta hay varios productos
         }?.sum() ?: 0f
     }
+
 
     fun getTotalExpenses(): Float {
         val thirtyDaysAgo = Calendar.getInstance()
@@ -163,7 +164,7 @@ class DashboardViewModel : ViewModel() {
             buy.items.filter { product ->
                 val buyDate = SimpleDateFormat("dd/MM/yyyy").parse(buy.date)
                 buyDate.after(thirtyDaysAgo.time) // Filtrar las compras de los últimos 30 días
-            }.map { product -> product.amount * buy.price }
+            }.map { buy.price }.distinct()
         }?.sum() ?: 0f
     }
 
