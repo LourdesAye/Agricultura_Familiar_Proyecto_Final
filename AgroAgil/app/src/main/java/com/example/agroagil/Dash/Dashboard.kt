@@ -211,8 +211,8 @@ fun WeatherCard(weatherJson: String?, borderColor: Color, backgroundColor: Color
                                 contentScale = ContentScale.FillBounds  // Escala sin estirar
                             )
                             // La API no trae las temp min y max del día, si no q hace variación de la actual
-                            temperatureMin -= 5
-                            temperatureMax +=1
+                            temperatureMin = 17
+                            temperatureMax = 30
 
                             // Muestra la fecha, la descripción traducida y la min y max
                             Column(
@@ -261,14 +261,15 @@ fun ForecastWeatherCard(currentDate: String, minTemp: Int, maxTemp: Int, descrip
     val isConnected = description != "Sin conexión"
 
 // Variables para text1
+    // temperatura min y max del día, son pagas...
     val conditionText1 = if (isConnected) "Cielo despejado" else "Sin conexión"
-    val minTempText1 = minTemp-5
-    val maxTempText1 = maxTemp
+    val minTempText1 = 20
+    val maxTempText1 = 29
 
 // Variables para text2
     val conditionText2 = if (isConnected) "Lluvia ligera" else "Sin conexión"
-    val minTempText2 = minTemp-4
-    val maxTempText2 = maxTemp+1
+    val minTempText2 = 16
+    val maxTempText2 = 24
 // Cadenas de texto
     val text1 = "$nextDayDate\n$conditionText1\n$minTempText1°C / $maxTempText1°C"
     val text2 = "$nextDayDate2\n$conditionText2\n$minTempText2°C / $maxTempText2°C"
