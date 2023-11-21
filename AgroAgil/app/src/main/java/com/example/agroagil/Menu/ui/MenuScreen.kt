@@ -1,5 +1,11 @@
 package com.example.agroagil.Menu.ui.featureMenu.menu.ui
 
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import java.text.SimpleDateFormat
+import java.util.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import com.lourd.myapplication.featureMenu.menu.domain.ItemMenuPrincipal
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.res.imageResource
@@ -35,22 +42,32 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
 import com.example.agroagil.R
 import com.example.agroagil.Menu.ui.NavigationEventMenu
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
+import kotlinx.coroutines.delay
 
 //import androidx.navigation.NavHost
 
@@ -112,7 +129,17 @@ fun ContenedorDeOpciones(
 
         })
 }
-
+fun isInternetAvailable(connectivityManager: ConnectivityManager): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val networkCapabilities = connectivityManager.activeNetwork ?: return false
+        val actNw =
+            connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+        actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    } else {
+        val networkInfo = connectivityManager.activeNetworkInfo
+        networkInfo != null && networkInfo.isConnected
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Menu(
@@ -125,11 +152,17 @@ fun Menu(
     navController: NavController,
     contentFrame:  @Composable () ->Unit
 ){
+    var statusNetwork by remember { mutableStateOf(false) }
+    var lastConnection by remember { mutableStateOf(SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+        .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)) }
         // Observa cambios en nombreGranja y nombreImagenGranja
     val nombreGranja: String by viewModel.nombreGranja.observeAsState("Mi Campo")
     val nombreImagenGranja:String by viewModel.nombreImagenGranja.observeAsState(initial ="farm3" )
     val selectedItem = viewModel.currentOptionSelected.observeAsState().value
-
+    val connectivityManager = getSystemService(
+        LocalContext.current,
+        ConnectivityManager::class.java
+    ) as ConnectivityManager?
 
     // Obtiene la clase R
     val drawableClass = R.drawable::class.java
@@ -252,6 +285,34 @@ fun Menu(
                 ContenedorDeOpciones(scope, drawerState, onNavigationEvent, title,
                     isMenu,
                     navController)
+                LaunchedEffect(true) {
+                    val updateInterval = 5000L // 5 segundos
+                    while (true) {
+                        if (connectivityManager != null){
+                            statusNetwork = isInternetAvailable(connectivityManager)
+                            if (statusNetwork){
+                                lastConnection = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
+                                    .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
+                            }
+                        }
+                        delay(updateInterval)
+                    }
+                }
+
+                AnimatedVisibility(visible = !statusNetwork) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Row(){
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.wifi_off),
+                                contentDescription = "Localized description",
+                            )
+                            Text("Sin acceso a internet")
+                        }
+                        Text(text = "Ultima actualizacion: "+ lastConnection)
+                    }
+
+                }
+
                 contentFrame()
             }
         }
