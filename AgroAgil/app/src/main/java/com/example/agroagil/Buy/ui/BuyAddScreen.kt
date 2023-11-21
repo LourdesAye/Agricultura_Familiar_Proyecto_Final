@@ -597,26 +597,6 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                     )
                 }
                 TextUserBuy()
-                /*
-                OutlinedTextField(
-                    value = user,
-                    onValueChange = { user = it
-                        error_name=false},
-                    label = {
-                        Text("Nombre de usuario")
-                    },
-                    trailingIcon = {
-                        Icon(
-                            Icons.Filled.Edit,
-                            contentDescription = "Localized description",
-                            modifier = Modifier.size(25.dp)
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp),
-                    isError = error_name
-                )*/
                 Row(horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -795,7 +775,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                             )
                                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                         )
-                                        var stockId = stockViewModel.addUpdateProduct(stockNew)
+                                        var stockId = stockViewModel.addUpdateProduct(stockNew, false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -821,7 +801,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                                 product.amount
                                             )
                                         }
-                                        var stockId = stockViewModel.addUpdateProduct(stockFind)
+                                        var stockId = stockViewModel.addUpdateProduct(stockFind,false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -832,6 +812,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                         )
                                     }
                                 }
+                                stockViewModel.setFarm()
                                 buyViewModel.addBuy(
                                     Buy(
                                     nameUser =userBuy.value, items = productsBuy,
@@ -840,6 +821,23 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                 )
                                 eventViewModel.setEventsBox()
                                 productsBuy.clear()
+                                openDialogAddItemBuy.value =  false
+                                totalPriceBuy.value = 0f
+                                userBuy.value = ""
+                                errorUserBuy.value = false
+                                nameProductBuy.value = ""
+                                amountBuy.value = ""
+                                measureBuy.value  = ""
+                                errorNameProductBuy.value = false
+                                errorAmountBuy.value = false
+                                errorMeasureBuy.value = false
+                                productsStockBuy.clear()
+                                stockSelectedBuy.value  = null
+                                isNewProductBuy.value = false
+                                isNewUnidadBuy.value = false
+                                errorNameTypeBuy.value = false
+                                nameTypeBuy.value = ""
+                                nameUnidadConvertBuy.value = ""
                                 navController.popBackStack()
                             }
                         }, modifier = Modifier.align(Alignment.CenterVertically)
