@@ -63,7 +63,7 @@ class StockViewModel : ViewModel() {
         }
 
     }
-    fun addUpdateProduct(stockNew: Stock): String {
+    fun addUpdateProduct(stockNew: Stock, resetStock: Boolean=true): String {
         var getKey: String?
         var stock = stockNew
         if(stock.id ==""){
@@ -83,7 +83,8 @@ class StockViewModel : ViewModel() {
         var updates = HashMap<String, Any>()
         updates["/$getKey"] = stock
         Firebase.database.getReference("stockSummary/0/").updateChildren(updates)
-        setFarm()
+        if (resetStock){
+        setFarm()}
         return stock.id
     }
 }

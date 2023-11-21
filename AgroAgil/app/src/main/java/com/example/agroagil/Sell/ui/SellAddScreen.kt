@@ -809,7 +809,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                 )
                                                     .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                             )
-                                            var stockID = stockViewModel.addUpdateProduct(stockNew)
+                                            var stockID = stockViewModel.addUpdateProduct(stockNew, false)
                                             eventViewModel.addEventOperationStock(
                                                 EventOperationStock(
                                                     date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -835,7 +835,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                     product.amount
                                                 )
                                             }
-                                            var stockID = stockViewModel.addUpdateProduct(stockFind)
+                                            var stockID = stockViewModel.addUpdateProduct(stockFind, false)
                                             eventViewModel.addEventOperationStock(
                                                 EventOperationStock(
                                                     date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -846,6 +846,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                             )
                                         }
                                     }
+                                    stockViewModel.setFarm()
                                     sellViewModel.addSell(
                                         Sell(
                                             nameUser = user.value, items = products,

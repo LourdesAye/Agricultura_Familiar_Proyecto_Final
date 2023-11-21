@@ -775,7 +775,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                             )
                                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                         )
-                                        var stockId = stockViewModel.addUpdateProduct(stockNew)
+                                        var stockId = stockViewModel.addUpdateProduct(stockNew, false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -801,7 +801,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                                 product.amount
                                             )
                                         }
-                                        var stockId = stockViewModel.addUpdateProduct(stockFind)
+                                        var stockId = stockViewModel.addUpdateProduct(stockFind,false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -812,6 +812,7 @@ fun BuyAddScreen(buyViewModel: BuyViewModel, navController: NavController, stock
                                         )
                                     }
                                 }
+                                stockViewModel.setFarm()
                                 buyViewModel.addBuy(
                                     Buy(
                                     nameUser =userBuy.value, items = productsBuy,
