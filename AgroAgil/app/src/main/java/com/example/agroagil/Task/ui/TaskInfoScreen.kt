@@ -29,7 +29,6 @@ import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -37,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.agroagil.R
@@ -45,7 +43,6 @@ import com.example.agroagil.core.models.Member
 
 @Composable
 fun TaskInfoScreen (taskViewModel: TaskViewModel, navController: NavController, taskId: String) {
-    taskViewModel.getTaskToVisualize(taskId)
     var taskToVisualize = taskViewModel.taskToVisualize.observeAsState().value
     val taskDeleted = taskViewModel.taskDeleted.observeAsState().value!!
 
