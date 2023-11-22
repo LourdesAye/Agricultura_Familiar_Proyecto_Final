@@ -15,7 +15,7 @@ class TaskRepository {
      * @param userId id del usuario
      */
     suspend fun getTaskCardsForUser(userId: Int): List<TaskCardData> {
-        return firebaseApi.getTaskCardsForUser(userId)
+        return firebaseApi.getTaskCardsForUser(userId).sortedByDescending { it.isoDate }
     }
 
     /**
