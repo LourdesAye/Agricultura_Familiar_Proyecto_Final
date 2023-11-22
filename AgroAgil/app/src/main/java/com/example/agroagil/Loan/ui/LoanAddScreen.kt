@@ -761,7 +761,7 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
                                             )
                                                 .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                         )
-                                        var stockId = stockViewModel.addUpdateProduct(stockNew)
+                                        var stockId = stockViewModel.addUpdateProduct(stockNew, false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -787,7 +787,7 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
                                                 product.amount
                                             )
                                         }
-                                        var stockId = stockViewModel.addUpdateProduct(stockFind)
+                                        var stockId = stockViewModel.addUpdateProduct(stockFind, false)
                                         eventViewModel.addEventOperationStock(
                                             EventOperationStock(
                                                 date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -798,6 +798,7 @@ fun LoanAddScreen(loanViewModel: LoanViewModel, stockViewModel: StockViewModel, 
                                         )
                                     }
                                 }
+                                stockViewModel.setFarm()
                                 loanViewModel.addLoan(
                                     Loan(
                                         nameUser = user.value,

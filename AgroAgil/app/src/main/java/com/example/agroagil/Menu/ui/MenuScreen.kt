@@ -3,6 +3,7 @@ package com.example.agroagil.Menu.ui.featureMenu.menu.ui
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,6 +33,7 @@ import com.lourd.myapplication.featureMenu.menu.domain.ItemMenuPrincipal
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.res.imageResource
@@ -42,8 +44,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +72,7 @@ import com.example.agroagil.R
 import com.example.agroagil.Menu.ui.NavigationEventMenu
 import com.lourd.myapplication.featureMenu.menu.ui.MenuViewModel
 import kotlinx.coroutines.delay
+import java.time.format.TextStyle
 
 //import androidx.navigation.NavHost
 
@@ -140,6 +145,7 @@ fun isInternetAvailable(connectivityManager: ConnectivityManager): Boolean {
         networkInfo != null && networkInfo.isConnected
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Menu(
@@ -152,7 +158,7 @@ fun Menu(
     navController: NavController,
     contentFrame:  @Composable () ->Unit
 ){
-    var statusNetwork by remember { mutableStateOf(false) }
+    var statusNetwork by remember { mutableStateOf(true) }
     var lastConnection by remember { mutableStateOf(SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
         .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)) }
         // Observa cambios en nombreGranja y nombreImagenGranja
@@ -301,14 +307,17 @@ fun Menu(
 
                 AnimatedVisibility(visible = !statusNetwork) {
                     Card(Modifier.fillMaxWidth()) {
-                        Row(){
+                        Row(modifier=Modifier.padding(start=20.dp, top=15.dp)){
                             Icon(
                                 imageVector = ImageVector.vectorResource(R.drawable.wifi_off),
                                 contentDescription = "Localized description",
                             )
-                            Text("Sin acceso a internet")
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text("Sin acceso a internet", style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ))
                         }
-                        Text(text = "Ultima actualizacion: "+ lastConnection)
+                        Text(text = "Ultima actualizacion: "+ lastConnection, modifier=Modifier.padding(start=20.dp,bottom=15.dp))
                     }
 
                 }

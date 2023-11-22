@@ -648,7 +648,7 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                                     )
                                         .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                 )
-                                var stockID = stockViewModel.addUpdateProduct(stockNew)
+                                var stockID = stockViewModel.addUpdateProduct(stockNew, false)
                                 eventViewModel.addEventOperationStock(
                                     EventOperationStock(
                                         date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -674,7 +674,7 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                                         product.amount
                                     )
                                 }
-                                var stockID = stockViewModel.addUpdateProduct(stockFind)
+                                var stockID = stockViewModel.addUpdateProduct(stockFind,false)
                                 eventViewModel.addEventOperationStock(
                                     EventOperationStock(
                                         date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -687,6 +687,7 @@ fun LoanEditScreen(navController: NavController, loanViewModel: LoanViewModel, l
                         }
 
                     }
+                    stockViewModel.setFarm()
                     currentLoanEdit.percentagePaid = percentagePaid.replace("%", "").replace(" ", "").toInt()
                     currentLoanEdit.paid = productsEdit
                     loanViewModel.updateLoan(currentLoanEdit, loanId)

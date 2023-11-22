@@ -87,7 +87,6 @@ val openDialogAddItem =  mutableStateOf(false)
 val products = mutableStateListOf<Product>()
 val totalPrice = mutableStateOf(0f)
 val productsStock = mutableStateListOf<Stock>()
-
 var nameProduct = mutableStateOf("")
 var priceSellAdd = mutableStateOf(0.0f)
 var amount = mutableStateOf("")
@@ -627,28 +626,6 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                     )
                 }
                 TextUser()
-                /*
-                OutlinedTextField(
-                    value = user,
-                    onValueChange = {
-                        user = it
-                        error_name = false
-                    },
-                    label = {
-                        Text("Nombre de usuario")
-                    },
-                    trailingIcon = {
-                        Icon(
-                            Icons.Filled.Edit,
-                            contentDescription = "Localized description",
-                            modifier = Modifier.size(25.dp)
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp),
-                    isError = error_name
-                )*/
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
@@ -832,7 +809,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                 )
                                                     .format(Calendar.getInstance(TimeZone.getTimeZone("America/Argentina/Buenos_Aires")).time)
                                             )
-                                            var stockID = stockViewModel.addUpdateProduct(stockNew)
+                                            var stockID = stockViewModel.addUpdateProduct(stockNew, false)
                                             eventViewModel.addEventOperationStock(
                                                 EventOperationStock(
                                                     date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -858,7 +835,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                                     product.amount
                                                 )
                                             }
-                                            var stockID = stockViewModel.addUpdateProduct(stockFind)
+                                            var stockID = stockViewModel.addUpdateProduct(stockFind, false)
                                             eventViewModel.addEventOperationStock(
                                                 EventOperationStock(
                                                     date= SimpleDateFormat("yyyy/MM/dd HH:mm",Locale.getDefault())
@@ -869,6 +846,7 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                             )
                                         }
                                     }
+                                    stockViewModel.setFarm()
                                     sellViewModel.addSell(
                                         Sell(
                                             nameUser = user.value, items = products,
@@ -878,6 +856,25 @@ fun SellAddScreen(sellViewModel: SellViewModel, navController: NavController,sto
                                     )
                                     eventViewModel.setEventsBox()
                                     products.clear()
+                                    openDialogAddItem.value = false
+                                    totalPrice.value = 0f
+                                    productsStock.clear()
+                                    nameProduct.value = ""
+                                    priceSellAdd.value = 0.0f
+                                    amount.value = ""
+                                    nameUnidad.value = ""
+                                    errorNameProduct.value = false
+                                    errorPriceSellAdd.value = false
+                                    errorAmount.value = false
+                                    errorNameUnidad.value = false
+                                    isNewProduct.value = false
+                                    stockSelected.value = null
+                                    nameType.value = ""
+                                    errorNameType.value = false
+                                    isNewUnidad.value = false
+                                    nameUnidadConvert.value = ""
+                                    user.value = ""
+                                    errorUser.value = false
                                     navController.popBackStack()
                                 }
                             }, modifier = Modifier.align(Alignment.CenterVertically)
