@@ -51,7 +51,7 @@ class TaskViewModel : ViewModel() {
     fun refreshTaskCardsLiveData(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val realValue = taskRepository.getTaskCardsForUser(userId)
+                val realValue = taskRepository.getTaskCardsForUser(userId).sortedByDescending { it.isoDate }
                 _taskCardDataList.postValue(realValue)
             } catch (e: Exception) {
                 // Handle exception, e.g., log it
