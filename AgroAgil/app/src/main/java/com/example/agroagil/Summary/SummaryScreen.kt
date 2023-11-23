@@ -102,7 +102,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 var expandedFilter = mutableStateOf(false)
-val titles = listOf("Caja", "Stock")
+val titles = listOf("Caja", "Almacén")
 var dataDateStart = mutableStateOf("")
 var dataDateEnd = mutableStateOf("")
 var dateFilterChip = mutableStateOf(false)
