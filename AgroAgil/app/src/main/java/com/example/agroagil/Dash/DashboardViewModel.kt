@@ -198,22 +198,15 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("sell/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Sells::class.java) as? Sells
             value?.let {
-                // Formatea las fechas al estilo "yyyy-MM-dd"
-                val formattedSells = it.sells.map { sell ->
-                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault()) //ver esto
-                    val formattedDate = dateFormat.format(Date(sell.date))
-                    sell.copy(date = formattedDate) // Crea una copia del objeto Sell con la fecha formateada
-                }
-
-                // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topSells = formattedSells.sortedByDescending { it.date }
-                    .take(5)
+                // No se realiza ningún formateo de fechas, se pasan tal como están
+                val topSells = it.sells.sortedByDescending { it.date }.take(5)
                 _topSells.postValue(topSells)
             }
         }.addOnFailureListener { exception ->
             // Maneja errores si es necesario
         }
     }
+
 
 
     // ----------------------- Compras
@@ -228,16 +221,8 @@ class DashboardViewModel : ViewModel() {
         Firebase.database.getReference("buy/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Buys::class.java) as? Buys
             value?.let {
-                // Formatea las fechas al estilo "yyyy-MM-dd"
-                val formattedBuys = it.buys.map { buy ->
-                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
-                    val formattedDate = dateFormat.format(Date(buy.date))
-                    buy.copy(date = formattedDate) // Crea una copia del objeto Buy con la fecha formateada
-                }
-
-                // Ordena los elementos por fecha descendente y luego selecciona los primeros n elementos
-                val topBuys = formattedBuys.sortedByDescending { it.date }
-                    .take(5)
+                // No se realiza ningún formateo de fechas, se pasan tal como están
+                val topBuys = it.buys.sortedByDescending { it.date }.take(5)
                 _topBuys.postValue(topBuys)
             }
         }.addOnFailureListener { exception ->
@@ -246,24 +231,18 @@ class DashboardViewModel : ViewModel() {
     }
 
 
+
     // --------------------------
     // -- Loans
     private val _loans = MutableLiveData<List<Loan>>()
 
     private fun fetchTopLoans() {
-        // esto ordena por fecha ascendente ahora. Y solo trae prestamos no devueltos
+        // Esto ordena por fecha ascendente ahora. Y solo trae préstamos no devueltos
         Firebase.database.getReference("loan/0").get().addOnSuccessListener { snapshot ->
             val value = snapshot.getValue(Loans::class.java) as? Loans
             value?.let {
-                // Formatea las fechas al estilo "yyyy-MM-dd"
-                val formattedLoans = it.loans.map { loan ->
-                    val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
-                    val formattedDate = dateFormat.format(Date(loan.date))
-                    loan.copy(date = formattedDate) // Crea una copia del objeto Loan con la fecha formateada
-                }
-
-                // Filtra los préstamos que no estén al 100%
-                val nonCompletedLoans = formattedLoans.filter { it.percentagePaid < 100 }
+                // No se realiza ningún formateo de fechas, se pasan tal como están
+                val nonCompletedLoans = it.loans.filter { it.percentagePaid < 100 }
 
                 // Ordena los elementos por fecha ascendente y selecciona los primeros 5 elementos
                 val topLoans = nonCompletedLoans.sortedBy { it.date }
@@ -275,8 +254,7 @@ class DashboardViewModel : ViewModel() {
             // Maneja errores si es necesario
         }
     }
-
-
+    
 
     val loans: LiveData<List<Loan>> get() = _loans
 
